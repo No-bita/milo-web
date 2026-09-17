@@ -1,0 +1,726 @@
+/* ==========================================================
+   MILO V2 — RESPONSIVE MOBILE-FIRST DESIGN SYSTEM
+   Full viewport on mobile (<768px), centered column on desktop.
+   Zero simulated phone frames or artificial bezels.
+   ========================================================== */
+
+:root {
+  /* ── Milo Brand Palette ── */
+  --milo-bg: #FAF7F2;
+  --milo-card-bg: #FFFFFF;
+  --milo-card-subtle: #F6F2EA;
+  --milo-text: #1A1814;
+  --milo-text-secondary: #6B6560;
+  --milo-text-muted: #9B958E;
+  
+  --milo-dark-pill: #1A1814;
+  --milo-dark-pill-text: #FFFFFF;
+  
+  --milo-accent: #D97757;
+  --milo-accent-light: rgba(217, 119, 87, 0.12);
+  --milo-terracotta: #C85A32;
+  
+  --milo-green: #2E7D32;
+  --milo-green-light: #E8F5E9;
+  --milo-whatsapp: #25D366;
+  --milo-whatsapp-dark: #128C7E;
+  
+  --milo-border: #E8E2D8;
+  --milo-border-light: #F0ECE4;
+  
+  --milo-tag-blue: #E0F2FE;
+  --milo-tag-blue-text: #0369A1;
+  --milo-tag-amber: #FEF3C7;
+  --milo-tag-amber-text: #92400E;
+  --milo-tag-green: #DCFCE7;
+  --milo-tag-green-text: #15803D;
+
+  --milo-radius-sm: 8px;
+  --milo-radius-md: 14px;
+  --milo-radius-lg: 20px;
+  --milo-radius-xl: 28px;
+  --milo-radius-full: 9999px;
+
+  --milo-shadow-sm: 0 1px 3px rgba(26, 24, 20, 0.05);
+  --milo-shadow-md: 0 4px 16px rgba(26, 24, 20, 0.08);
+  --milo-shadow-lg: 0 12px 32px rgba(26, 24, 20, 0.12);
+
+  --milo-font-display: 'DM Serif Display', Georgia, serif;
+  --milo-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --milo-font-handwriting: 'Caveat', 'Comic Sans MS', cursive;
+}
+
+/* ── Base Container ── */
+.milo-root {
+  font-family: var(--milo-font-sans);
+  color: var(--milo-text);
+  background-color: var(--milo-bg);
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+}
+
+.milo-root * {
+  box-sizing: border-box;
+}
+
+/* ── Developer-Only Control Bar ── */
+.milo-dev-bar {
+  width: 100%;
+  background: #201E1B;
+  border-bottom: 1px solid #34312D;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  color: #FAF7F2;
+}
+
+.milo-dev-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.milo-dev-tag {
+  background: var(--milo-accent);
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.milo-screen-select {
+  padding: 6px 12px;
+  border-radius: var(--milo-radius-sm);
+  border: 1px solid #4A4641;
+  background: #2E2B27;
+  font-family: var(--milo-font-sans);
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: #FAF7F2;
+  cursor: pointer;
+  max-width: 280px;
+}
+
+.milo-dev-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.milo-toolbar-btn {
+  padding: 5px 12px;
+  border-radius: var(--milo-radius-full);
+  border: 1px solid #4A4641;
+  background: #2E2B27;
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: #FAF7F2;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.milo-toolbar-btn:hover {
+  background: #3E3A34;
+  border-color: #635E55;
+}
+
+.milo-toolbar-btn.active {
+  background: var(--milo-accent);
+  color: #FFFFFF;
+  border-color: var(--milo-accent);
+}
+
+/* Hide Dev Bar on mobile devices to preserve pure native product feel */
+@media (max-width: 768px) {
+  .milo-dev-bar {
+    display: none;
+  }
+  .milo-dev-bar.open-on-mobile {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  }
+}
+
+/* Discreet floating trigger on mobile */
+.milo-mobile-dev-trigger {
+  display: none;
+}
+@media (max-width: 768px) {
+  .milo-mobile-dev-trigger {
+    display: flex;
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 9999;
+    background: rgba(26, 24, 20, 0.85);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    backdrop-filter: blur(4px);
+    touch-action: manipulation;
+  }
+}
+
+/* ── Main Stage ── */
+.milo-stage {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  padding: 0;
+}
+
+/* ── Responsive Milo Page Container ── */
+/* Mobile-first: Full viewport on mobile, centered column on desktop */
+.milo-responsive-page {
+  width: 100%;
+  max-width: 580px;
+  min-height: 100vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: max(18px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+  background-color: var(--milo-bg);
+  box-sizing: border-box;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .milo-responsive-page {
+    padding: 36px 32px 48px;
+  }
+}
+
+/* ── Typography & Headers ── */
+.milo-brand-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--milo-text);
+  margin: 0;
+}
+
+.milo-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  min-height: 40px;
+}
+
+/* ── Minimalist Progress Bar ── */
+.milo-progress-bar {
+  width: 100%;
+  height: 3px;
+  background: var(--milo-border);
+  border-radius: var(--milo-radius-full);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.milo-progress-fill {
+  height: 100%;
+  background: var(--milo-text);
+  border-radius: var(--milo-radius-full);
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Native Date/Time Hidden Input Wrapper ── */
+.milo-picker-btn-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.milo-native-hidden-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.milo-back-btn {
+  background: none;
+  border: none;
+  font-size: 1.35rem;
+  color: var(--milo-text);
+  cursor: pointer;
+  padding: 8px;
+  margin-left: -8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--milo-radius-full);
+  min-width: 44px;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+.milo-back-btn:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.milo-screen-h1 {
+  font-family: var(--milo-font-display);
+  font-size: 1.85rem;
+  line-height: 1.2;
+  font-weight: 400;
+  color: var(--milo-text);
+  margin: 8px 0 6px;
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 768px) {
+  .milo-screen-h1 {
+    font-size: 2.15rem;
+  }
+}
+
+.milo-screen-h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--milo-text);
+  margin: 12px 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.milo-screen-subhead {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--milo-text-secondary);
+  margin: 0 0 20px;
+}
+
+/* ── Buttons & Interactive Elements ── */
+.milo-btn-primary {
+  width: 100%;
+  min-height: 50px;
+  background: var(--milo-dark-pill);
+  color: var(--milo-dark-pill-text);
+  border: none;
+  border-radius: var(--milo-radius-full);
+  padding: 14px 24px;
+  font-family: var(--milo-font-sans);
+  font-size: 0.975rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.15s ease, background 0.15s ease;
+  box-shadow: 0 4px 14px rgba(26, 24, 20, 0.14);
+  touch-action: manipulation;
+}
+
+.milo-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.milo-btn-whatsapp {
+  background: var(--milo-whatsapp);
+  color: #FFFFFF;
+}
+.milo-btn-whatsapp:hover {
+  background: #20BA5A;
+}
+
+.milo-btn-secondary {
+  width: 100%;
+  min-height: 46px;
+  background: #FFFFFF;
+  color: var(--milo-text);
+  border: 1px solid var(--milo-border);
+  border-radius: var(--milo-radius-full);
+  padding: 12px 20px;
+  font-family: var(--milo-font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+}
+
+.milo-btn-secondary:hover {
+  background: var(--milo-card-subtle);
+  border-color: #D4CCC2;
+}
+
+.milo-text-link {
+  background: none;
+  border: none;
+  color: var(--milo-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 8px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+.milo-text-link:hover {
+  color: var(--milo-text);
+}
+
+/* ── Sticky Action Footers ── */
+.milo-action-footer {
+  margin-top: auto;
+  padding-top: 24px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to top, var(--milo-bg) 85%, rgba(250, 247, 242, 0) 100%);
+  z-index: 20;
+}
+
+/* ── Cards & Containers ── */
+.milo-card {
+  background: var(--milo-card-bg);
+  border: 1px solid var(--milo-border);
+  border-radius: var(--milo-radius-lg);
+  padding: 16px;
+  box-shadow: var(--milo-shadow-sm);
+  margin-bottom: 14px;
+}
+
+.milo-info-box {
+  background: #FDF8F3;
+  border: 1px solid #EFE4D6;
+  border-radius: var(--milo-radius-md);
+  padding: 12px 14px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #7A5B3E;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+/* ── Interactive Chips & Pills ── */
+.milo-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 16px;
+}
+
+.milo-pill {
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: var(--milo-radius-full);
+  border: 1px solid var(--milo-border);
+  background: #FFFFFF;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--milo-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.milo-pill:hover {
+  border-color: var(--milo-text-secondary);
+}
+
+.milo-pill.selected {
+  background: var(--milo-dark-pill);
+  color: #FFFFFF;
+  border-color: var(--milo-dark-pill);
+  font-weight: 600;
+}
+
+/* ── Tag with Dismiss '×' ── */
+.milo-tag-dismiss {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--milo-radius-full);
+  background: #FFFFFF;
+  border: 1px solid var(--milo-border);
+  font-size: 0.85rem;
+  color: var(--milo-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+}
+
+.milo-tag-dismiss.active {
+  background: #FAF0EC;
+  border-color: var(--milo-accent);
+  color: var(--milo-terracotta);
+  font-weight: 600;
+}
+
+/* ── Segmented Control ── */
+.milo-segmented {
+  display: flex;
+  background: #EDE8DF;
+  border-radius: var(--milo-radius-full);
+  padding: 4px;
+  gap: 4px;
+  margin: 10px 0 16px;
+}
+
+.milo-segmented-btn {
+  flex: 1;
+  min-height: 40px;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  border-radius: var(--milo-radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--milo-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+  touch-action: manipulation;
+}
+
+.milo-segmented-btn.selected {
+  background: #FFFFFF;
+  color: var(--milo-text);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+/* ── Checklist Items ── */
+.milo-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.milo-check-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.925rem;
+  color: var(--milo-text);
+}
+
+.milo-check-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.milo-check-done {
+  background: var(--milo-green);
+  color: #FFFFFF;
+}
+
+.milo-check-pending {
+  border: 2px solid var(--milo-border);
+  background: transparent;
+}
+
+.milo-check-active {
+  border: 2px solid var(--milo-accent);
+  background: var(--milo-accent-light);
+  animation: pulse-ring 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+/* ── iOS Switch ── */
+.milo-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--milo-border-light);
+  min-height: 48px;
+}
+
+.milo-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 30px;
+  touch-action: manipulation;
+}
+
+.milo-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.milo-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #D4CCC2;
+  transition: .2s;
+  border-radius: 34px;
+}
+
+.milo-slider:before {
+  position: absolute;
+  content: "";
+  height: 24px;
+  width: 24px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .2s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+input:checked + .milo-slider {
+  background-color: var(--milo-green);
+}
+
+input:checked + .milo-slider:before {
+  transform: translateX(20px);
+}
+
+/* ── Star Rating ── */
+.milo-star-rating {
+  display: flex;
+  gap: 10px;
+  font-size: 2rem;
+  color: #E2DDD5;
+  cursor: pointer;
+  margin: 12px 0 16px;
+  user-select: none;
+}
+
+.milo-star {
+  transition: transform 0.1s ease, color 0.15s ease;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+.milo-star:hover, .milo-star.active {
+  color: #F59E0B;
+  transform: scale(1.1);
+}
+
+/* ── All Screens Grid View (Showcase Mode) ── */
+.milo-grid-container {
+  width: 100%;
+  max-width: 1400px;
+  padding: 24px 16px 80px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 28px;
+  justify-content: center;
+}
+
+@media (min-width: 1280px) {
+  .milo-grid-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.milo-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.milo-grid-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--milo-text);
+  letter-spacing: -0.01em;
+  text-align: left;
+  width: 100%;
+  padding-left: 6px;
+}
+
+.milo-grid-card {
+  width: 100%;
+  height: 600px;
+  background: var(--milo-bg);
+  border-radius: var(--milo-radius-lg);
+  border: 1px solid var(--milo-border);
+  overflow: hidden;
+  box-shadow: var(--milo-shadow-md);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.milo-grid-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--milo-shadow-lg);
+  border-color: var(--milo-text);
+}
+
+.milo-grid-card-inner {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+}
