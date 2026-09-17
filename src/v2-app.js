@@ -76,7 +76,8 @@ export function renderV2App(container, params = {}) {
     } else {
       const activeScreenConfig = SCREENS[activeIndex - 1] || SCREENS[0];
       const screenHtml = activeScreenConfig.render();
-      stageContent = renderMobileShell(screenHtml);
+      const shellClass = activeIndex === 1 ? 'milo-shell-welcome' : '';
+      stageContent = renderMobileShell(screenHtml, shellClass);
     }
 
     container.innerHTML = `

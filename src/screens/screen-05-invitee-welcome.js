@@ -1,114 +1,70 @@
 // ==========================================================
 // MILO V2 — SCREEN 5: INVITEE WELCOME
-// "Rohan is planning a date with you!"
-// The invitee accepts and prepares to enter their side
-// of preferences and constraints.
+// Full portrait hero photography of Priya, overlapping welcome card,
+// and reassurance points.
 // ==========================================================
 
-import { getState, nextScreen, prevScreen } from '../state.js';
+import { getState, nextScreen } from '../state.js';
+import { renderImageHtml } from '../assets/manifest.js';
 
 export function renderScreen05() {
   const state = getState();
   const plannerName = state.planner?.name || 'Rohan';
 
   return `
-    <div style="display:flex; flex-direction:column; height:100%; justify-content:space-between;">
-      <div>
-        <div class="milo-nav-header" style="justify-content:center;">
-          <h1 class="milo-brand-title">milo</h1>
-        </div>
+    <div style="display:flex; flex-direction:column; min-height:100%;">
+      <!-- Hero Portrait -->
+      <div style="height: clamp(260px, 36svh, 380px); position: relative; overflow: hidden; width: 100%;">
+        ${renderImageHtml('priyaPortrait')}
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 40%, rgba(26,24,20,0.7) 100%);"></div>
+        <div class="milo-hero-brand">milo</div>
+      </div>
 
-        <!-- Avatars Container -->
-        <div style="display:flex; justify-content:center; align-items:center; margin: 16px 0 18px; position:relative;">
-          <div style="width:72px; height:72px; border-radius:50%; overflow:hidden; border:3px solid #FFFFFF; box-shadow:var(--milo-shadow-md); z-index:2;">
-            <img 
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" 
-              alt="${plannerName}"
-              style="width:100%; height:100%; object-fit:cover;"
-            />
+      <!-- Overlapping Floating Card -->
+      <div class="milo-card" style="margin: -24px 16px 20px; border-radius: var(--milo-radius-xl); padding: 22px 20px; position: relative; z-index: 2; box-shadow: var(--milo-shadow-lg);">
+        <!-- Avatars connected -->
+        <div class="milo-connected-avatars" style="margin: 0 0 14px;">
+          <div class="milo-avatar-circle">
+            ${renderImageHtml('rohanAvatar')}
           </div>
-          <div style="width:68px; height:68px; border-radius:50%; overflow:hidden; border:3px solid #FFFFFF; box-shadow:var(--milo-shadow-md); margin-left:-18px; z-index:1;">
-            <img 
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80" 
-              alt="You"
-              style="width:100%; height:100%; object-fit:cover;"
-            />
+          <div class="milo-avatar-connector">
+            <div class="milo-avatar-heart">✨</div>
           </div>
-          <div style="position:absolute; right:35%; top:-4px; font-size:1.2rem;">
-            ✨
+          <div class="milo-avatar-circle">
+            ${renderImageHtml('priyaPortrait')}
           </div>
         </div>
 
-        <h2 style="font-family: var(--milo-font-display); font-size: 1.85rem; font-weight:400; text-align:center; line-height:1.2; margin: 0 0 16px; color:var(--milo-text);">
-          ${plannerName}'s planning your date.<br>
-          <span style="font-family: var(--milo-font-sans); font-size: 1.05rem; font-weight: 400; color: var(--milo-text-secondary); display:block; margin-top:6px;">
-            You just tell me what sounds good.
-          </span>
+        <h2 style="font-family: var(--milo-font-display); font-size: 1.65rem; font-weight:400; text-align:center; line-height:1.2; margin: 0 0 6px; color:var(--milo-text);">
+          ${plannerName}'s planning your date.
         </h2>
+        <p style="text-align: center; font-size: 0.9rem; color: var(--milo-text-secondary); margin: 0 0 16px;">
+          You just tell me what sounds good to you.
+        </p>
 
-        <!-- 3 Reassurance Points -->
-        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
-          <div class="milo-card" style="display:flex; align-items:flex-start; gap:14px; padding:12px 14px; margin:0;">
-            <div style="width:36px; height:36px; border-radius:50%; background:#FAF0EC; display:flex; align-items:center; justify-content:center; font-size:1.05rem; flex-shrink:0;">
-              🔒
-            </div>
-            <div>
-              <div style="font-size:0.875rem; font-weight:600; color:var(--milo-text);">
-                Your answers stay yours
-              </div>
-              <div style="font-size:0.775rem; color:var(--milo-text-secondary); margin-top:2px;">
-                ${plannerName} won't see your individual answers.
-              </div>
-            </div>
+        <!-- 3 Quick Reassurance Points -->
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; gap:12px; background:var(--milo-bg); border-radius:var(--milo-radius-md); padding:10px 12px;">
+            <span style="font-size:1.1rem;">🔒</span>
+            <span style="font-size:0.82rem; color:var(--milo-text); font-weight:500;">Your answers stay yours — no awkwardness</span>
           </div>
 
-          <div class="milo-card" style="display:flex; align-items:flex-start; gap:14px; padding:12px 14px; margin:0;">
-            <div style="width:36px; height:36px; border-radius:50%; background:#F3EDE4; display:flex; align-items:center; justify-content:center; font-size:1.05rem; flex-shrink:0;">
-              🤝
-            </div>
-            <div>
-              <div style="font-size:0.875rem; font-weight:600; color:var(--milo-text);">
-                I'll find something for both of you
-              </div>
-              <div style="font-size:0.775rem; color:var(--milo-text-secondary); margin-top:2px;">
-                Not just whatever one person happens to like.
-              </div>
-            </div>
+          <div style="display:flex; align-items:center; gap:12px; background:var(--milo-bg); border-radius:var(--milo-radius-md); padding:10px 12px;">
+            <span style="font-size:1.1rem;">🤝</span>
+            <span style="font-size:0.82rem; color:var(--milo-text); font-weight:500;">I'll find something you'll both genuinely like</span>
           </div>
 
-          <div class="milo-card" style="display:flex; align-items:flex-start; gap:14px; padding:12px 14px; margin:0;">
-            <div style="width:36px; height:36px; border-radius:50%; background:#E8F5E9; display:flex; align-items:center; justify-content:center; font-size:1.05rem; flex-shrink:0;">
-              ✨
-            </div>
-            <div>
-              <div style="font-size:0.875rem; font-weight:600; color:var(--milo-text);">
-                Nothing to download
-              </div>
-              <div style="font-size:0.775rem; color:var(--milo-text-secondary); margin-top:2px;">
-                Just answer a few questions and you're done.
-              </div>
-            </div>
+          <div style="display:flex; align-items:center; gap:12px; background:var(--milo-bg); border-radius:var(--milo-radius-md); padding:10px 12px;">
+            <span style="font-size:1.1rem;">⚡</span>
+            <span style="font-size:0.82rem; color:var(--milo-text); font-weight:500;">Takes 30 seconds. Nothing to download</span>
           </div>
-        </div>
-
-        <!-- Decorative Botanical Elements SVG -->
-        <div style="display:flex; justify-content:center; margin-top:6px; opacity:0.85;">
-          <svg width="220" height="42" viewBox="0 0 220 42" fill="none">
-            <path d="M10 40C25 15 50 12 70 30" stroke="#C85A32" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M70 30C90 10 120 8 140 28" stroke="#4A7C59" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M140 28C160 12 185 15 210 40" stroke="#D97757" stroke-width="2.5" stroke-linecap="round"/>
-            <circle cx="70" cy="30" r="4" fill="#C85A32"/>
-            <circle cx="140" cy="28" r="4" fill="#4A7C59"/>
-          </svg>
         </div>
       </div>
 
-      <div class="milo-action-footer">
+      <!-- Action Footer -->
+      <div class="milo-action-footer" style="padding: 0 16px 24px;">
         <button class="milo-btn-primary" id="btnScreen5Accept">
-          Let's do this
-        </button>
-        <button class="milo-text-link" id="btnScreen5Later">
-          Maybe later
+          Let's do this →
         </button>
       </div>
     </div>
@@ -118,11 +74,4 @@ export function renderScreen05() {
 export function attachScreen05Listeners(container) {
   const acceptBtn = container.querySelector('#btnScreen5Accept');
   if (acceptBtn) acceptBtn.addEventListener('click', () => nextScreen());
-
-  const laterBtn = container.querySelector('#btnScreen5Later');
-  if (laterBtn) {
-    laterBtn.addEventListener('click', () => {
-      alert("No pressure. I'll be here when you're ready.");
-    });
-  }
 }

@@ -222,6 +222,26 @@
   }
 }
 
+.milo-responsive-page.milo-shell-welcome {
+  padding: 0;
+  background-color: #1A1814;
+  overflow: hidden;
+  height: 100vh;
+  height: 100svh;
+  min-height: 0;
+  max-height: 100svh;
+}
+
+@media (min-width: 768px) {
+  .milo-responsive-page.milo-shell-welcome {
+    height: clamp(660px, 88vh, 820px);
+    max-height: 820px;
+    border-radius: var(--milo-radius-xl);
+    box-shadow: var(--milo-shadow-lg);
+    margin: auto;
+  }
+}
+
 /* ── Typography & Headers ── */
 .milo-brand-title {
   font-size: 1.45rem;
@@ -724,3 +744,528 @@ input:checked + .milo-slider:before {
   display: flex;
   flex-direction: column;
 }
+
+/* ==========================================================
+   MILO V2 — VISUAL-HEAVY PRIMITIVES
+   Hero containers, photographic cards, calendars, polaroids
+   ========================================================== */
+
+/* ── Hero Container ── */
+.milo-screen-welcome {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: #1A1814;
+  position: relative;
+  overflow: hidden;
+}
+
+.milo-hero,
+.milo-hero-welcome {
+  flex: 1 1 58%;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  background-color: #201E1B;
+}
+
+.milo-hero img,
+.milo-hero-welcome img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.milo-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.05) 35%, rgba(26, 24, 20, 0.8) 100%);
+  pointer-events: none;
+}
+
+.milo-hero-brand {
+  position: absolute;
+  top: max(20px, env(safe-area-inset-top));
+  left: 24px;
+  font-family: var(--milo-font-display);
+  font-size: 1.85rem;
+  color: #FFFFFF;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  z-index: 10;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.milo-hero-dark-card {
+  flex: 0 0 auto;
+  min-height: 42%;
+  background: #1A1814;
+  color: #FAF7F2;
+  padding: 26px 24px max(24px, env(safe-area-inset-bottom));
+  border-radius: 28px 28px 0 0;
+  margin-top: -24px;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.milo-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.milo-hero-headline {
+  font-family: var(--milo-font-display);
+  font-size: clamp(1.9rem, 5.5vw, 2.35rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: #FFFFFF;
+}
+
+.milo-hero-headline span {
+  color: #F3EBE1;
+}
+
+.milo-hero-subhead {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #C4BEB5;
+  margin: 0;
+  max-width: 360px;
+}
+
+.milo-hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.milo-hero-microcopy {
+  text-align: center;
+  font-size: 0.78rem;
+  color: #8F8982;
+  letter-spacing: 0.01em;
+}
+
+.milo-hero-dark-card .milo-title {
+  color: #FFFFFF;
+}
+
+.milo-hero-dark-card .milo-subhead {
+  color: #BDB7AF;
+}
+
+/* ── Calendar Week Strip ── */
+.milo-calendar-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.milo-calendar-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.milo-calendar-item {
+  flex: 1 0 calc((100% - 48px) / 7);
+  min-width: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 4px;
+  border-radius: var(--milo-radius-md);
+  background: var(--milo-card-bg);
+  border: 1px solid var(--milo-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.milo-calendar-item.selected {
+  background: var(--milo-text);
+  color: #FFFFFF;
+  border-color: var(--milo-text);
+  box-shadow: 0 4px 12px rgba(26, 24, 20, 0.15);
+}
+
+.milo-calendar-item .day-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.milo-calendar-item.selected .day-name {
+  opacity: 0.9;
+  color: #FFFFFF;
+}
+
+.milo-calendar-item .day-num {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* ── Discrete Time Ruler ── */
+.milo-time-ruler {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.milo-time-ruler::-webkit-scrollbar {
+  display: none;
+}
+
+.milo-time-stop {
+  padding: 10px 18px;
+  border-radius: var(--milo-radius-full);
+  background: var(--milo-card-bg);
+  border: 1px solid var(--milo-border);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.milo-time-stop.selected {
+  background: var(--milo-text);
+  color: #FFFFFF;
+  border-color: var(--milo-text);
+}
+
+/* ── Photographic Vibe Cards ── */
+.milo-vibe-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.milo-vibe-card {
+  position: relative;
+  height: 100px;
+  border-radius: var(--milo-radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.milo-vibe-card.selected {
+  border-color: var(--milo-text);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.milo-vibe-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.milo-vibe-card:hover img {
+  transform: scale(1.02);
+}
+
+.milo-vibe-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.3) 65%, rgba(0, 0, 0, 0.5) 100%);
+}
+
+.milo-vibe-content {
+  position: absolute;
+  inset: 0;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #FFFFFF;
+}
+
+.milo-vibe-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.milo-vibe-desc {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+/* ── Locality Photo Grid ── */
+.milo-locality-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.milo-locality-card {
+  position: relative;
+  height: 120px;
+  border-radius: var(--milo-radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  border: 2.5px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.milo-locality-card.selected {
+  border-color: var(--milo-text);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.milo-locality-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.milo-locality-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+.milo-locality-label {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.milo-locality-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  color: var(--milo-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.milo-locality-banner {
+  grid-column: 1 / -1;
+  position: relative;
+  height: 90px;
+  border-radius: var(--milo-radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  border: 2.5px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.milo-locality-banner.selected {
+  border-color: var(--milo-text);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.milo-locality-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Preference Photo Grid (Screen 6) ── */
+.milo-pref-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.milo-pref-card {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--milo-radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  border: 2.5px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.milo-pref-card.selected {
+  border-color: var(--milo-text);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.milo-pref-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.milo-pref-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+.milo-pref-title {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.milo-pref-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  color: var(--milo-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Connected Avatars (Screen 7 & 10) ── */
+.milo-connected-avatars {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 16px 0;
+  position: relative;
+}
+
+.milo-avatar-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background: var(--milo-border);
+  flex-shrink: 0;
+}
+
+.milo-avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.milo-avatar-connector {
+  position: relative;
+  width: 70px;
+  height: 2px;
+  border-top: 2px dashed #E57373;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.milo-avatar-heart {
+  position: absolute;
+  top: -12px;
+  width: 24px;
+  height: 24px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ── Polaroid Stack (Screen 8 & 16) ── */
+.milo-polaroid {
+  background: #FFFFFF;
+  padding: 10px 10px 22px 10px;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.milo-polaroid-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.milo-polaroid-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.milo-polaroid-caption {
+  font-family: var(--milo-font-handwriting);
+  font-size: 1.15rem;
+  color: var(--milo-text);
+  margin-top: 10px;
+  line-height: 1.1;
+}
+
+/* ── Handwritten & Rationale Details ── */
+.milo-handwritten {
+  font-family: var(--milo-font-handwriting);
+  color: var(--milo-accent);
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.milo-rationale-pill {
+  background: rgba(217, 119, 87, 0.08);
+  border: 1px solid rgba(217, 119, 87, 0.2);
+  border-radius: var(--milo-radius-md);
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--milo-text);
+}
+

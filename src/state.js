@@ -1,25 +1,31 @@
 // ==========================================================
 // MILO V2 — CENTRAL REACTIVE STATE STORE
-// Lightweight, observable state for the 16-screen prototype.
+// Normalized state schema holding localities, preferences,
+// hard constraints, date context, and learned profiles.
 // ==========================================================
 
-import { BASE_RECOMMENDATIONS, getFilteredRecommendations } from './data/recommendations.js';
+import { BASE_RECOMMENDATIONS, getRecommendations, getFilteredRecommendations } from './data/recommendations.js';
+import { DEMO_DATE_ISO, DEMO_TIME_DEFAULT } from './data/demo-date.js';
 
 const initialState = {
   currentScreenIndex: 1, // 1 to 16
   viewMode: 'mobile',    // 'mobile' | 'grid'
   
-  // Established Date Context (Date already agreed!)
+  // Date Context: ISO date string + 24h time, derived dynamically
   dateContext: {
-    date: 'Friday, 25 Oct',
-    time: '7:30 PM',
-    occasion: 'Regular Date Night',
+    date: DEMO_DATE_ISO, // '2026-10-25'
+    time: DEMO_TIME_DEFAULT, // '19:30'
+    occasion: 'Just a date',
     flexibleWindow: true
   },
 
   // Person A: Planner (Rohan)
   planner: {
     name: 'Rohan',
+    localities: ['Indiranagar'],
+    softPreferences: ['fun', 'food'],
+    hardConstraints: ['no-loud-places'],
+    // Backward compatibility mirrors:
     preferredArea: 'Indiranagar',
     preferences: ['fun', 'food'],
     hardNo: ['no-loud-places']
@@ -28,6 +34,10 @@ const initialState = {
   // Person B: Invitee (Priya)
   invitee: {
     name: 'Priya',
+    localities: ['Indiranagar'],
+    softPreferences: ['fun', 'romantic'],
+    hardConstraints: ['no-alcohol', 'no-outdoor'],
+    // Backward compatibility mirrors:
     preferredArea: 'Indiranagar',
     preferences: ['fun', 'romantic'],
     hardNo: ['no-alcohol', 'no-outdoor']
@@ -40,7 +50,7 @@ const initialState = {
   booking: {
     status: 'confirmed',
     totalAmount: '₹2,300',
-    perPersonAmount: '₹1,150 per person'
+    perPersonAmount: '₹1,150 each'
   },
 
   reminders: {
@@ -54,10 +64,18 @@ const initialState = {
     liked: ['activity'],
     energy: 'just-right',
     notes: 'Loved the pottery session! Drift desserts were a sweet finish.'
+  },
+
+  // Learned dating profile from completed dates & feedback
+  learnedProfile: {
+    likedActivities: ['Pottery', 'Dessert'],
+    preferredVibe: 'Playful & tactile',
+    favoriteNeighborhood: 'Indiranagar',
+    notes: 'Responds best to active hands-on early evening plans.'
   }
 };
 
-let state = { ...initialState };
+let state = JSON.parse(JSON.stringify(initialState));
 const listeners = new Set();
 
 export function getState() {
@@ -65,17 +83,43 @@ export function getState() {
 }
 
 export function setState(updates) {
+  // Synchronize compatibility properties if new schema properties are updated
+  if (updates.planner) {
+    if (updates.planner.localities && !updates.planner.preferredArea) {
+      updates.planner.preferredArea = updates.planner.localities[0] || 'Indiranagar';
+    }
+    if (updates.planner.softPreferences && !updates.planner.preferences) {
+      updates.planner.preferences = updates.planner.softPreferences;
+    }
+    if (updates.planner.hardConstraints && !updates.planner.hardNo) {
+      updates.planner.hardNo = updates.planner.hardConstraints;
+    }
+  }
+
+  if (updates.invitee) {
+    if (updates.invitee.localities && !updates.invitee.preferredArea) {
+      updates.invitee.preferredArea = updates.invitee.localities[0] || 'Indiranagar';
+    }
+    if (updates.invitee.softPreferences && !updates.invitee.preferences) {
+      updates.invitee.preferences = updates.invitee.softPreferences;
+    }
+    if (updates.invitee.hardConstraints && !updates.invitee.hardNo) {
+      updates.invitee.hardNo = updates.invitee.hardConstraints;
+    }
+  }
+
   state = {
     ...state,
     ...updates,
-    // Deep merge objects if supplied
     dateContext: updates.dateContext ? { ...state.dateContext, ...updates.dateContext } : state.dateContext,
     planner: updates.planner ? { ...state.planner, ...updates.planner } : state.planner,
     invitee: updates.invitee ? { ...state.invitee, ...updates.invitee } : state.invitee,
     booking: updates.booking ? { ...state.booking, ...updates.booking } : state.booking,
     reminders: updates.reminders ? { ...state.reminders, ...updates.reminders } : state.reminders,
-    feedback: updates.feedback ? { ...state.feedback, ...updates.feedback } : state.feedback
+    feedback: updates.feedback ? { ...state.feedback, ...updates.feedback } : state.feedback,
+    learnedProfile: updates.learnedProfile ? { ...state.learnedProfile, ...updates.learnedProfile } : state.learnedProfile
   };
+
   notify();
 }
 
@@ -115,13 +159,14 @@ export function resetDemo() {
 }
 
 export function getActiveRecommendations() {
-  return getFilteredRecommendations(
-    { hardNos: state.planner.hardNo },
-    { hardNos: state.invitee.hardNo }
-  );
+  return getRecommendations({
+    planner: state.planner,
+    invitee: state.invitee,
+    dateContext: state.dateContext
+  });
 }
 
 export function getSelectedDateOption() {
-  const recs = BASE_RECOMMENDATIONS;
-  return recs.find(r => r.id === state.selectedOptionId) || recs[0];
+  const recs = getActiveRecommendations();
+  return recs.find(r => r.id === state.selectedOptionId) || recs[0] || BASE_RECOMMENDATIONS[0];
 }

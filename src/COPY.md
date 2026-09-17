@@ -36,7 +36,6 @@ A collated reference of all user-facing copy used across all 16 screens of the M
     - 🍽️ `Dinner / Evening (~7:30 PM)`
     - 🌙 `Late Night (~9 PM)`
   - Exact Time: `⏱ Choose exact time`
-  - Leeway: `[✓] ±30m flexible`
 * **Section 3:** *What's the vibe?*
   - **Just a date ✨** — *Easy, fun, no big agenda.*
   - **First date 🌱** — *Good conversation. Nothing too intense.*

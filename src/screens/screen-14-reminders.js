@@ -1,7 +1,6 @@
 // ==========================================================
 // MILO V2 — SCREEN 14: REMINDERS
-// "Milo's got you covered"
-// Helpful reminder toggle switches and traffic alerts.
+// Clean iOS switch cards for departure nudges and arrival moments.
 // ==========================================================
 
 import { getState, setState, nextScreen, prevScreen } from '../state.js';
@@ -11,25 +10,26 @@ export function renderScreen14() {
   const reminders = state.reminders || { twoHours: true, thirtyMinutes: true, atVenue: true };
 
   return `
-    <div style="display:flex; flex-direction:column; height:100%; justify-content:space-between;">
+    <div style="display:flex; flex-direction:column; min-height:100%; justify-content:space-between; padding-bottom: 24px;">
       <div>
         <div class="milo-nav-header">
           <button class="milo-back-btn" id="btnScreen14Back" aria-label="Go back">←</button>
-          <span style="font-size:0.8rem; font-weight:600; color:var(--milo-text-secondary);">Reminders</span>
+          <span style="font-size:0.85rem; font-weight:600; color:var(--milo-text-secondary);">Reminders</span>
+          <div style="width: 32px;"></div>
         </div>
 
-        <h1 class="milo-screen-h1">I'll remind you. You enjoy the date.</h1>
+        <h1 class="milo-screen-h1" style="margin-top: 16px;">I'll remind you.<br/>You just enjoy the date.</h1>
         <p class="milo-screen-subhead">
-          A couple of nudges so you don't have to keep checking the clock.
+          A couple of quiet nudges so you never have to worry about checking the clock.
         </p>
 
         <!-- Switch Rows Container -->
-        <div class="milo-card" style="padding:4px 16px; margin-bottom:18px;">
+        <div class="milo-card" style="padding: 6px 18px; margin-bottom: 20px; box-shadow: var(--milo-shadow-sm);">
           <!-- 2 hours before -->
           <div class="milo-switch-row">
             <div style="padding-right:12px;">
-              <strong style="font-size:0.9rem; color:var(--milo-text); display:block;">2 hours before</strong>
-              <span style="font-size:0.8rem; color:var(--milo-text-secondary);">Time to get ready</span>
+              <strong style="font-size:0.92rem; color:var(--milo-text); display:block;">2 hours before</strong>
+              <span style="font-size:0.8rem; color:var(--milo-text-secondary);">Time to get ready & dress up</span>
             </div>
             <label class="milo-switch">
               <input type="checkbox" id="switchTwoHours" ${reminders.twoHours ? 'checked' : ''} />
@@ -40,8 +40,8 @@ export function renderScreen14() {
           <!-- 30 minutes before -->
           <div class="milo-switch-row">
             <div style="padding-right:12px;">
-              <strong style="font-size:0.9rem; color:var(--milo-text); display:block;">30 minutes before</strong>
-              <span style="font-size:0.8rem; color:var(--milo-text-secondary);">Time to head out</span>
+              <strong style="font-size:0.92rem; color:var(--milo-text); display:block;">30 minutes before</strong>
+              <span style="font-size:0.8rem; color:var(--milo-text-secondary);">Traffic check & time to head out</span>
             </div>
             <label class="milo-switch">
               <input type="checkbox" id="switchThirtyMins" ${reminders.thirtyMinutes ? 'checked' : ''} />
@@ -52,8 +52,8 @@ export function renderScreen14() {
           <!-- At the venue -->
           <div class="milo-switch-row" style="border-bottom:none;">
             <div style="padding-right:12px;">
-              <strong style="font-size:0.9rem; color:var(--milo-text); display:block;">At the venue</strong>
-              <span style="font-size:0.8rem; color:var(--milo-text-secondary);">You're here. Have fun. ❤️</span>
+              <strong style="font-size:0.92rem; color:var(--milo-text); display:block;">At the venue</strong>
+              <span style="font-size:0.8rem; color:var(--milo-text-secondary);">You're here. Put the phone away ❤️</span>
             </div>
             <label class="milo-switch">
               <input type="checkbox" id="switchAtVenue" ${reminders.atVenue ? 'checked' : ''} />
@@ -61,8 +61,15 @@ export function renderScreen14() {
             </label>
           </div>
         </div>
+
+        <div style="text-align: center; margin-top: 12px;">
+          <div class="milo-handwritten" style="font-size: 1.3rem;">
+            "Put your phone away once you get there." ♡ — Milo
+          </div>
+        </div>
       </div>
 
+      <!-- Action Footer -->
       <div class="milo-action-footer">
         <button class="milo-btn-primary" id="btnScreen14Continue">
           Continue to Feedback →

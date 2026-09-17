@@ -1,27 +1,49 @@
 // ==========================================================
 // MILO V2 — SCREEN 16: NEXT DATE
-// "That looked fun. Shall we plan the next one?"
-// Demonstrates the learned preference loop & repeat engagement.
+// 3 overlapping polaroids recalling date memories,
+// dynamic learnedProfile bullets, and handwritten sign-off.
 // ==========================================================
 
-import { setScreen, resetDemo } from '../state.js';
+import { getState, setScreen, resetDemo } from '../state.js';
+import { renderImageHtml } from '../assets/manifest.js';
 
 export function renderScreen16() {
+  const state = getState();
+  const learned = state.learnedProfile || {
+    likedActivities: ['Pottery', 'Dessert'],
+    preferredVibe: 'Playful & tactile',
+    notes: 'Responds best to active hands-on early evening plans.'
+  };
+
   return `
-    <div style="display:flex; flex-direction:column; height:100%; justify-content:space-between;">
+    <div style="display:flex; flex-direction:column; min-height:100%; justify-content:space-between; padding-bottom: 24px;">
       <div>
         <div class="milo-nav-header" style="justify-content:center;">
           <h1 class="milo-brand-title">milo</h1>
         </div>
 
-        <!-- Couple Looking at City Night Lights -->
-        <div style="width:100%; height:200px; border-radius:var(--milo-radius-lg); overflow:hidden; position:relative; box-shadow:var(--milo-shadow-md); margin-bottom:18px;">
-          <img 
-            src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80" 
-            alt="Couple enjoying night view of city"
-            style="width:100%; height:100%; object-fit:cover;"
-          />
-          <div style="position:absolute; bottom:0; left:0; right:0; height:60px; background:linear-gradient(to top, rgba(26,24,20,0.6), transparent);"></div>
+        <!-- 3 Overlapping Polaroids Stack -->
+        <div style="display:flex; justify-content:center; align-items:center; margin: 20px 0 30px; position:relative; height: 160px;">
+          <div class="milo-polaroid" style="width: 110px; position: absolute; left: calc(50% - 110px); transform: rotate(-7deg); z-index: 1;">
+            <div class="milo-polaroid-img">
+              ${renderImageHtml('polaroid1')}
+            </div>
+            <div class="milo-polaroid-caption">Rooftop</div>
+          </div>
+
+          <div class="milo-polaroid" style="width: 115px; position: absolute; left: calc(50% - 40px); transform: rotate(2deg); z-index: 2;">
+            <div class="milo-polaroid-img">
+              ${renderImageHtml('polaroid2')}
+            </div>
+            <div class="milo-polaroid-caption">Pottery</div>
+          </div>
+
+          <div class="milo-polaroid" style="width: 110px; position: absolute; right: calc(50% - 110px); transform: rotate(8deg); z-index: 3;">
+            <div class="milo-polaroid-img">
+              ${renderImageHtml('polaroid3')}
+            </div>
+            <div class="milo-polaroid-caption">Drift</div>
+          </div>
         </div>
 
         <h1 style="font-family:var(--milo-font-display); font-size:1.85rem; line-height:1.2; font-weight:400; color:var(--milo-text); margin:0 0 16px;">
@@ -30,44 +52,44 @@ export function renderScreen16() {
 
         <!-- Learned Preferences -->
         <div style="margin-bottom: 8px;">
-          <strong style="font-size: 0.95rem; color: var(--milo-text); display: block; margin-bottom: 12px;">
-            I remember the good bits.
+          <strong style="font-size: 0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color: var(--milo-terracotta); display: block; margin-bottom: 12px;">
+            I remember the good bits:
           </strong>
         </div>
 
-        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
-          <div style="display:flex; align-items:flex-start; gap:10px; font-size:0.875rem; color:var(--milo-text); line-height: 1.4;">
-            <span style="color:var(--milo-terracotta);">✓</span>
-            <span>You liked pottery and quieter places. I'll keep that in mind.</span>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px; background:#FFFFFF; padding:16px; border-radius:var(--milo-radius-lg); border:1px solid var(--milo-border);">
+          <div style="display:flex; align-items:flex-start; gap:10px; font-size:0.88rem; color:var(--milo-text); line-height: 1.4;">
+            <span style="color:var(--milo-terracotta); font-weight:700;">✓</span>
+            <span>You both love <strong>${(learned.likedActivities || ['Pottery']).join(' & ')}</strong>. I've saved that.</span>
           </div>
 
-          <div style="display:flex; align-items:flex-start; gap:10px; font-size:0.875rem; color:var(--milo-text); line-height: 1.4;">
-            <span style="color:var(--milo-terracotta);">✓</span>
-            <span>Next time, we can skip the questions you've already answered.</span>
+          <div style="display:flex; align-items:flex-start; gap:10px; font-size:0.88rem; color:var(--milo-text); line-height: 1.4;">
+            <span style="color:var(--milo-terracotta); font-weight:700;">✓</span>
+            <span>Vibe tuned to: <em>${learned.preferredVibe || 'Playful & tactile'}</em></span>
           </div>
 
-          <div style="display:flex; align-items:flex-start; gap:10px; font-size:0.875rem; color:var(--milo-text); line-height: 1.4;">
-            <span style="color:var(--milo-terracotta);">✓</span>
-            <span>And I'll know a little more about what makes a good night for you two.</span>
+          <div style="display:flex; align-items:flex-start; gap:10px; font-size:0.88rem; color:var(--milo-text); line-height: 1.4;">
+            <span style="color:var(--milo-terracotta); font-weight:700;">✓</span>
+            <span>Next time, we can skip questions you've already answered.</span>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 10px;">
+          <div class="milo-handwritten" style="font-size: 1.4rem;">
+            "More good dates ahead." ♡ — Milo
           </div>
         </div>
       </div>
 
-      <div class="milo-action-footer">
+      <!-- Action Footer -->
+      <div class="milo-action-footer" style="margin-top: 20px;">
         <button class="milo-btn-primary" id="btnPlanAnotherDate">
-          Plan another date
-        </button>
-        <button class="milo-text-link" id="btnNextDateLater">
-          Maybe later
+          Plan another date →
         </button>
 
-        <!-- Bottom Footer Branding -->
-        <div style="text-align:center; padding-top:16px; border-top:1px solid var(--milo-border-light); width:100%; margin-top:8px;">
+        <div style="text-align:center; padding-top:14px; border-top:1px solid var(--milo-border-light); width:100%; margin-top:8px;">
           <div style="font-weight:700; font-size:0.9rem; color:var(--milo-text); letter-spacing:-0.02em;">
             milo <span style="font-weight:400; font-size:0.8rem; color:var(--milo-text-secondary);">· Better dates. Less planning.</span>
-          </div>
-          <div style="font-size:0.75rem; color:var(--milo-text-muted); margin-top:4px;">
-            Not a dating app. Just better dates.
           </div>
         </div>
       </div>
@@ -81,13 +103,6 @@ export function attachScreen16Listeners(container) {
     planBtn.addEventListener('click', () => {
       resetDemo();
       setScreen(1);
-    });
-  }
-
-  const laterBtn = container.querySelector('#btnNextDateLater');
-  if (laterBtn) {
-    laterBtn.addEventListener('click', () => {
-      alert("I'll be here. No pressure.");
     });
   }
 }
