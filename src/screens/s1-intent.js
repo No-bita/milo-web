@@ -16,9 +16,9 @@ export function renderScreen01(sessionId = 'aarav') {
 
   const isCtaDisabled = selectedIntents.length === 0;
 
-  const contextLine = sessionId === 'sneha' 
-    ? `${partnerName}'s done. Your turn.`
-    : `Tonight, with ${partnerName}`;
+  const contextLineHtml = sessionId === 'sneha' 
+    ? `<div class="milo-context-line">${partnerName}'s done. Your turn.</div>`
+    : '';
 
   const tilesHtml = INTENTS.map((intent) => {
     const isSelected = selectedIntents.includes(intent.id);
@@ -68,7 +68,7 @@ export function renderScreen01(sessionId = 'aarav') {
       </header>
 
       <div class="milo-s1-intro">
-        <div class="milo-context-line">${contextLine}</div>
+        ${contextLineHtml}
         <h1 class="milo-headline">What do you want tonight to feel like?</h1>
         <p class="milo-subline" id="miloSubline-${sessionId}">Pick up to three.</p>
       </div>
