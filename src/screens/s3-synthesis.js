@@ -14,9 +14,6 @@ function observationIcon(text) {
     shape = '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z" />';
   } else {
     shape = '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" fill="currentColor" stroke="none" />';
-  }
-  // Stroke-only icons get pathLength=1 so the CSS can draw them in. The filled heart just fades.
-  if (!/fill="currentColor"/.test(shape)) shape = shape.replace(/<(path|circle) /g, '<$1 pathLength="1" ');
   return `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${shape}</svg>`;
 }
 
