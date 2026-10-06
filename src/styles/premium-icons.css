@@ -25,64 +25,65 @@
   color: var(--color-on-dark);
 }
 .milo-deck-undo-btn.milo-icon-back { color: var(--color-on-dark); }
-.milo-deck-undo-btn.milo-icon-undo {
-  width: auto;
-  min-width: 44px;
-  padding: 10px 0;
-  border-radius: 8px;
-  font: 500 12px/24px var(--font-sans);
-}
 .milo-night-chevron, .milo-banner-arrow { color: var(--color-oxblood); }
 .milo-icon-back:focus-visible,
 .milo-reaction-btn:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 3px;
 }
-/* Type-first action rail, replacing the three dating-app circles. */
+/* Three circular actions, plus a quieter undo target beside the rail. */
+.milo-deck-controls { position: relative; width: 100%; padding-left: 44px; }
+.milo-deck-back-btn {
+  background: transparent; border: 0; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-on-dark);
+}
+.milo-deck-undo-btn.milo-icon-undo {
+  position: absolute; left: 0; top: 9px;
+  width: 44px; height: 44px; padding: 10px; border-radius: 50%;
+  color: var(--color-on-dark); background: transparent;
+}
 .milo-reaction-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1.2fr;
-  align-items: stretch;
-  gap: 8px;
-  max-width: 388px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start; gap: 4px; max-width: 340px;
 }
 .milo-reaction-btn {
-  min-width: 0;
-  min-height: 54px;
-  padding: 8px 5px;
-  flex-direction: row;
-  justify-content: center;
-  gap: 6px;
-  color: var(--color-on-dark);
-  border-radius: 10px;
-  border: 1px solid rgba(245, 240, 234, 0.24);
-  background: transparent;
+  min-width: 0; padding: 0; gap: 0;
+  color: var(--color-on-dark); background: transparent; border: 0;
+}
+.milo-reaction-btn .milo-btn-circle {
+  width: 54px; height: 54px; margin-top: 4px;
+  color: var(--color-on-dark); background: rgba(245, 240, 234, 0.06);
+  border: 1px solid rgba(245, 240, 234, 0.24); box-shadow: none;
+  backdrop-filter: none;
 }
 .milo-reaction-btn .milo-btn-label {
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 17px;
-  letter-spacing: 0;
-  margin: 0;
-  white-space: normal;
-  color: inherit;
+  font-size: 12px; font-weight: 500; line-height: 16px;
+  letter-spacing: 0; margin-top: 7px; white-space: normal;
+  color: var(--color-on-dark); min-height: 32px;
 }
-.milo-reaction-btn.btn-into-it {
-  background: var(--color-oxblood-wash);
-  color: var(--color-oxblood);
-  border-color: var(--color-oxblood-wash);
-  box-shadow: none;
+.milo-reaction-btn.btn-into-it .milo-btn-circle {
+  width: 62px; height: 62px; margin-top: 0;
+  background: var(--color-oxblood-wash); color: var(--color-oxblood);
+  border-color: var(--color-oxblood-wash); box-shadow: none;
 }
-.milo-reaction-btn:hover { background: rgba(245, 240, 234, 0.08); }
-.milo-reaction-btn.btn-into-it:hover { background: var(--color-ivory); }
-.milo-reaction-btn:active, .milo-reaction-btn.active-drag {
-  border-color: var(--color-on-dark);
-  background: rgba(245, 240, 234, 0.14);
+.milo-reaction-btn:hover .milo-btn-circle {
+  background: rgba(245, 240, 234, 0.11); box-shadow: none;
 }
-.milo-reaction-btn.btn-into-it:active,
-.milo-reaction-btn.btn-into-it.active-drag {
-  background: var(--color-sand);
-  color: var(--color-oxblood-press);
+.milo-reaction-btn.btn-into-it:hover .milo-btn-circle {
+  background: var(--color-ivory); color: var(--color-oxblood);
+}
+.milo-reaction-btn:active .milo-btn-circle,
+.milo-reaction-btn.active-drag .milo-btn-circle {
+  background: rgba(245, 240, 234, 0.16); box-shadow: none;
+}
+.milo-reaction-btn.btn-into-it:active .milo-btn-circle,
+.milo-reaction-btn.btn-into-it.active-drag .milo-btn-circle {
+  background: var(--color-sand); color: var(--color-oxblood-press); box-shadow: none;
+}
+.milo-deck-undo-btn.milo-icon-undo:hover { background: rgba(245, 240, 234, 0.08); }
+.milo-deck-back-btn:focus-visible, .milo-icon-undo:focus-visible {
+  outline: 2px solid currentColor; outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {
   .milo-reaction-btn { transition: none; }
