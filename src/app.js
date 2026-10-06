@@ -30,7 +30,7 @@ function renderSessionContent(sessionId) {
     case 's2':
       return renderScreen02(sessionId);
     case 's3':
-      return renderScreen03(sessionId);
+      return sessionId === 'sneha' ? renderScreen05(sessionId) : renderScreen03(sessionId);
     case 's4_invite':
     case 's4_waiting':
       return renderScreen04(sessionId);
@@ -63,7 +63,8 @@ function attachSessionListeners(container, sessionId) {
       attachScreen02Listeners(container, sessionId);
       break;
     case 's3':
-      attachScreen03Listeners(container, sessionId);
+      if (sessionId === 'sneha') attachScreen05Listeners(container, sessionId);
+      else attachScreen03Listeners(container, sessionId);
       break;
     case 's4_invite':
     case 's4_waiting':
@@ -156,7 +157,7 @@ export function initApp(container) {
       store.setSessionScreen('sneha', 'threshold');
     } else if (screenParam === 's3') {
       store.setSessionScreen('aarav', 's3');
-      store.setSessionScreen('sneha', 's3');
+      store.setSessionScreen('sneha', 's5');
     } else if (screenParam === 's4') {
       store.setSessionScreen('aarav', 's4_invite');
       store.setSessionScreen('sneha', 's0');
@@ -210,4 +211,3 @@ export function initApp(container) {
     render();
   });
 }
-
