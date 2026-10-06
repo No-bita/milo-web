@@ -118,10 +118,14 @@
   padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
 }
 .milo-viewport .milo-closing-content {
-  flex: 1 0 auto;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   justify-content: flex-start;
   padding: clamp(8px, 4vh, 36px) 0 0;
 }
+.milo-viewport .milo-closing-content > * { flex-shrink: 0; }
 .milo-viewport .milo-closing-monograms { margin-bottom: 16px; }
 .milo-viewport .milo-closing-sub {
   font-size: 16px;
@@ -146,6 +150,7 @@
   width: 100%;
   max-width: 340px;
   margin: 20px auto 0;
+  flex: 0 0 auto;
   padding-bottom: 0;
 }
 .milo-viewport .milo-closing-footer .milo-text-button { padding: 10px 16px; }
@@ -178,4 +183,32 @@
 .milo-viewport .milo-header-back:focus-visible {
   outline: 2px solid var(--color-ink);
   outline-offset: 2px;
+}
+
+/* S3: one connected triangular cluster, centred within the existing collage. */
+.milo-viewport .milo-s3-collage {
+  max-width: 340px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.milo-viewport .milo-s3-photo-food { left: calc(50% - 140px); }
+.milo-viewport .milo-s3-photo-dining {
+  top: 75px;
+  right: calc(50% - 140px);
+  z-index: 1;
+}
+.milo-viewport .milo-s3-photo-cafe {
+  top: 128px;
+  left: calc(50% - 110px);
+}
+@media (max-width: 374px), (max-height: 740px) {
+  .milo-viewport .milo-s3-photo-food { left: calc(50% - 110px); }
+  .milo-viewport .milo-s3-photo-dining {
+    top: 60px;
+    right: calc(50% - 110px);
+  }
+  .milo-viewport .milo-s3-photo-cafe {
+    top: 104px;
+    left: calc(50% - 86px);
+  }
 }
