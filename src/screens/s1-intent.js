@@ -37,7 +37,10 @@ export function renderScreen01(sessionId = 'aarav') {
   const isCtaDisabled = selectedIntents.length === 0;
 
   const contextLineHtml = sessionId === 'sneha' 
-    ? `<div class="milo-context-line">${partnerName}'s done. Your turn.</div>`
+    ? `
+      <div class="milo-context-line milo-context-line--lead">${partnerName}'s done. Your turn.</div>
+      <p class="milo-partner-context">${partnerName || 'Your partner'} invited you to plan tonight. Your picks stay private. About a minute.</p>
+    `
     : '';
 
   const tilesHtml = INTENTS.map((intent, index) => {
