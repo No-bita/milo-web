@@ -23,31 +23,17 @@ export function installPremiumIcons(root) {
       button.classList.add('milo-icon-back');
     });
     root.querySelectorAll('.milo-s2-container').forEach(deck => {
-      const sessionId = deck.dataset.sessionId;
-      const controls = deck.querySelector('.milo-deck-controls');
       const header = deck.querySelector('.milo-deck-header');
       const original = deck.querySelector('.milo-deck-undo-btn');
-      if (!original || !controls || !header) return;
+      if (!original || !header) return;
       const canUndo = original.getAttribute('aria-label') === 'Undo';
-      // Move the existing wired button, rather than replacing its listener.
-      // PR #3's hint cancellation and undo fly-back remain on this same node.
-      if (canUndo) {
-        original.innerHTML = icon('undo');
-        original.classList.add('milo-icon-undo');
-        controls.prepend(original);
-        if (!header.querySelector('.milo-deck-back-btn')) {
-          const back = document.createElement('button');
-          back.className = 'milo-deck-back-btn milo-icon-back';
-          back.title = 'Back to intents';
-          back.setAttribute('aria-label', 'Back to intents');
-          back.innerHTML = icon('back');
-          back.addEventListener('click', () => store.setSessionScreen(sessionId, 's1'));
-          header.prepend(back);
-        }
-      } else {
-        original.innerHTML = icon('back');
-        original.classList.add('milo-icon-back');
-      }
+      // Keep the existing wired node and ID for PR #3's undo fly-back.
+      // The first-card navigation action is hidden, never repurposed as undo.
+      original.innerHTML = icon('undo');
+      original.classList.add('milo-icon-undo');
+      original.hidden = !canUndo;
+      original.disabled = !canUndo;
+      header.prepend(original);
     });
     root.querySelectorAll('.milo-reaction-btn').forEach(button => {
       const label = button.querySelector('.milo-btn-label');
