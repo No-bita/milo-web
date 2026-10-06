@@ -28,7 +28,7 @@ export function renderScreen04(sessionId = 'aarav') {
 
           <div class="milo-s4-content">
             <div class="milo-s4-illustration-wrap">
-              <img src="/assets/toasting-glasses.jpg" alt="Planning together" class="milo-s4-illustration" />
+              <img src="./assets/toasting-glasses.jpg" alt="Planning together" class="milo-s4-illustration" />
             </div>
 
             <div class="milo-s4-intro">
@@ -61,7 +61,7 @@ export function renderScreen04(sessionId = 'aarav') {
 
         <div class="milo-s4-content">
           <div class="milo-s4-illustration-wrap milo-waiting-glow">
-            <img src="/assets/toasting-glasses.jpg" alt="Planning together" class="milo-s4-illustration" />
+            <img src="./assets/toasting-glasses.jpg" alt="Planning together" class="milo-s4-illustration" />
           </div>
 
           <div class="milo-s4-intro">
@@ -98,7 +98,7 @@ export function renderScreen04(sessionId = 'aarav') {
 
       <div class="milo-s4-content">
         <div class="milo-s4-illustration-wrap">
-          <img src="/assets/toasting-glasses.jpg" alt="Planning together" class="milo-s4-illustration" />
+          <img src="./assets/toasting-glasses.jpg" alt="Planning together" class="milo-s4-illustration" />
         </div>
 
         <div class="milo-s4-intro">
