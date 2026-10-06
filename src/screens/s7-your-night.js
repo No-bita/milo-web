@@ -6,6 +6,47 @@
 
 import { store } from '../domain/store.js';
 import { computeSharedOutput } from '../logic/shared.js';
+import { DEMO_TIME_DEFAULT } from '../data/demo-date.js';
+
+// Plan summary used by the closing state's share and calendar actions.
+function planText(night, partnerName) {
+  const steps = night.beats.map(b => b.name).join(' \u2192 ');
+  return `Tonight's sorted with ${partnerName}: ${night.name}. ${steps}.`;
+}
+
+// Builds an .ics for tonight at the default start time. The time is a
+// placeholder the user adjusts in their calendar app; no venues exist yet.
+function downloadCalendarFile(night, partnerName) {
+  const pad = n => String(n).padStart(2, '0');
+  const [h, m] = DEMO_TIME_DEFAULT.split(':').map(Number);
+  const start = new Date();
+  start.setHours(h, m, 0, 0);
+  const end = new Date(start.getTime() + 3 * 60 * 60 * 1000);
+  const fmt = d => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+  const desc = night.beats.map(b => `${b.name}: ${b.desc}`).join('\\n');
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Milo//Tonight//EN',
+    'BEGIN:VEVENT',
+    `UID:milo-${night.id}-${fmt(start)}@milo`,
+    `DTSTAMP:${fmt(new Date())}`,
+    `DTSTART:${fmt(start)}`,
+    `DTEND:${fmt(end)}`,
+    `SUMMARY:${night.name} with ${partnerName}`,
+    `DESCRIPTION:${desc}`,
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'tonight.ics';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 export function renderScreen07(sessionId = 'aarav') {
   const state = store.getState();
@@ -22,6 +63,22 @@ export function renderScreen07(sessionId = 'aarav') {
   const suggestion = state.shared.suggestion;
   const isConfirmed = state.shared.confirmedNightId === night.id;
 
+  // Beats timeline HTML
+  const timelineHtml = night.beats.map((beat, i) => {
+    return `
+      <div class="milo-timeline-item">
+        <div class="milo-timeline-track">
+          <div class="milo-timeline-dot"></div>
+          ${i < night.beats.length - 1 ? '<div class="milo-timeline-line"></div>' : ''}
+        </div>
+        <div class="milo-timeline-content">
+          <span class="milo-timeline-name">${beat.name}</span>
+          <span class="milo-timeline-desc">${beat.desc}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
   // Closing state (§2.9 & Acceptance Criteria)
   if (isConfirmed) {
     return `
@@ -37,9 +94,20 @@ export function renderScreen07(sessionId = 'aarav') {
           </div>
           <h1 class="milo-headline">Tonight's sorted.</h1>
           <p class="milo-closing-sub">${night.name}. Have a lovely evening.</p>
+
+          <div class="milo-closing-plan">
+            <div class="milo-section-label">TONIGHT'S PLAN</div>
+            ${timelineHtml}
+          </div>
         </div>
 
         <div class="milo-closing-footer">
+          <button class="milo-pill-btn-primary" id="miloAddCalendar-${sessionId}">
+            Add to calendar
+          </button>
+          <button class="milo-pill-btn-secondary" id="miloSharePlan-${sessionId}">
+            Share plan on WhatsApp
+          </button>
           <button class="milo-text-button" id="miloResetBtn-${sessionId}">
             Start over
           </button>
@@ -64,22 +132,6 @@ export function renderScreen07(sessionId = 'aarav') {
       </div>
     `;
   }
-
-  // Beats timeline HTML
-  const timelineHtml = night.beats.map((beat, i) => {
-    return `
-      <div class="milo-timeline-item">
-        <div class="milo-timeline-track">
-          <div class="milo-timeline-dot"></div>
-          ${i < night.beats.length - 1 ? '<div class="milo-timeline-line"></div>' : ''}
-        </div>
-        <div class="milo-timeline-content">
-          <span class="milo-timeline-name">${beat.name}</span>
-          <span class="milo-timeline-desc">${beat.desc}</span>
-        </div>
-      </div>
-    `;
-  }).join('');
 
   // Primary CTA according to state
   let ctaAreaHtml = '';
@@ -212,6 +264,22 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
         });
       }
     });
+  }
+
+  const calBtn = container.querySelector(`#miloAddCalendar-${sessionId}`);
+  const shareBtn = container.querySelector(`#miloSharePlan-${sessionId}`);
+  if (calBtn || shareBtn) {
+    const closingNight = sharedData.selectedNights.find(sn => sn.night.id === state.shared.confirmedNightId)?.night
+      || sharedData.selectedNights[0].night;
+    const partnerName = sessionId === 'sneha' ? 'Aarav' : 'Sneha';
+    if (calBtn) {
+      calBtn.addEventListener('click', () => downloadCalendarFile(closingNight, partnerName));
+    }
+    if (shareBtn) {
+      shareBtn.addEventListener('click', () => {
+        window.open(`https://wa.me/?text=${encodeURIComponent(planText(closingNight, partnerName))}`, '_blank', 'noopener');
+      });
+    }
   }
 
   const resetBtn = container.querySelector(`#miloResetBtn-${sessionId}`);
