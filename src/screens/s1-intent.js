@@ -7,6 +7,10 @@
 import { INTENTS } from '../data/mockData.js';
 import { store } from '../domain/store.js';
 
+function counterText(count) {
+  return count > 0 ? `${count} of 3` : 'Pick up to three.';
+}
+
 export function renderScreen01(sessionId = 'aarav') {
   const state = store.getState();
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
@@ -70,7 +74,7 @@ export function renderScreen01(sessionId = 'aarav') {
       <div class="milo-s1-intro">
         ${contextLineHtml}
         <h1 class="milo-headline">How do you want tonight to feel?</h1>
-        <p class="milo-subline" id="miloSubline-${sessionId}">Pick up to three.</p>
+        <p class="milo-subline" id="miloSubline-${sessionId}"><span class="milo-subline-text">${counterText(selectedIntents.length)}</span></p>
       </div>
 
       <div class="milo-tiles-grid" id="miloTilesGrid-${sessionId}">
@@ -139,4 +143,29 @@ export function attachScreen01Listeners(container, sessionId = 'aarav') {
       }
     });
   }
+}
+
+// Update the mounted s1 DOM in place after a state change.
+export function patchScreen01(container, sessionId = 'aarav') {
+  const state = store.getState();
+  const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
+  const selected = state[sessionKey].intents || [];
+
+  container.querySelectorAll('.milo-tile').forEach((tile) => {
+    const isSelected = selected.includes(tile.getAttribute('data-intent-id'));
+    if (tile.classList.contains('selected') !== isSelected) {
+      tile.classList.toggle('selected', isSelected);
+      tile.setAttribute('aria-pressed', String(isSelected));
+    }
+  });
+
+  const subline = container.querySelector(`#miloSubline-${sessionId}`);
+  const textEl = subline && subline.querySelector('.milo-subline-text');
+  const next = counterText(selected.length);
+  if (textEl && textEl.textContent !== next) {
+    textEl.textContent = next;
+  }
+
+  const cta = container.querySelector(`#miloCta-${sessionId}`);
+  if (cta) cta.disabled = selected.length === 0;
 }
