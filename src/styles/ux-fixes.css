@@ -1,0 +1,32 @@
+/* UX fixes: always-visible CTA footers on s3 and s5 (small phones). */
+
+/* s3: footer sticks to the bottom of the scrolling container, on its own background */
+.milo-s3-footer {
+  position: sticky;
+  bottom: calc(-1 * max(20px, env(safe-area-inset-bottom)));
+  z-index: 20;
+  background: var(--color-ivory);
+  padding: 16px 0 max(16px, env(safe-area-inset-bottom));
+  margin-bottom: calc(-1 * max(20px, env(safe-area-inset-bottom)));
+  box-shadow: 0 -12px 12px -4px var(--color-ivory);
+}
+.milo-s3-content { padding-bottom: 20px; }
+
+/* s5: footer is a fixed bar under the scrolling content, with its own background */
+.milo-s5-scroll-content { min-height: 0; padding-bottom: 28px; }
+.milo-s5-footer {
+  position: relative;
+  z-index: 20;
+  background: var(--color-ivory);
+  padding: 12px 20px max(16px, env(safe-area-inset-bottom));
+  box-shadow: 0 -12px 12px -4px var(--color-ivory);
+}
+.milo-s5-footer .milo-cta-button { margin-top: 0; }
+
+/* Demo-only controls: quiet "Start over" with confirm */
+.milo-reset-confirm { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.milo-reset-confirm p { font-size: 13px; line-height: 18px; color: var(--color-ink-muted); }
+.milo-reset-confirm-actions { display: flex; gap: 8px; }
+.milo-reset-confirm button { min-height: 44px; padding: 0 16px; border-radius: 9999px; font: 500 13px var(--font-sans); cursor: pointer; background: transparent; color: var(--color-ink-muted); border: 1px solid var(--color-taupe); }
+.milo-reset-confirm button.milo-reset-yes { color: var(--color-oxblood); border-color: var(--color-oxblood); }
+.milo-closing-footer .milo-text-button { color: var(--color-ink-muted); font-size: 13px; min-height: 44px; }
