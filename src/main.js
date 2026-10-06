@@ -4,6 +4,7 @@ import './styles/ux-context.css';
 import './styles/premium-icons.css';
 import './styles/polish.css';
 import './styles/waiting-glasses.css';
+import './styles/deck-labels.css';
 import { initApp } from './app.js';
 import { installPremiumIcons } from './components/premium-icons.js';
 

@@ -1,0 +1,14 @@
+/* Keep the three deck action labels on one baseline, even though the featured icon is larger. */
+.milo-reaction-buttons {
+  align-items: flex-start;
+}
+
+.milo-reaction-btn {
+  display: grid;
+  grid-template-rows: 62px auto;
+  justify-items: center;
+}
+
+.milo-reaction-btn .milo-btn-circle {
+  align-self: start;
+}
