@@ -69,7 +69,7 @@ export function renderScreen01(sessionId = 'aarav') {
 
       <div class="milo-s1-intro">
         ${contextLineHtml}
-        <h1 class="milo-headline">What do you want tonight to feel like?</h1>
+        <h1 class="milo-headline">How do you want tonight to feel?</h1>
         <p class="milo-subline" id="miloSubline-${sessionId}">Pick up to three.</p>
       </div>
 
@@ -119,6 +119,12 @@ export function attachScreen01Listeners(container, sessionId = 'aarav') {
               subline.classList.remove('milo-subline-flash');
             }, 1000);
           }
+        }
+      });
+      tile.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          tile.click();
         }
       });
     });

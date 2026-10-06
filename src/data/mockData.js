@@ -78,6 +78,7 @@ export const EXPERIENCE_POOL = [
     title: 'A slow dinner in a hidden courtyard',
     subline: 'Candlelight, no rush, nowhere else to be.',
     shape: 'Dinner → Dessert, same table',
+    tags: ['Romantic', 'Intimate', 'Quiet'],
     traits: { energy: -1, novelty: 0, pace: -1, setting: 1, occasion: 1, company: -1 },
     image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80'
   },
@@ -87,6 +88,7 @@ export const EXPERIENCE_POOL = [
     title: "Explore a neighbourhood you've never really wandered through",
     subline: 'Follow whatever looks interesting.',
     shape: 'Wander → Snacks → Somewhere to sit',
+    tags: ['Spontaneous', 'Discovery', 'Low-key'],
     traits: { energy: 0, novelty: 1, pace: 1, setting: 1, occasion: -1, company: 0 },
     image: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=900&q=80'
   },
@@ -96,6 +98,7 @@ export const EXPERIENCE_POOL = [
     title: 'A small live music set and a long dinner',
     subline: 'Close enough to feel it, quiet enough to talk.',
     shape: 'Dinner → Live set',
+    tags: ['Atmospheric', 'Live Set', 'Intimate'],
     traits: { energy: 1, novelty: 0, pace: 0, setting: -1, occasion: 1, company: 0 },
     image: 'https://images.unsplash.com/photo-1514306191717-452ec28c7814?auto=format&fit=crop&w=900&q=80'
   },
@@ -105,8 +108,10 @@ export const EXPERIENCE_POOL = [
     title: 'Sunset outdoors, then somewhere cosy',
     subline: 'Golden hour first, a warm corner after.',
     shape: 'Sunset → Cosy dinner',
+    tags: ['Golden Hour', 'Cosy', 'Scenic'],
     traits: { energy: -1, novelty: 0, pace: 1, setting: 1, occasion: 0, company: -1 },
-    image: 'https://images.unsplash.com/photo-1507842229452-7d0865bc044a?auto=format&fit=crop&w=900&q=80'
+    image: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=900&q=80',
+    fallback: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=900&q=80'
   },
   {
     id: 'dessert-crawl',
@@ -114,6 +119,7 @@ export const EXPERIENCE_POOL = [
     title: 'A late-night dessert crawl',
     subline: 'Three stops, all of them sweet.',
     shape: 'Dessert → Dessert → Dessert',
+    tags: ['Playful', 'Indulgent', 'Late Night'],
     traits: { energy: 1, novelty: 1, pace: 1, setting: 0, occasion: -1, company: 0 },
     image: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=900&q=80'
   },
@@ -123,6 +129,7 @@ export const EXPERIENCE_POOL = [
     title: 'Get dressed up and make an evening of it',
     subline: 'The kind of night you plan an outfit for.',
     shape: 'Get ready → Dinner → Drinks',
+    tags: ['Special', 'Dressed Up', 'Evening'],
     traits: { energy: 0, novelty: 0, pace: -1, setting: -1, occasion: 1, company: 0 },
     image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=900&q=80'
   },
@@ -132,6 +139,7 @@ export const EXPERIENCE_POOL = [
     title: 'A creative activity followed by dinner',
     subline: 'Make something together, then eat.',
     shape: 'Workshop → Dinner',
+    tags: ['Hands-on', 'Novel', 'Engaging'],
     traits: { energy: 0, novelty: 1, pace: 1, setting: -1, occasion: 0, company: -1 },
     image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=900&q=80'
   },
@@ -141,6 +149,7 @@ export const EXPERIENCE_POOL = [
     title: 'Rooftop drinks with a view',
     subline: 'The city lit up below you.',
     shape: 'Drinks → Small plates',
+    tags: ['Skyline View', 'Buzz', 'Open Air'],
     traits: { energy: 1, novelty: 0, pace: 0, setting: 1, occasion: 1, company: 1 },
     image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=900&q=80'
   },
@@ -150,6 +159,7 @@ export const EXPERIENCE_POOL = [
     title: 'A tiny bar where nobody knows you',
     subline: 'Eight seats, good music, one long conversation.',
     shape: 'One bar, all night',
+    tags: ['Hidden Gem', 'Intimate', 'Conversational'],
     traits: { energy: -1, novelty: 1, pace: -1, setting: -1, occasion: 0, company: -1 },
     image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=900&q=80'
   },
@@ -159,6 +169,7 @@ export const EXPERIENCE_POOL = [
     title: 'Street food and a late film',
     subline: 'Easy, a little messy, very good.',
     shape: 'Street food → Late film',
+    tags: ['Casual', 'Late Night', 'Cinematic'],
     traits: { energy: 0, novelty: 0, pace: 1, setting: 0, occasion: -1, company: 1 },
     image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80'
   },
@@ -168,6 +179,7 @@ export const EXPERIENCE_POOL = [
     title: 'A long walk that ends somewhere warm',
     subline: 'Talk the whole way there.',
     shape: 'Walk → Somewhere warm',
+    tags: ['Stroll', 'Unrushed', 'Warm'],
     traits: { energy: -1, novelty: 0, pace: 1, setting: 1, occasion: -1, company: -1 },
     image: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=80'
   },
@@ -177,6 +189,7 @@ export const EXPERIENCE_POOL = [
     title: 'Board games and good wine somewhere cosy',
     subline: 'A little competitive, very relaxed.',
     shape: 'Games → Wine → Snacks',
+    tags: ['Cosy', 'Playful', 'Relaxed'],
     traits: { energy: -1, novelty: 1, pace: -1, setting: -1, occasion: -1, company: 0 },
     image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=900&q=80'
   }

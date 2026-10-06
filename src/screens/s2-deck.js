@@ -36,7 +36,9 @@ export function renderScreen02(sessionId = 'aarav') {
           title="${isFirstCard ? 'Back to intents' : 'Undo last reaction'}" 
           aria-label="${isFirstCard ? 'Back to intents' : 'Undo'}"
         >
-          ←
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
         </button>
 
         <div class="milo-deck-progress">
@@ -50,18 +52,30 @@ export function renderScreen02(sessionId = 'aarav') {
       <div class="milo-deck-stage" id="miloDeckStage-${sessionId}">
         ${nextCard ? `
           <div class="milo-deck-card milo-card-peeking" aria-hidden="true">
-            <img src="${nextCard.image}" alt="" class="milo-card-img" />
+            <img 
+              src="${nextCard.image}" 
+              alt="" 
+              class="milo-card-img" 
+              onerror="if(this.src!=='${nextCard.fallback || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80'}'){this.src='${nextCard.fallback || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80'}'}"
+            />
             <div class="milo-card-scrim"></div>
             <div class="milo-card-body">
               <h2 class="milo-card-title">${nextCard.title}</h2>
-              <p class="milo-card-subline">${nextCard.subline}</p>
-              <div class="milo-card-shape">${nextCard.shape}</div>
+              ${nextCard.subline ? `<p class="milo-card-subline">${nextCard.subline}</p>` : ''}
+              <div class="milo-card-tags">
+                ${(nextCard.tags || ['Romantic', 'Intimate', 'Quiet']).map(t => `<span class="milo-card-tag">${t}</span>`).join('')}
+              </div>
             </div>
           </div>
         ` : ''}
 
         <div class="milo-deck-card milo-card-active" id="miloActiveCard-${sessionId}">
-          <img src="${activeCard.image}" alt="${activeCard.title}" class="milo-card-img" />
+          <img 
+            src="${activeCard.image}" 
+            alt="${activeCard.title}" 
+            class="milo-card-img" 
+            onerror="if(this.src!=='${activeCard.fallback || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80'}'){this.src='${activeCard.fallback || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80'}'}"
+          />
           <div class="milo-card-scrim"></div>
 
           <!-- Drag Edge Labels -->
@@ -70,8 +84,10 @@ export function renderScreen02(sessionId = 'aarav') {
 
           <div class="milo-card-body">
             <h2 class="milo-card-title">${activeCard.title}</h2>
-            <p class="milo-card-subline">${activeCard.subline}</p>
-            <div class="milo-card-shape">${activeCard.shape}</div>
+            ${activeCard.subline ? `<p class="milo-card-subline">${activeCard.subline}</p>` : ''}
+            <div class="milo-card-tags">
+              ${(activeCard.tags || ['Romantic', 'Intimate', 'Quiet']).map(t => `<span class="milo-card-tag">${t}</span>`).join('')}
+            </div>
           </div>
         </div>
       </div>
@@ -80,27 +96,35 @@ export function renderScreen02(sessionId = 'aarav') {
       <div class="milo-deck-controls">
         <div class="milo-reaction-buttons">
           <!-- Button 1: Not Tonight -->
-          <button class="milo-reaction-btn btn-not-tonight" id="btnNotTonight-${sessionId}" aria-label="Not tonight">
-            <div class="milo-btn-circle">✕</div>
-            <span class="milo-btn-label">Not tonight</span>
+          <button class="milo-reaction-btn btn-not-tonight" id="btnNotTonight-${sessionId}" aria-label="Not tonight" title="Not tonight">
+            <div class="milo-btn-circle">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </div>
           </button>
 
-          <!-- Button 2: Maybe (Button ONLY) -->
-          <button class="milo-reaction-btn btn-maybe" id="btnMaybe-${sessionId}" aria-label="Maybe">
-            <div class="milo-btn-circle">○</div>
-            <span class="milo-btn-label">Maybe</span>
+          <!-- Button 2: More like this (Maybe) -->
+          <button class="milo-reaction-btn btn-maybe" id="btnMaybe-${sessionId}" aria-label="More like this" title="More like this">
+            <div class="milo-btn-circle">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </div>
+            <span class="milo-btn-label">More like this</span>
           </button>
 
-          <!-- Button 3: I'm Into It -->
-          <button class="milo-reaction-btn btn-into-it" id="btnIntoIt-${sessionId}" aria-label="I'm into it">
-            <div class="milo-btn-circle">✓</div>
-            <span class="milo-btn-label">I'm into it</span>
+          <!-- Button 3: Into It -->
+          <button class="milo-reaction-btn btn-into-it" id="btnIntoIt-${sessionId}" aria-label="Into it" title="Into it">
+            <div class="milo-btn-circle">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+            </div>
           </button>
         </div>
-
-        ${showFirstCardHint ? `
-          <div class="milo-deck-hint">Swipe, or use the buttons.</div>
-        ` : '<div class="milo-deck-hint-spacer"></div>'}
       </div>
     </div>
   `;
