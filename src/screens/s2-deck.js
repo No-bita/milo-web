@@ -6,6 +6,12 @@
 
 import { buildDeck } from '../logic/deck.js';
 import { store } from '../domain/store.js';
+import '../styles/s2-motion.css';
+
+// Motion state kept at module level so it survives the deck's full re-render on every store update.
+let firstCardHintShown = false; // item 18: wiggle teaches the swipe once per page load
+let pendingUndoSide = null;     // item 19: side the undone card exited from
+const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function renderScreen02(sessionId = 'aarav') {
   const state = store.getState();
@@ -144,6 +150,35 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
   const deck = buildDeck(sessionData.intents || []);
   const activeCard = deck[sessionData.currentCardIndex || 0];
 
+  // Item 19: if this render follows an undo, fly the card back in from the side it left.
+  if (card && pendingUndoSide) {
+    const side = pendingUndoSide;
+    pendingUndoSide = null;
+    if (!prefersReducedMotion()) {
+      card.classList.add(`milo-card-undo-${side}`);
+      card.addEventListener('animationend', () => card.classList.remove(`milo-card-undo-${side}`), { once: true });
+    }
+  }
+
+  // Item 18: first card only, after 3s of no interaction, one tiny sideways wiggle. Once only.
+  if (card && !firstCardHintShown && (sessionData.currentCardIndex || 0) === 0 && !prefersReducedMotion()) {
+    let hintTimer = setTimeout(() => {
+      hintTimer = null;
+      if (!card.isConnected || firstCardHintShown) return;
+      firstCardHintShown = true;
+      card.classList.add('milo-card-wiggle');
+      card.addEventListener('animationend', () => card.classList.remove('milo-card-wiggle'), { once: true });
+    }, 3000);
+    const cancelHint = () => {
+      if (hintTimer) { clearTimeout(hintTimer); hintTimer = null; }
+      firstCardHintShown = true;
+      card.classList.remove('milo-card-wiggle');
+    };
+    // Any interaction means they already know how to swipe.
+    ['touchstart', 'mousedown', 'pointerdown'].forEach(evt => card.addEventListener(evt, cancelHint, { passive: true, once: true }));
+    [btnNot, btnMaybe, btnInto, undoBtn].forEach(btn => btn && btn.addEventListener('click', cancelHint, { once: true }));
+  }
+
   function commitReaction(reaction, exitType = 'fly') {
     if (!card) return;
 
@@ -199,6 +234,8 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
       if (currentIdx === 0) {
         store.setSessionScreen(sessionId, 's1');
       } else {
+        const last = (sessionData.reactions || [])[(sessionData.reactions || []).length - 1];
+        pendingUndoSide = last && last.reaction === 'not_tonight' ? 'left' : last && last.reaction === 'maybe' ? 'below' : 'right';
         store.undoReaction(sessionId);
       }
     });
