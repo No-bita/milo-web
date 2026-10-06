@@ -53,14 +53,17 @@
 }
 .milo-reaction-btn.btn-into-it .milo-btn-circle {
   width: 62px; height: 62px; margin-top: 0;
-  background: var(--color-oxblood-wash); color: var(--color-oxblood);
-  border-color: var(--color-oxblood-wash); box-shadow: none;
+  /* Restore the original coral action, including its soft glow. */
+  background: linear-gradient(140deg, #D64C59 0%, #A32534 100%); color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 22px rgba(214, 76, 89, 0.42);
 }
 .milo-reaction-btn:hover .milo-btn-circle {
   background: rgba(245, 240, 234, 0.11); box-shadow: none;
 }
 .milo-reaction-btn.btn-into-it:hover .milo-btn-circle {
-  background: var(--color-ivory); color: var(--color-oxblood);
+  background: linear-gradient(140deg, #D64C59 0%, #A32534 100%); color: #FFFFFF;
+  box-shadow: 0 8px 28px rgba(214, 76, 89, 0.6);
 }
 .milo-reaction-btn:active .milo-btn-circle,
 .milo-reaction-btn.active-drag .milo-btn-circle {
@@ -68,7 +71,8 @@
 }
 .milo-reaction-btn.btn-into-it:active .milo-btn-circle,
 .milo-reaction-btn.btn-into-it.active-drag .milo-btn-circle {
-  background: var(--color-sand); color: var(--color-oxblood-press); box-shadow: none;
+  background: linear-gradient(140deg, #E05361 0%, #B32938 100%); color: #FFFFFF;
+  box-shadow: 0 8px 30px rgba(214, 76, 89, 0.7);
 }
 @media (prefers-reduced-motion: reduce) {
   .milo-reaction-btn { transition: none; }
