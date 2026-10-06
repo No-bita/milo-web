@@ -24,23 +24,14 @@
   background: rgba(18, 18, 20, 0.66);
   color: var(--color-on-dark);
 }
-.milo-deck-undo-btn.milo-icon-back { color: var(--color-on-dark); }
 .milo-night-chevron, .milo-banner-arrow { color: var(--color-oxblood); }
 .milo-icon-back:focus-visible,
 .milo-reaction-btn:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 3px;
 }
-/* Three circular actions; undo uses the deck header's top-left slot. */
+/* Three circular actions. */
 .milo-deck-controls { position: relative; width: 100%; }
-.milo-deck-undo-btn.milo-icon-undo {
-  position: relative; flex: 0 0 44px;
-  width: 44px; height: 44px; padding: 10px; border-radius: 50%;
-  color: var(--color-on-dark); background: transparent;
-}
-.milo-deck-undo-btn.milo-icon-undo[hidden] {
-  display: block; visibility: hidden; pointer-events: none;
-}
 .milo-reaction-buttons {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: start; gap: 4px; max-width: 340px;
@@ -79,13 +70,12 @@
 .milo-reaction-btn.btn-into-it.active-drag .milo-btn-circle {
   background: var(--color-sand); color: var(--color-oxblood-press); box-shadow: none;
 }
-.milo-deck-undo-btn.milo-icon-undo:hover { background: rgba(245, 240, 234, 0.08); }
-.milo-icon-undo:focus-visible {
-  outline: 2px solid currentColor; outline-offset: 3px;
-}
 @media (prefers-reduced-motion: reduce) {
   .milo-reaction-btn { transition: none; }
 }
 /* Let the insight copy lead without a repeated decorative icon column. */
 .milo-obs-row { gap: 0; }
 .milo-shared-row { gap: 0; }
+/* Deck back arrow keeps its look; a 44px hit area comes from an invisible pseudo-element. */
+.milo-s2-container .milo-deck-undo-btn { position: relative; }
+.milo-s2-container .milo-deck-undo-btn::after { content: ""; position: absolute; inset: -6px; }
