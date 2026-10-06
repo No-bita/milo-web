@@ -7,6 +7,9 @@
 import { store } from '../domain/store.js';
 import { computeSharedOutput } from '../logic/shared.js';
 
+// "Start over" is demo scaffolding: only shown with ?demo
+const isDemo = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo');
+
 export function renderScreen07(sessionId = 'aarav') {
   const state = store.getState();
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
@@ -40,9 +43,9 @@ export function renderScreen07(sessionId = 'aarav') {
         </div>
 
         <div class="milo-closing-footer">
-          <button class="milo-text-button" id="miloResetBtn-${sessionId}">
+          ${isDemo() ? `<button class="milo-text-button" id="miloResetBtn-${sessionId}">
             Start over
-          </button>
+          </button>` : ''}
         </div>
       </div>
     `;
@@ -217,7 +220,18 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
   const resetBtn = container.querySelector(`#miloResetBtn-${sessionId}`);
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
-      store.reset();
+      // Confirm before wiping the plan
+      const box = document.createElement('div');
+      box.className = 'milo-reset-confirm';
+      box.innerHTML = `
+        <p>Start over? This clears tonight's plan.</p>
+        <div class="milo-reset-confirm-actions">
+          <button type="button" class="milo-reset-no">Keep it</button>
+          <button type="button" class="milo-reset-yes">Yes, start over</button>
+        </div>`;
+      resetBtn.replaceWith(box);
+      box.querySelector('.milo-reset-no').addEventListener('click', () => box.replaceWith(resetBtn));
+      box.querySelector('.milo-reset-yes').addEventListener('click', () => store.reset());
     });
   }
 }
