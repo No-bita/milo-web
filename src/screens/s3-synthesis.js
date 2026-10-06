@@ -53,8 +53,8 @@ export function renderScreen03(sessionId = 'aarav') {
           </div>`}
       </div>
       <footer class="milo-s3-footer">
-        <button class="milo-cta-button" id="miloS3Ideas-${sessionId}">See more ideas <span aria-hidden="true">→</span></button>
-        <button class="milo-s3-continue" id="miloS3Cta-${sessionId}">Continue to invite your date <span aria-hidden="true">→</span></button>
+        <button class="milo-cta-button milo-s3-start-afresh" id="miloS3Restart-${sessionId}">Start afresh</button>
+        <button class="milo-cta-button" id="miloS3Cta-${sessionId}">Looks good</button>
       </footer>
     </div>
   `;
@@ -72,7 +72,9 @@ export function attachScreen03Listeners(container, sessionId = 'aarav') {
     });
   };
   container.querySelector(`#miloS3Back-${sessionId}`)?.addEventListener('click', revisitDiscovery);
-  container.querySelector(`#miloS3Ideas-${sessionId}`)?.addEventListener('click', revisitDiscovery);
+  container.querySelector(`#miloS3Restart-${sessionId}`)?.addEventListener('click', () => {
+    store.setSessionScreen(sessionId, 's1');
+  });
   container.querySelector(`#miloS3Cta-${sessionId}`)?.addEventListener('click', () => {
     store.setSessionScreen(sessionId, sessionId === 'sneha' ? 's5' : 's4_invite');
   });
