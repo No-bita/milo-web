@@ -6,6 +6,9 @@
 
 import { store } from '../domain/store.js';
 
+// Demo scaffolding (open the partner's side in a new tab) shows only with ?demo
+const isDemo = () => new URLSearchParams(window.location.search).has('demo');
+
 export function renderScreen04(sessionId = 'aarav') {
   const state = store.getState();
   const sessionData = state.sessionA;
@@ -71,9 +74,9 @@ export function renderScreen04(sessionId = 'aarav') {
         </div>
 
         <div class="milo-s4-actions">
-          <a href="?as=sneha" target="_blank" class="milo-pill-btn-secondary" id="miloOpenSnehaTab">
+          ${isDemo() ? `<a href="?as=sneha" target="_blank" class="milo-pill-btn-secondary" id="miloOpenSnehaTab">
             Open Sneha's invitation in a new tab ↗
-          </a>
+          </a>` : ''}
           <button class="milo-pill-btn-ghost" id="miloCopyLinkBtn">
             Copy invite link
           </button>
