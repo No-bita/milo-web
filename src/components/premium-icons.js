@@ -6,7 +6,6 @@ const paths = {
   heart: '<path d="M20.5 5.5a5 5 0 0 0-7.1 0L12 6.9l-1.4-1.4a5 5 0 0 0-7.1 7.1L12 21l8.5-8.4a5 5 0 0 0 0-7.1Z"/>',
   dismiss: '<path d="m6 6 12 12M18 6 6 18"/>',
   more: '<path d="M5 12h14"/>',
-  undo: '<path d="M9 4 4 9l5 5M4 9h9a7 7 0 1 1 0 14"/>',
   forward: '<path d="M5 12h14m-6-6 6 6-6 6"/>'
 };
 
@@ -23,17 +22,19 @@ export function installPremiumIcons(root) {
       button.classList.add('milo-icon-back');
     });
     root.querySelectorAll('.milo-s2-container').forEach(deck => {
-      const header = deck.querySelector('.milo-deck-header');
+      // The deck header control is back-to-intents on every card. Undo is not
+      // offered here. Replacing the node drops the old combined back/undo handler.
       const original = deck.querySelector('.milo-deck-undo-btn');
-      if (!original || !header) return;
-      const canUndo = original.getAttribute('aria-label') === 'Undo';
-      // Keep the existing wired node and ID for PR #3's undo fly-back.
-      // The first-card navigation action is hidden, never repurposed as undo.
-      original.innerHTML = icon('undo');
-      original.classList.add('milo-icon-undo');
-      original.hidden = !canUndo;
-      original.disabled = !canUndo;
-      header.prepend(original);
+      if (!original) return;
+      const sessionId = deck.getAttribute('data-session-id');
+      const back = original.cloneNode(true);
+      back.title = 'Back to intents';
+      back.setAttribute('aria-label', 'Back to intents');
+      back.addEventListener('click', event => {
+        event.stopPropagation();
+        store.setSessionScreen(sessionId, 's1');
+      });
+      original.replaceWith(back);
     });
     root.querySelectorAll('.milo-reaction-btn').forEach(button => {
       const label = button.querySelector('.milo-btn-label');
