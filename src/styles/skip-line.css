@@ -1,0 +1,13 @@
+/* Option detail: give the "Skip this one if..." line its own emphasis */
+.milo-s7-body .milo-s7-skip-line {
+  margin: 4px 0 28px;
+  padding: 14px 16px 14px 18px;
+  background: var(--color-oxblood-wash);
+  border-left: 3px solid var(--color-oxblood);
+  border-radius: 0 12px 12px 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 17px;
+  line-height: 24px;
+  color: var(--color-oxblood);
+}
