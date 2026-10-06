@@ -1,0 +1,151 @@
+/* ==========================================================
+   POLISH PASS (findings 13-17)
+   Loaded after milo.css so it overrides without touching the
+   large legacy file. Scoped under .milo-viewport.
+   ========================================================== */
+
+:root {
+  --milo-gutter: 20px;
+  --milo-top: 8px;
+}
+
+/* 13 - one header everywhere: 44px back slot | centred wordmark | 44px slot */
+.milo-viewport .milo-header {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  height: 48px;
+  min-height: 48px;
+  margin: 0 0 16px;
+  padding: 0;
+  justify-content: initial;
+  flex-shrink: 0;
+}
+.milo-viewport .milo-header > .milo-wordmark {
+  grid-column: 2;
+  justify-self: center;
+  font-size: 19.5px;
+  line-height: 1;
+}
+.milo-viewport .milo-header > .milo-header-back {
+  grid-column: 1;
+  justify-self: start;
+  width: 44px;
+  height: 44px;
+  margin: 0 0 0 -12px;
+  padding: 0;
+  border-radius: 50%;
+}
+.milo-viewport .milo-header > .milo-header-space { display: none; }
+
+/* Same side gutters and top inset on every screen that carries the header */
+.milo-viewport .milo-s0-container,
+.milo-viewport .milo-s4-container,
+.milo-viewport .milo-s6-container,
+.milo-viewport .milo-closing-state {
+  padding-top: var(--milo-top);
+  padding-left: var(--milo-gutter);
+  padding-right: var(--milo-gutter);
+}
+.milo-viewport .milo-s1-container {
+  padding-top: var(--milo-top);
+  padding-left: var(--milo-gutter);
+  padding-right: var(--milo-gutter);
+}
+.milo-viewport .milo-s3-container {
+  padding-top: var(--milo-top);
+  padding-left: var(--milo-gutter);
+  padding-right: var(--milo-gutter);
+}
+.milo-viewport .milo-s5-container {
+  padding: var(--milo-top) var(--milo-gutter) 0;
+}
+.milo-viewport .milo-s5-scroll-content {
+  padding-left: 0;
+  padding-right: 0;
+}
+.milo-viewport .milo-s5-footer {
+  padding-left: 0;
+  padding-right: 0;
+}
+.milo-viewport .milo-s3-container .milo-header { margin-bottom: 16px; }
+
+/* Same screen-title size on every screen */
+.milo-viewport .milo-headline,
+.milo-viewport .milo-s3-intro .milo-headline,
+.milo-viewport .milo-s4-intro .milo-headline {
+  font-size: 26px;
+  line-height: 32px;
+  letter-spacing: -0.015em;
+}
+@media (max-width: 374px), (max-height: 740px) {
+  .milo-viewport .milo-s3-intro .milo-headline { font-size: 26px; line-height: 32px; }
+}
+
+/* 14 - rebalance the dead band on the invite screens */
+.milo-viewport .milo-s4-illustration-wrap {
+  max-width: 280px;
+  max-width: 320px;
+  height: clamp(150px, 33vh, 300px);
+  margin-bottom: clamp(16px, 3vh, 28px);
+}
+.milo-viewport .milo-s4-content { max-width: 340px; }
+.milo-viewport .milo-s4-actions { gap: 10px; padding-top: 12px; }
+.milo-viewport .milo-s0-content {
+  justify-content: flex-end;
+  padding-bottom: clamp(24px, 5vh, 48px);
+  gap: 0;
+}
+.milo-viewport .milo-monograms-row { margin-bottom: clamp(20px, 3.5vh, 32px); }
+.milo-viewport .milo-s0-container > .milo-cta-button { margin-top: 16px; flex-shrink: 0; }
+.milo-viewport .milo-s0-footer-space { height: 0; }
+
+/* 15 - the overlap line is the reassurance that gets her to send */
+.milo-viewport .milo-s4-reassure {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 21px;
+  font-weight: 500;
+  color: var(--color-ink);
+  text-align: center;
+  margin: 0 0 6px;
+}
+
+/* 17 - payoff screen carries the plan */
+.milo-viewport .milo-closing-state {
+  justify-content: flex-start;
+  align-items: stretch;
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+}
+.milo-viewport .milo-closing-content {
+  flex: 1 0 auto;
+  justify-content: flex-start;
+  padding: clamp(8px, 4vh, 36px) 0 0;
+}
+.milo-viewport .milo-closing-monograms { margin-bottom: 16px; }
+.milo-viewport .milo-closing-sub {
+  font-size: 16px;
+  line-height: 23px;
+  margin: 6px 0 20px;
+}
+.milo-viewport .milo-closing-plan {
+  width: 100%;
+  max-width: 340px;
+  text-align: left;
+  padding: 16px 18px 2px;
+  background: var(--color-sand);
+  border-radius: 14px;
+}
+.milo-viewport .milo-closing-plan .milo-section-label { margin: 0 0 14px; }
+.milo-viewport .milo-closing-plan .milo-timeline-section { margin-bottom: 0; }
+.milo-viewport .milo-closing-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 340px;
+  margin: 20px auto 0;
+  padding-bottom: 0;
+}
+.milo-viewport .milo-closing-footer .milo-text-button { padding: 10px 16px; }
