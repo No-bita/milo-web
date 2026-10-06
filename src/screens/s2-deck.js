@@ -106,14 +106,14 @@ export function renderScreen02(sessionId = 'aarav') {
             <span class="milo-btn-label">Not for tonight</span>
           </button>
 
-          <!-- Button 2: More like this (Maybe) -->
-          <button class="milo-reaction-btn btn-maybe" id="btnMaybe-${sessionId}" aria-label="More like this" title="More like this">
+          <!-- Button 2: Maybe -->
+          <button class="milo-reaction-btn btn-maybe" id="btnMaybe-${sessionId}" aria-label="Maybe" title="Maybe">
             <div class="milo-btn-circle">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
             </div>
-            <span class="milo-btn-label">More like this</span>
+            <span class="milo-btn-label">Maybe</span>
           </button>
 
           <!-- Button 3: I'm into it -->
