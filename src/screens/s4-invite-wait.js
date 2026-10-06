@@ -38,10 +38,10 @@ export function renderScreen04(sessionId = 'aarav') {
           </div>
 
           <div class="milo-s4-actions">
+            <p class="milo-s4-reassure">You'll see where you naturally overlap.</p>
             <button class="milo-pill-btn-primary" id="miloSeeSharedBtn">
               See what you're both looking for →
             </button>
-            <p class="milo-s4-footer-note">You'll see where you naturally overlap.</p>
           </div>
         </div>
       `;
@@ -71,13 +71,13 @@ export function renderScreen04(sessionId = 'aarav') {
         </div>
 
         <div class="milo-s4-actions">
+          <p class="milo-s4-reassure">You'll see where you naturally overlap.</p>
           <a href="?as=sneha" target="_blank" class="milo-pill-btn-secondary" id="miloOpenSnehaTab">
             Open Sneha's invitation in a new tab ↗
           </a>
           <button class="milo-pill-btn-ghost" id="miloCopyLinkBtn">
             Copy invite link
           </button>
-          <p class="milo-s4-footer-note">You'll see where you naturally overlap.</p>
         </div>
       </div>
     `;
@@ -108,13 +108,13 @@ export function renderScreen04(sessionId = 'aarav') {
       </div>
 
       <div class="milo-s4-actions">
-        <button class="milo-pill-btn-primary" id="miloSendInviteBtn">
-          Send invite link
-        </button>
-        <button class="milo-pill-btn-secondary" id="miloShareWhatsappBtn">
+        <p class="milo-s4-reassure">You'll see where you naturally overlap.</p>
+        <button class="milo-pill-btn-primary" id="miloShareWhatsappBtn">
           Share via WhatsApp
         </button>
-        <p class="milo-s4-footer-note">You'll see where you naturally overlap.</p>
+        <button class="milo-pill-btn-secondary" id="miloSendInviteBtn">
+          Send invite link
+        </button>
       </div>
     </div>
   `;
@@ -147,6 +147,9 @@ export function attachScreen04Listeners(container, sessionId = 'aarav') {
   const whatsappBtn = container.querySelector('#miloShareWhatsappBtn');
   if (whatsappBtn) {
     whatsappBtn.addEventListener('click', () => {
+      const url = window.location.origin + window.location.pathname + '?as=sneha';
+      const text = `Planning tonight with Milo. Add your picks, it takes about a minute and stays private: ${url}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
       store.updateShared({ inviteSent: true });
       store.setSessionScreen('aarav', 's4_waiting');
     });
