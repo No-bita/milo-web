@@ -869,8 +869,7 @@ body[data-viewport="430"] .milo-viewport {
 
 .btn-into-it .milo-btn-circle {
   width: 62px;
-  height: 62px;
-  margin-top: 0;
+  height: 62px;  margin-top: 0;
   background: linear-gradient(140deg, #D64C59 0%, #A32534 100%);
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 6px 22px rgba(214, 76, 89, 0.42);
