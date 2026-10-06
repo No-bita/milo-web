@@ -1,0 +1,49 @@
+/* S3 motion: restrained, calm breath. Single gentle entrance, zero looping distraction. */
+@keyframes milo-s3-fade-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes milo-s3-row {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes milo-s3-breathe {
+  from { opacity: 0.45; }
+  to { opacity: 0.85; }
+}
+
+/* Subtle image entrance: circles settle in softly with light stagger, then stay still */
+.milo-s3-photo {
+  animation: milo-s3-fade-in 480ms ease-out both;
+}
+.milo-s3-photo-food { animation-delay: 0ms; }
+.milo-s3-photo-dining { animation-delay: 100ms; }
+.milo-s3-photo-cafe { animation-delay: 200ms; }
+
+/* Staggered observation reveal: rows reveal one by one calmly */
+.milo-s3-container .milo-obs-row {
+  animation: milo-s3-row 400ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(350ms + var(--i, 0) * 200ms);
+}
+
+/* Empty state only: gentle breathing placeholder outlines */
+.milo-s3-collage.is-empty .milo-s3-photo {
+  background: transparent;
+  box-shadow: none;
+  border: 1.5px solid var(--color-taupe);
+  animation: milo-s3-fade-in 480ms ease-out both, milo-s3-breathe 4s ease-in-out infinite alternate;
+}
+.milo-s3-collage.is-empty .milo-s3-photo-food { animation-delay: 0ms, 400ms; }
+.milo-s3-collage.is-empty .milo-s3-photo-dining { animation-delay: 100ms, 800ms; }
+.milo-s3-collage.is-empty .milo-s3-photo-cafe { animation-delay: 200ms, 1200ms; }
+.milo-s3-collage.is-empty .milo-s3-photo img { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .milo-s3-photo,
+  .milo-s3-container .milo-obs-row,
+  .milo-s3-collage.is-empty .milo-s3-photo {
+    animation: none !important;
+  }
+}
