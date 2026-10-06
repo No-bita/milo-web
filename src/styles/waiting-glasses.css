@@ -1,0 +1,4 @@
+.milo-viewport .waiting-state .milo-s4-illustration {
+  mix-blend-mode: multiply;
+  filter: brightness(1.09) contrast(1.02);
+}
