@@ -853,9 +853,9 @@ body[data-viewport="430"] .milo-viewport {
 .milo-s3-container .milo-obs-text { font-family: var(--font-sans); font-size: 13px; line-height: 19px; color: var(--color-ink); }
 .milo-s3-empty { padding: 20px; border-radius: 12px; background: var(--color-sand); font-size: 14px; line-height: 21px; }
 .milo-s3-empty p + p { margin-top: 8px; color: var(--color-ink-muted); }
-.milo-s3-footer { padding-top: 28px; margin-top: auto; flex-shrink: 0; }
-.milo-s3-footer .milo-cta-button { gap: 8px; }
-.milo-s3-continue { display: block; width: 100%; margin-top: 14px; padding: 8px; min-height: 40px; border: 0; background: none; color: var(--color-oxblood); font: 13px var(--font-sans); cursor: pointer; }
+.milo-s3-footer { display: flex; gap: 12px; padding-top: 28px; margin-top: auto; flex-shrink: 0; }
+.milo-s3-footer .milo-cta-button { flex: 1; min-width: 0; padding-left: 12px; padding-right: 12px; }
+.milo-s3-footer .milo-s3-start-afresh { background: transparent; color: var(--color-oxblood); border: 1px solid var(--color-oxblood); }
 .milo-s3-container button:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 4px; }
 @media (max-width: 374px), (max-height: 740px) {
   .milo-s3-container { padding-left: 20px; padding-right: 20px; }
