@@ -1,0 +1,85 @@
+/* Small editorial icon pass. No font dependency, no screen-flow changes. */
+.milo-icon { display: block; flex: 0 0 24px; }
+.milo-icon-back {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 10px;
+  margin-left: 0;
+  border-radius: 50%;
+  color: var(--color-ink);
+  flex-shrink: 0;
+}
+.milo-header-space { width: 44px; flex-shrink: 0; }
+.milo-header { min-height: 44px; }
+/* The same left alignment and top inset across the light headers. */
+.milo-s1-container .milo-header { margin-top: 0; }
+.milo-s3-container .milo-header { margin-left: -12px; width: calc(100% + 24px); }
+.milo-s4-container .milo-header { margin-left: -4px; width: calc(100% + 8px); }
+.milo-s5-container > .milo-header { padding: 0 16px; margin-top: 10px; }
+.milo-s6-container > .milo-header { margin-left: -4px; width: calc(100% + 8px); margin-top: 10px; }
+.milo-s7-back-btn.milo-icon-back {
+  top: max(10px, env(safe-area-inset-top));
+  left: 16px;
+  background: rgba(18, 18, 20, 0.66);
+  color: var(--color-on-dark);
+}
+.milo-night-chevron, .milo-banner-arrow { color: var(--color-oxblood); }
+.milo-icon-back:focus-visible,
+.milo-reaction-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+/* Three circular actions. */
+.milo-deck-controls { position: relative; width: 100%; }
+.milo-reaction-buttons {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start; gap: 4px; max-width: 340px;
+}
+.milo-reaction-btn {
+  min-width: 0; padding: 0; gap: 0;
+  color: var(--color-on-dark); background: transparent; border: 0;
+}
+.milo-reaction-btn .milo-btn-circle {
+  width: 54px; height: 54px; margin-top: 4px;
+  color: var(--color-on-dark); background: rgba(245, 240, 234, 0.06);
+  border: 1px solid rgba(245, 240, 234, 0.24); box-shadow: none;
+  backdrop-filter: none;
+}
+.milo-reaction-btn .milo-btn-label {
+  font-size: 12px; font-weight: 500; line-height: 16px;
+  letter-spacing: 0; margin-top: 7px; white-space: normal;
+  color: var(--color-on-dark); min-height: 32px;
+}
+.milo-reaction-btn.btn-into-it .milo-btn-circle {
+  width: 62px; height: 62px; margin-top: 0;
+  /* Restore the original coral action, including its soft glow. */
+  background: linear-gradient(140deg, #D64C59 0%, #A32534 100%); color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 22px rgba(214, 76, 89, 0.42);
+}
+.milo-reaction-btn:hover .milo-btn-circle {
+  background: rgba(245, 240, 234, 0.11); box-shadow: none;
+}
+.milo-reaction-btn.btn-into-it:hover .milo-btn-circle {
+  background: linear-gradient(140deg, #D64C59 0%, #A32534 100%); color: #FFFFFF;
+  box-shadow: 0 8px 28px rgba(214, 76, 89, 0.6);
+}
+.milo-reaction-btn:active .milo-btn-circle,
+.milo-reaction-btn.active-drag .milo-btn-circle {
+  background: rgba(245, 240, 234, 0.16); box-shadow: none;
+}
+.milo-reaction-btn.btn-into-it:active .milo-btn-circle,
+.milo-reaction-btn.btn-into-it.active-drag .milo-btn-circle {
+  background: linear-gradient(140deg, #E05361 0%, #B32938 100%); color: #FFFFFF;
+  box-shadow: 0 8px 30px rgba(214, 76, 89, 0.7);
+}
+@media (prefers-reduced-motion: reduce) {
+  .milo-reaction-btn { transition: none; }
+}
+/* Let the insight copy lead without a repeated decorative icon column. */
+.milo-obs-row { gap: 0; }
+.milo-shared-row { gap: 0; }
+/* Deck back arrow keeps its look; a 44px hit area comes from an invisible pseudo-element. */
+.milo-s2-container .milo-deck-undo-btn { position: relative; }
+.milo-s2-container .milo-deck-undo-btn::after { content: ""; position: absolute; inset: -6px; }
