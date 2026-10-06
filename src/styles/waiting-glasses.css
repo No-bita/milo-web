@@ -1,3 +1,8 @@
+/* Blend the animated group itself into the page, not only its isolated child. */
+.milo-viewport .waiting-state .milo-waiting-glow {
+  mix-blend-mode: multiply;
+}
+
 .milo-viewport .waiting-state .milo-s4-illustration {
   mix-blend-mode: multiply;
   filter: brightness(1.09) contrast(1.02);
