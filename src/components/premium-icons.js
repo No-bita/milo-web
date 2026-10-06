@@ -4,6 +4,9 @@ import { store } from '../domain/store.js';
 const paths = {
   back: '<path d="M19 12H5m6-6-6 6 6 6"/>',
   heart: '<path d="M20.5 5.5a5 5 0 0 0-7.1 0L12 6.9l-1.4-1.4a5 5 0 0 0-7.1 7.1L12 21l8.5-8.4a5 5 0 0 0 0-7.1Z"/>',
+  dismiss: '<path d="m6 6 12 12M18 6 6 18"/>',
+  more: '<path d="M5 12h14"/>',
+  undo: '<path d="M9 4 4 9l5 5M4 9h9a7 7 0 1 1 0 14"/>',
   forward: '<path d="M5 12h14m-6-6 6 6-6 6"/>'
 };
 
@@ -15,21 +18,43 @@ export function icon(name) {
 // and action IDs intact, so independent motion / footer PRs remain isolated.
 export function installPremiumIcons(root) {
   function decorate() {
-    root.querySelectorAll('.milo-header-back, .milo-s7-back-btn, .milo-deck-undo-btn').forEach(button => {
+    root.querySelectorAll('.milo-header-back, .milo-s7-back-btn').forEach(button => {
       button.innerHTML = icon('back');
       button.classList.add('milo-icon-back');
-      if (button.classList.contains('milo-deck-undo-btn')) {
-        const undo = button.getAttribute('aria-label') === 'Undo';
-        button.classList.toggle('milo-icon-undo', undo);
-        if (undo) button.innerHTML = '<span>Undo</span>';
+    });
+    root.querySelectorAll('.milo-s2-container').forEach(deck => {
+      const sessionId = deck.dataset.sessionId;
+      const controls = deck.querySelector('.milo-deck-controls');
+      const header = deck.querySelector('.milo-deck-header');
+      const original = deck.querySelector('.milo-deck-undo-btn');
+      if (!original || !controls || !header) return;
+      const canUndo = original.getAttribute('aria-label') === 'Undo';
+      // Move the existing wired button, rather than replacing its listener.
+      // PR #3's hint cancellation and undo fly-back remain on this same node.
+      if (canUndo) {
+        original.innerHTML = icon('undo');
+        original.classList.add('milo-icon-undo');
+        controls.prepend(original);
+        if (!header.querySelector('.milo-deck-back-btn')) {
+          const back = document.createElement('button');
+          back.className = 'milo-deck-back-btn milo-icon-back';
+          back.title = 'Back to intents';
+          back.setAttribute('aria-label', 'Back to intents');
+          back.innerHTML = icon('back');
+          back.addEventListener('click', () => store.setSessionScreen(sessionId, 's1'));
+          header.prepend(back);
+        }
+      } else {
+        original.innerHTML = icon('back');
+        original.classList.add('milo-icon-back');
       }
     });
     root.querySelectorAll('.milo-reaction-btn').forEach(button => {
       const label = button.querySelector('.milo-btn-label');
       if (!label) return;
-      const intoIt = button.classList.contains('btn-into-it');
-      // Words carry the two ambiguous actions. Only the heart earns an icon.
-      button.innerHTML = `${intoIt ? icon('heart') : ''}<span class="milo-btn-label">${label.textContent}</span>`;
+      const name = button.classList.contains('btn-into-it') ? 'heart'
+        : button.classList.contains('btn-maybe') ? 'more' : 'dismiss';
+      button.innerHTML = `<span class="milo-btn-circle">${icon(name)}</span><span class="milo-btn-label">${label.textContent}</span>`;
     });
     // Repeated decorative symbols add no information beside these sentences.
     root.querySelectorAll('.milo-obs-icon, .milo-shared-row-icon').forEach(element => element.remove());
