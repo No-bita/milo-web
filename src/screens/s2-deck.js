@@ -160,21 +160,21 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
     }
   }
 
-  // Item 18: first card only, after 3s of no interaction, one tiny sideways wiggle. Once only.
+  // First card only: after ~1s of idle pause, a quiet directional nudge (5px). Once only.
   if (card && !firstCardHintShown && (sessionData.currentCardIndex || 0) === 0 && !prefersReducedMotion()) {
     let hintTimer = setTimeout(() => {
       hintTimer = null;
       if (!card.isConnected || firstCardHintShown) return;
       firstCardHintShown = true;
-      card.classList.add('milo-card-wiggle');
-      card.addEventListener('animationend', () => card.classList.remove('milo-card-wiggle'), { once: true });
-    }, 3000);
+      card.classList.add('milo-card-nudge');
+      card.addEventListener('animationend', () => card.classList.remove('milo-card-nudge'), { once: true });
+    }, 1100);
     const cancelHint = () => {
       if (hintTimer) { clearTimeout(hintTimer); hintTimer = null; }
       firstCardHintShown = true;
-      card.classList.remove('milo-card-wiggle');
+      card.classList.remove('milo-card-nudge');
     };
-    // Any interaction means they already know how to swipe.
+    // Any interaction immediately silences the hint.
     ['touchstart', 'mousedown', 'pointerdown'].forEach(evt => card.addEventListener(evt, cancelHint, { passive: true, once: true }));
     [btnNot, btnMaybe, btnInto, undoBtn].forEach(btn => btn && btn.addEventListener('click', cancelHint, { once: true }));
   }

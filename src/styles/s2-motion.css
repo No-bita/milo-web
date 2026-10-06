@@ -1,18 +1,30 @@
-/* S2 deck motion: transform/opacity only, fire-once. */
-@keyframes milo-card-wiggle {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
-  30% { transform: translate3d(10px, 0, 0) rotate(0.8deg); }
-  65% { transform: translate3d(-7px, 0, 0) rotate(-0.6deg); }
+/* S2 deck motion: calm breath, quiet directional hint. Transform/opacity only, fire-once. */
+@keyframes milo-card-nudge {
+  0% { transform: translate3d(0, 0, 0); }
+  40% { transform: translate3d(5px, 0, 0) rotate(0.25deg); }
+  100% { transform: translate3d(0, 0, 0); }
 }
-@keyframes milo-card-undo-left { from { opacity: 0; transform: translate3d(-120%, 0, 0) rotate(-16deg); } to { opacity: 1; transform: none; } }
-@keyframes milo-card-undo-right { from { opacity: 0; transform: translate3d(120%, 0, 0) rotate(16deg); } to { opacity: 1; transform: none; } }
-@keyframes milo-card-undo-below { from { opacity: 0; transform: translate3d(0, 24px, 0) scale(0.94); } to { opacity: 1; transform: none; } }
 
-.milo-card-wiggle { animation: milo-card-wiggle 800ms ease-in-out 1; }
+@keyframes milo-card-undo-left {
+  from { opacity: 0; transform: translate3d(-120%, 0, 0) rotate(-16deg); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes milo-card-undo-right {
+  from { opacity: 0; transform: translate3d(120%, 0, 0) rotate(16deg); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes milo-card-undo-below {
+  from { opacity: 0; transform: translate3d(0, 24px, 0) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+.milo-card-nudge { animation: milo-card-nudge 650ms cubic-bezier(0.25, 1, 0.5, 1) 1; }
 .milo-card-undo-left { animation: milo-card-undo-left 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 .milo-card-undo-right { animation: milo-card-undo-right 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 .milo-card-undo-below { animation: milo-card-undo-below 280ms ease-out both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .milo-card-wiggle, .milo-card-undo-left, .milo-card-undo-right, .milo-card-undo-below { animation: none !important; }
+  .milo-card-nudge, .milo-card-undo-left, .milo-card-undo-right, .milo-card-undo-below {
+    animation: none !important;
+  }
 }
