@@ -1,0 +1,56 @@
+/* S3 motion: slow, soft, fire-once. Only the collage float loops. transform/opacity only. */
+@keyframes milo-s3-pop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+@keyframes milo-s3-float { from { translate: 0 -3px; } to { translate: 0 3px; } }
+@keyframes milo-s3-breathe { from { opacity: 0.55; } to { opacity: 1; } }
+@keyframes milo-s3-row { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes milo-s3-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes milo-s3-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes milo-s3-ring { 0% { opacity: 0; transform: scale(1); } 40% { opacity: 0.22; } 100% { opacity: 0; transform: scale(1.06); } }
+
+/* 21: circles scale in ~120ms apart, then drift on a very slow float (offset per circle) */
+.milo-s3-photo { animation: milo-s3-pop 520ms ease-out both; }
+.milo-s3-photo-food { animation-delay: 0ms; }
+.milo-s3-photo-dining { animation-delay: 120ms; }
+.milo-s3-photo-cafe { animation-delay: 240ms; }
+.milo-s3-collage:not(.is-empty) .milo-s3-photo {
+  animation-name: milo-s3-pop, milo-s3-float;
+  animation-duration: 520ms, 7s;
+  animation-timing-function: ease-out, ease-in-out;
+  animation-fill-mode: both, none;
+  animation-iteration-count: 1, infinite;
+  animation-direction: normal, alternate;
+}
+.milo-s3-collage:not(.is-empty) .milo-s3-photo-food { animation-delay: 0ms, 800ms; }
+.milo-s3-collage:not(.is-empty) .milo-s3-photo-dining { animation-delay: 120ms, 1900ms; animation-duration: 520ms, 8s; }
+.milo-s3-collage:not(.is-empty) .milo-s3-photo-cafe { animation-delay: 240ms, 3100ms; animation-duration: 520ms, 9s; }
+
+/* 22: rows reveal one by one, ~350ms apart; the icon draws in just after its row */
+.milo-s3-container .milo-obs-row { animation: milo-s3-row 450ms ease-out both; animation-delay: calc(500ms + var(--i, 0) * 350ms); }
+.milo-s3-container .milo-obs-icon [pathLength] {
+  stroke-dasharray: 1; stroke-dashoffset: 1;
+  animation: milo-s3-draw 600ms ease-out forwards;
+  animation-delay: calc(650ms + var(--i, 0) * 350ms);
+}
+.milo-s3-container .milo-obs-row:not(:has([pathLength])) .milo-obs-icon svg { animation: milo-s3-fade 500ms ease-out both; animation-delay: calc(650ms + var(--i, 0) * 350ms); }
+
+/* 23: "Looks good" gives a faint ring pulse, three times, only after the last row has arrived */
+.milo-s3-footer .milo-cta-button:not(.milo-s3-start-afresh) { position: relative; }
+.milo-s3-container:not(:has(.milo-s3-empty)) .milo-s3-footer .milo-cta-button:not(.milo-s3-start-afresh)::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--color-oxblood);
+  opacity: 0; pointer-events: none;
+  animation: milo-s3-ring 2400ms ease-out 3;
+  animation-delay: calc(500ms + var(--obs-count, 0) * 350ms + 900ms);
+}
+
+/* 24: no data yet: circles become soft outlines that gently breathe */
+.milo-s3-collage.is-empty .milo-s3-photo { background: transparent; box-shadow: none; border: 1.5px solid var(--color-taupe); animation-name: milo-s3-pop, milo-s3-breathe; animation-duration: 520ms, 4s; animation-timing-function: ease-out, ease-in-out; animation-fill-mode: both, none; animation-iteration-count: 1, infinite; animation-direction: normal, alternate; }
+.milo-s3-collage.is-empty .milo-s3-photo-food { animation-delay: 0ms, 800ms; }
+.milo-s3-collage.is-empty .milo-s3-photo-dining { animation-delay: 120ms, 1200ms; }
+.milo-s3-collage.is-empty .milo-s3-photo-cafe { animation-delay: 240ms, 1600ms; }
+.milo-s3-collage.is-empty .milo-s3-photo img { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .milo-s3-photo, .milo-s3-container .milo-obs-row, .milo-s3-container .milo-obs-icon svg,
+  .milo-s3-container .milo-obs-icon [pathLength], .milo-s3-footer .milo-cta-button::after { animation: none !important; }
+  .milo-s3-container .milo-obs-icon [pathLength] { stroke-dashoffset: 0; }
+}
