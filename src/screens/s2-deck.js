@@ -108,9 +108,8 @@ export function renderScreen02(sessionId = 'aarav') {
           <!-- Button 2: More like this (Maybe) -->
           <button class="milo-reaction-btn btn-maybe" id="btnMaybe-${sessionId}" aria-label="More like this" title="More like this">
             <div class="milo-btn-circle">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
               </svg>
             </div>
             <span class="milo-btn-label">More like this</span>
