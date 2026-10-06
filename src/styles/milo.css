@@ -709,9 +709,9 @@ body[data-viewport="430"] .milo-viewport {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  gap: 34px;
+  gap: 22px;
   width: 100%;
-  max-width: 320px;
+  max-width: 340px;
   margin: 0 auto;
 }
 
@@ -725,6 +725,7 @@ body[data-viewport="430"] .milo-viewport {
   outline: none;
   padding: 0;
   transition: transform 160ms var(--ease-milo);
+  min-width: 80px;
 }
 
 .milo-reaction-btn:hover {
@@ -802,10 +803,11 @@ body[data-viewport="430"] .milo-viewport {
   font-size: 11px;
   font-weight: 450;
   line-height: 14px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.5);
   letter-spacing: 0.02em;
   margin-top: 7px;
   white-space: nowrap;
+  text-align: center;
 }
 
 .milo-deck-hint {

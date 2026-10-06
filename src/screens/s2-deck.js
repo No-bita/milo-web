@@ -95,14 +95,15 @@ export function renderScreen02(sessionId = 'aarav') {
       <!-- Controls Area -->
       <div class="milo-deck-controls">
         <div class="milo-reaction-buttons">
-          <!-- Button 1: Not Tonight -->
-          <button class="milo-reaction-btn btn-not-tonight" id="btnNotTonight-${sessionId}" aria-label="Not tonight" title="Not tonight">
+          <!-- Button 1: Not for tonight -->
+          <button class="milo-reaction-btn btn-not-tonight" id="btnNotTonight-${sessionId}" aria-label="Not for tonight" title="Not for tonight">
             <div class="milo-btn-circle">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </div>
+            <span class="milo-btn-label">Not for tonight</span>
           </button>
 
           <!-- Button 2: More like this (Maybe) -->
@@ -115,13 +116,14 @@ export function renderScreen02(sessionId = 'aarav') {
             <span class="milo-btn-label">More like this</span>
           </button>
 
-          <!-- Button 3: Into It -->
-          <button class="milo-reaction-btn btn-into-it" id="btnIntoIt-${sessionId}" aria-label="Into it" title="Into it">
+          <!-- Button 3: I'm into it -->
+          <button class="milo-reaction-btn btn-into-it" id="btnIntoIt-${sessionId}" aria-label="I'm into it" title="I'm into it">
             <div class="milo-btn-circle">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
               </svg>
             </div>
+            <span class="milo-btn-label">I'm into it</span>
           </button>
         </div>
       </div>
