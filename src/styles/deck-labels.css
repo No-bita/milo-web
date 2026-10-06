@@ -1,14 +1,20 @@
-/* Keep the three deck action labels on one baseline, even though the featured icon is larger. */
-.milo-reaction-buttons {
-  align-items: flex-start;
-}
-
-.milo-reaction-btn {
+/* A shared icon track and explicit label track keep unequal circles aligned. */
+.milo-reaction-buttons .milo-reaction-btn {
   display: grid;
-  grid-template-rows: 62px auto;
+  grid-template-rows: 62px 32px;
+  row-gap: 7px;
+  align-items: start;
   justify-items: center;
 }
 
-.milo-reaction-btn .milo-btn-circle {
+.milo-reaction-buttons .milo-reaction-btn .milo-btn-circle {
+  grid-row: 1;
+  align-self: center;
+  margin-top: 0;
+}
+
+.milo-reaction-buttons .milo-reaction-btn .milo-btn-label {
+  grid-row: 2;
   align-self: start;
+  margin-top: 0;
 }
