@@ -21,21 +21,8 @@ export function installPremiumIcons(root) {
       button.innerHTML = icon('back');
       button.classList.add('milo-icon-back');
     });
-    root.querySelectorAll('.milo-s2-container').forEach(deck => {
-      // The deck header control is back-to-intents on every card. Undo is not
-      // offered here. Replacing the node drops the old combined back/undo handler.
-      const original = deck.querySelector('.milo-deck-undo-btn');
-      if (!original) return;
-      const sessionId = deck.getAttribute('data-session-id');
-      const back = original.cloneNode(true);
-      back.title = 'Back to intents';
-      back.setAttribute('aria-label', 'Back to intents');
-      back.addEventListener('click', event => {
-        event.stopPropagation();
-        store.setSessionScreen(sessionId, 's1');
-      });
-      original.replaceWith(back);
-    });
+    // Keep the deck's original chevron node and listener intact: back on
+    // card one, undo after a reaction. This also preserves PR #3's fly-back.
     root.querySelectorAll('.milo-reaction-btn').forEach(button => {
       const label = button.querySelector('.milo-btn-label');
       if (!label) return;
