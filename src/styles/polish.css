@@ -149,3 +149,9 @@
   padding-bottom: 0;
 }
 .milo-viewport .milo-closing-footer .milo-text-button { padding: 10px 16px; }
+
+/* Glasses illustration: lift the photo baked cream so it vanishes into the page */
+.milo-viewport .milo-s4-illustration {
+  mix-blend-mode: multiply;
+  filter: brightness(1.09) contrast(1.02);
+}
