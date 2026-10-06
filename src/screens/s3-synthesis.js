@@ -2,6 +2,7 @@
 import { computePersonalSynthesis } from '../logic/synthesis.js';
 import { renderImageHtml } from '../assets/manifest.js';
 import { store } from '../domain/store.js';
+import '../styles/s3-motion.css';
 
 function observationIcon(text) {
   let shape;
@@ -14,21 +15,23 @@ function observationIcon(text) {
   } else {
     shape = '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" fill="currentColor" stroke="none" />';
   }
+  // Stroke-only icons get pathLength=1 so the CSS can draw them in. The filled heart just fades.
+  if (!/fill="currentColor"/.test(shape)) shape = shape.replace(/<(path|circle) /g, '<$1 pathLength="1" ');
   return `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${shape}</svg>`;
 }
 
 export function renderScreen03(sessionId = 'aarav') {
   const session = store.getState()[sessionId === 'sneha' ? 'sessionB' : 'sessionA'];
   const observations = computePersonalSynthesis(session.intents || [], session.reactions || []);
-  const rows = observations.map(obs => `
-    <li class="milo-obs-row">
+  const rows = observations.map((obs, i) => `
+    <li class="milo-obs-row" style="--i:${i}">
       <span class="milo-obs-icon">${observationIcon(obs)}</span>
       <p class="milo-obs-text">${obs}</p>
     </li>
   `).join('');
 
   return `
-    <div class="milo-s3-container" data-session-id="${sessionId}">
+    <div class="milo-s3-container" data-session-id="${sessionId}" style="--obs-count:${observations.length}">
       <header class="milo-header">
         <button class="milo-header-back" id="miloS3Back-${sessionId}" aria-label="Back to discovery">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7" /></svg>
@@ -38,7 +41,7 @@ export function renderScreen03(sessionId = 'aarav') {
       </header>
       <div class="milo-s3-progress" aria-hidden="true"><span></span></div>
       <div class="milo-s3-content">
-        <div class="milo-s3-collage" aria-hidden="true">
+        <div class="milo-s3-collage${observations.length ? '' : ' is-empty'}" aria-hidden="true">
           <div class="milo-s3-photo milo-s3-photo-food">${renderImageHtml('prefFood', { loading: 'eager' })}</div>
           <div class="milo-s3-photo milo-s3-photo-dining">${renderImageHtml('prefRomantic', { loading: 'eager' })}</div>
           <div class="milo-s3-photo milo-s3-photo-cafe">${renderImageHtml('prefLowKey', { loading: 'eager' })}</div>
