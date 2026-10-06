@@ -826,51 +826,48 @@ body[data-viewport="430"] .milo-viewport {
    SCREEN 3 — PERSONAL SYNTHESIS (S3)
    ========================================================== */
 
+/* Scoped to s3: keep other screens' shared typography and layout intact. */
 .milo-s3-container {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 0 20px 16px;
-  position: relative;
-  overflow: hidden;
+  padding: 12px 28px max(20px, env(safe-area-inset-bottom));
+  overflow-y: auto;
   box-sizing: border-box;
 }
 
-.milo-s3-intro {
-  margin-top: 12px;
-  margin-bottom: 32px;
-}
-
-.milo-observations-list {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.milo-obs-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--color-taupe);
-}
-
-.milo-obs-row:first-child {
-  border-top: 1px solid var(--color-taupe);
-}
-
-.milo-obs-icon {
-  color: var(--color-ink-muted);
-  margin-top: 3px;
-  flex-shrink: 0;
-}
-
-.milo-obs-text {
-  font-family: var(--font-serif);
-  font-size: 20px;
-  line-height: 28px;
-  color: var(--color-ink);
+.milo-s3-container .milo-header { margin-bottom: 18px; }
+.milo-s3-progress { height: 2px; flex-shrink: 0; background: var(--color-taupe); }
+.milo-s3-progress span { display: block; width: 44%; height: 100%; background: var(--color-oxblood); }
+.milo-s3-content { margin-top: auto; padding-top: 40px; }
+.milo-s3-collage { width: 100%; height: 270px; position: relative; }
+.milo-s3-photo { position: absolute; border-radius: 50%; overflow: hidden; border: 4px solid var(--color-ivory); background: var(--color-sand); box-shadow: 0 0 0 1px var(--color-taupe); }
+.milo-s3-photo img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.milo-s3-photo-food { width: 180px; height: 180px; top: 0; left: 26px; z-index: 2; }
+.milo-s3-photo-dining { width: 158px; height: 158px; top: 94px; right: 20px; }
+.milo-s3-photo-cafe { width: 132px; height: 132px; top: 138px; left: 20px; z-index: 3; }
+.milo-s3-intro { margin: 24px 0 20px; }
+.milo-s3-intro .milo-headline { font-size: 30px; line-height: 34px; margin: 0; }
+.milo-s3-container .milo-observations-list { display: flex; flex-direction: column; gap: 8px; list-style: none; }
+.milo-s3-container .milo-obs-row { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 12px; border: 0; border-radius: 12px; background: var(--color-sand); }
+.milo-s3-container .milo-obs-icon { color: var(--color-oxblood); display: flex; flex-shrink: 0; }
+.milo-s3-container .milo-obs-text { font-family: var(--font-sans); font-size: 13px; line-height: 19px; color: var(--color-ink); }
+.milo-s3-empty { padding: 20px; border-radius: 12px; background: var(--color-sand); font-size: 14px; line-height: 21px; }
+.milo-s3-empty p + p { margin-top: 8px; color: var(--color-ink-muted); }
+.milo-s3-footer { display: flex; gap: 12px; padding-top: 28px; margin-top: auto; flex-shrink: 0; }
+.milo-s3-footer .milo-cta-button { flex: 1; min-width: 0; padding-left: 12px; padding-right: 12px; }
+.milo-s3-footer .milo-s3-start-afresh { background: transparent; color: var(--color-oxblood); border: 1px solid var(--color-oxblood); }
+.milo-s3-container button:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 4px; }
+@media (max-width: 374px), (max-height: 740px) {
+  .milo-s3-container { padding-left: 20px; padding-right: 20px; }
+  .milo-s3-content { padding-top: 24px; }
+  .milo-s3-collage { height: 205px; width: 280px; max-width: 100%; margin: 0 auto; }
+  .milo-s3-photo-food { width: 140px; height: 140px; left: 20px; }
+  .milo-s3-photo-dining { width: 120px; height: 120px; top: 70px; right: 16px; }
+  .milo-s3-photo-cafe { width: 100px; height: 100px; top: 105px; left: 16px; }
+  .milo-s3-intro .milo-headline { font-size: 27px; line-height: 31px; }
+  .milo-s3-footer { padding-top: 20px; }
 }
 
 /* ==========================================================
@@ -1654,4 +1651,3 @@ body[data-viewport="430"] .milo-viewport {
   cursor: pointer;
   padding: 8px 16px;
 }
-

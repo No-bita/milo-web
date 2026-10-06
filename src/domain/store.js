@@ -138,7 +138,7 @@ class DomainStore {
           ...current,
           reactions: newReactions,
           currentCardIndex: nextIndex,
-          screen: 's3'
+          screen: sessionId === 'sneha' ? 's5' : 's3'
         }
       };
     } else {
