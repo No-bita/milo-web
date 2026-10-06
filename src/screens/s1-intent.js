@@ -7,6 +7,26 @@
 import { INTENTS } from '../data/mockData.js';
 import { store } from '../domain/store.js';
 
+function counterText(count) {
+  return count > 0 ? `${count} of 3` : 'Pick up to three.';
+}
+
+// Fade the old counter text out while the new text fades in.
+function crossFadeText(wrapper, textEl, next) {
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduceMotion) {
+    const ghost = textEl.cloneNode(true);
+    ghost.classList.add('milo-subline-ghost');
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.addEventListener('animationend', () => ghost.remove());
+    wrapper.appendChild(ghost);
+    textEl.classList.remove('milo-subline-in');
+    void textEl.offsetWidth;
+    textEl.classList.add('milo-subline-in');
+  }
+  textEl.textContent = next;
+}
+
 export function renderScreen01(sessionId = 'aarav') {
   const state = store.getState();
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
@@ -20,12 +40,13 @@ export function renderScreen01(sessionId = 'aarav') {
     ? `<div class="milo-context-line">${partnerName}'s done. Your turn.</div>`
     : '';
 
-  const tilesHtml = INTENTS.map((intent) => {
+  const tilesHtml = INTENTS.map((intent, index) => {
     const isSelected = selectedIntents.includes(intent.id);
     const safeFallback = intent.fallback || intent.image;
     return `
       <div 
-        class="milo-tile ${isSelected ? 'selected' : ''}" 
+        class="milo-tile milo-tile--enter ${isSelected ? 'selected' : ''}" 
+        style="--tile-i:${index}"
         data-intent-id="${intent.id}"
         role="button"
         tabindex="0"
@@ -42,7 +63,7 @@ export function renderScreen01(sessionId = 'aarav') {
         <div class="milo-tile-scrim"></div>
         <div class="milo-tile-check">
           <svg viewBox="0 0 24 24">
-            <polyline points="20 6 9 17 4 12"></polyline>
+            <polyline points="20 6 9 17 4 12" pathLength="24"></polyline>
           </svg>
         </div>
         <span class="milo-tile-label">${intent.label}</span>
@@ -70,7 +91,7 @@ export function renderScreen01(sessionId = 'aarav') {
       <div class="milo-s1-intro">
         ${contextLineHtml}
         <h1 class="milo-headline">How do you want tonight to feel?</h1>
-        <p class="milo-subline" id="miloSubline-${sessionId}">Pick up to three.</p>
+        <p class="milo-subline" id="miloSubline-${sessionId}"><span class="milo-subline-text">${counterText(selectedIntents.length)}</span></p>
       </div>
 
       <div class="milo-tiles-grid" id="miloTilesGrid-${sessionId}">
@@ -103,6 +124,10 @@ export function attachScreen01Listeners(container, sessionId = 'aarav') {
   if (grid) {
     const tiles = grid.querySelectorAll('.milo-tile');
     tiles.forEach((tile) => {
+      tile.addEventListener('animationend', (e) => {
+        if (e.target !== tile) return;
+        tile.classList.remove('milo-tile--enter', 'milo-tile-pulse', 'milo-tile-shake');
+      });
       tile.addEventListener('click', (e) => {
         const intentId = tile.getAttribute('data-intent-id');
         const res = store.toggleIntent(sessionId, intentId);
@@ -112,6 +137,14 @@ export function attachScreen01Listeners(container, sessionId = 'aarav') {
           tile.classList.remove('milo-tile-shake');
           void tile.offsetWidth; // Trigger reflow
           tile.classList.add('milo-tile-shake');
+
+          // "These are your three": the selected tiles breathe once.
+          tiles.forEach((other) => {
+            if (!other.classList.contains('selected')) return;
+            other.classList.remove('milo-tile-pulse');
+            void other.offsetWidth;
+            other.classList.add('milo-tile-pulse');
+          });
 
           if (subline) {
             subline.classList.add('milo-subline-flash');
@@ -139,4 +172,29 @@ export function attachScreen01Listeners(container, sessionId = 'aarav') {
       }
     });
   }
+}
+
+// Update the mounted s1 DOM in place after a state change.
+export function patchScreen01(container, sessionId = 'aarav') {
+  const state = store.getState();
+  const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
+  const selected = state[sessionKey].intents || [];
+
+  container.querySelectorAll('.milo-tile').forEach((tile) => {
+    const isSelected = selected.includes(tile.getAttribute('data-intent-id'));
+    if (tile.classList.contains('selected') !== isSelected) {
+      tile.classList.toggle('selected', isSelected);
+      tile.setAttribute('aria-pressed', String(isSelected));
+    }
+  });
+
+  const subline = container.querySelector(`#miloSubline-${sessionId}`);
+  const textEl = subline && subline.querySelector('.milo-subline-text');
+  const next = counterText(selected.length);
+  if (textEl && textEl.textContent !== next) {
+    crossFadeText(subline, textEl, next);
+  }
+
+  const cta = container.querySelector(`#miloCta-${sessionId}`);
+  if (cta) cta.disabled = selected.length === 0;
 }

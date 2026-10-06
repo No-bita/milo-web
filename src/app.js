@@ -7,7 +7,7 @@
 import { store } from './domain/store.js';
 import { attachStorageAdapter } from './domain/storage-adapter.js';
 import { renderScreen00, attachScreen00Listeners } from './screens/s0-invitation.js';
-import { renderScreen01, attachScreen01Listeners } from './screens/s1-intent.js';
+import { renderScreen01, attachScreen01Listeners, patchScreen01 } from './screens/s1-intent.js';
 import { renderThreshold, attachThresholdListeners } from './screens/threshold.js';
 import { renderScreen02, attachScreen02Listeners } from './screens/s2-deck.js';
 import { renderScreen03, attachScreen03Listeners } from './screens/s3-synthesis.js';
@@ -15,6 +15,19 @@ import { renderScreen04, attachScreen04Listeners } from './screens/s4-invite-wai
 import { renderScreen05, attachScreen05Listeners } from './screens/s5-shared.js';
 import { renderScreen06, attachScreen06Listeners } from './screens/s6-nights.js';
 import { renderScreen07, attachScreen07Listeners } from './screens/s7-your-night.js';
+
+// Screens that can update in place when only state (not the screen) changes.
+// Screens without a patcher fall back to a full re-render, as before.
+const SCREEN_PATCHERS = {
+  s1: patchScreen01
+};
+
+function getCurrentScreen(sessionId) {
+  const state = store.getState();
+  const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
+  const sessionData = state[sessionKey] || {};
+  return sessionData.screen || (sessionId === 'sneha' ? 's0' : 's1');
+}
 
 function renderSessionContent(sessionId) {
   const state = store.getState();
@@ -189,9 +202,23 @@ export function initApp(container) {
     }
   }
 
+  let mountedKey = null;
+
   function render() {
     const activeSessionId = asParam === 'sneha' ? 'sneha' : 'aarav';
+    const screen = getCurrentScreen(activeSessionId);
+    const key = `${activeSessionId}:${screen}`;
+    const patch = SCREEN_PATCHERS[screen];
+    const viewport = container.querySelector(`#viewport-${activeSessionId}`);
 
+    // Same screen, state-only change: patch the existing DOM so CSS
+    // transitions run and entry animations do not replay.
+    if (patch && viewport && mountedKey === key) {
+      patch(viewport, activeSessionId);
+      return;
+    }
+
+    mountedKey = key;
     container.innerHTML = `
       <div class="milo-stage">
         <div class="milo-viewport" id="viewport-${activeSessionId}" data-session-id="${activeSessionId}">

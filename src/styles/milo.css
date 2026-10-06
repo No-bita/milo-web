@@ -218,6 +218,7 @@ body[data-viewport="430"] .milo-viewport {
 }
 
 .milo-subline {
+  position: relative;
   font-size: 14px;
   line-height: 19px;
   color: var(--color-ink-muted);
@@ -344,7 +345,9 @@ body[data-viewport="430"] .milo-viewport {
   object-fit: cover;
   display: block;
   pointer-events: none;
-  transition: filter 180ms ease;
+  transform: scale(1);
+  transition: transform 420ms var(--ease-milo);
+  will-change: transform;
 }
 
 .milo-tile-scrim {
@@ -353,6 +356,16 @@ body[data-viewport="430"] .milo-viewport {
   background: var(--color-scrim);
   pointer-events: none;
   transition: background 180ms ease;
+}
+
+/* Oxblood warmth fades in over the scrim on select */
+.milo-tile-scrim::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(110, 34, 40, 0.10) 0%, rgba(110, 34, 40, 0.42) 100%);
+  opacity: 0;
+  transition: opacity 360ms var(--ease-milo);
 }
 
 .milo-tile-label {
@@ -375,7 +388,11 @@ body[data-viewport="430"] .milo-viewport {
 }
 
 .milo-tile.selected .milo-tile-img {
-  filter: brightness(0.86);
+  transform: scale(1.04);
+}
+
+.milo-tile.selected .milo-tile-scrim::after {
+  opacity: 1;
 }
 
 .milo-tile.selected .milo-tile-scrim {
@@ -387,7 +404,10 @@ body[data-viewport="430"] .milo-viewport {
 }
 
 .milo-tile-check {
-  display: none;
+  display: flex;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 160ms ease, transform 220ms var(--ease-milo);
   position: absolute;
   top: 7px;
   right: 7px;
@@ -402,7 +422,8 @@ body[data-viewport="430"] .milo-viewport {
 }
 
 .milo-tile.selected .milo-tile-check {
-  display: flex;
+  opacity: 1;
+  transform: scale(1);
 }
 
 .milo-tile-check svg {
@@ -411,6 +432,17 @@ body[data-viewport="430"] .milo-viewport {
   stroke: #FFFFFF;
   stroke-width: 2.5;
   fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset 0ms linear;
+}
+
+/* The checkmark draws itself */
+.milo-tile.selected .milo-tile-check svg {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 220ms ease-out 70ms;
 }
 
 @keyframes milo-tile-shake {
@@ -421,6 +453,65 @@ body[data-viewport="430"] .milo-viewport {
 
 .milo-tile-shake {
   animation: milo-tile-shake 200ms ease-in-out;
+}
+
+/* "These are your three": selected tiles breathe once on the 4th tap */
+@keyframes milo-tile-pulse {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.02); }
+}
+
+.milo-tile-pulse {
+  animation: milo-tile-pulse 520ms var(--ease-milo);
+}
+
+/* Tiles settle in, one after another */
+@keyframes milo-tile-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.milo-tile--enter {
+  animation: milo-tile-enter 420ms var(--ease-milo) backwards;
+  animation-delay: calc(var(--tile-i, 0) * 40ms);
+}
+
+/* Counter cross-fade */
+@keyframes milo-subline-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes milo-subline-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.milo-subline-in {
+  animation: milo-subline-in 260ms ease-out;
+}
+
+.milo-subline-ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  animation: milo-subline-out 260ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .milo-tile--enter,
+  .milo-tile-pulse,
+  .milo-subline-in,
+  .milo-subline-ghost {
+    animation: none;
+  }
+  .milo-tile-img,
+  .milo-tile-scrim::after,
+  .milo-tile-check,
+  .milo-tile.selected .milo-tile-check svg {
+    transition: none;
+  }
 }
 
 /* ==========================================================
