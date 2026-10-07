@@ -6,46 +6,12 @@
 
 import { store } from '../domain/store.js';
 import { computeSharedOutput } from '../logic/shared.js';
-import { DEMO_TIME_DEFAULT } from '../data/demo-date.js';
+import { askCalendarDate } from '../components/calendar-export.js';
 
 // Plan summary used by the closing state's share and calendar actions.
 function planText(night, partnerName) {
   const steps = night.beats.map(b => b.name).join(' \u2192 ');
   return `Tonight's sorted with ${partnerName}: ${night.name}. ${steps}.`;
-}
-
-// Builds an .ics for tonight at the default start time. The time is a
-// placeholder the user adjusts in their calendar app; no venues exist yet.
-function downloadCalendarFile(night, partnerName) {
-  const pad = n => String(n).padStart(2, '0');
-  const [h, m] = DEMO_TIME_DEFAULT.split(':').map(Number);
-  const start = new Date();
-  start.setHours(h, m, 0, 0);
-  const end = new Date(start.getTime() + 3 * 60 * 60 * 1000);
-  const fmt = d => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
-  const desc = night.beats.map(b => `${b.name}: ${b.desc}`).join('\\n');
-  const ics = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Milo//Tonight//EN',
-    'BEGIN:VEVENT',
-    `UID:milo-${night.id}-${fmt(start)}@milo`,
-    `DTSTAMP:${fmt(new Date())}`,
-    `DTSTART:${fmt(start)}`,
-    `DTEND:${fmt(end)}`,
-    `SUMMARY:${night.name} with ${partnerName}`,
-    `DESCRIPTION:${desc}`,
-    'END:VEVENT',
-    'END:VCALENDAR'
-  ].join('\r\n');
-  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'tonight.ics';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // "Start over" is demo scaffolding: only shown with ?demo
@@ -276,7 +242,7 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
       || sharedData.selectedNights[0].night;
     const partnerName = sessionId === 'sneha' ? 'Aarav' : 'Sneha';
     if (calBtn) {
-      calBtn.addEventListener('click', () => downloadCalendarFile(closingNight, partnerName));
+      calBtn.addEventListener('click', () => askCalendarDate(container, calBtn, closingNight, partnerName));
     }
     if (shareBtn) {
       shareBtn.addEventListener('click', () => {
