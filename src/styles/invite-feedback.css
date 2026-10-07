@@ -1,0 +1,36 @@
+/* Invite recovery uses the existing ivory/oxblood palette and type tokens. */
+.milo-invite-feedback {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(382px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 28px 24px;
+  overflow-y: auto;
+  border: 1px solid var(--color-sand);
+  border-radius: 24px;
+  background: var(--color-ivory);
+  color: var(--color-ink);
+  box-shadow: 0 16px 64px rgba(28, 25, 23, .16);
+}
+.milo-invite-feedback::backdrop { background: rgba(28, 25, 23, .32); }
+.milo-invite-feedback form { display: flex; flex-direction: column; gap: 16px; }
+.milo-invite-feedback h2 { font: 400 30px/1.12 var(--font-serif); }
+.milo-invite-feedback p:not(.milo-context-line) { font: 400 14px/1.6 var(--font-sans); color: var(--color-ink-muted); }
+.milo-invite-feedback label { font: 500 12px/1.4 var(--font-sans); }
+.milo-invite-feedback textarea {
+  width: 100%; resize: none; padding: 12px;
+  font: 400 14px/1.5 var(--font-sans);
+  color: var(--color-ink); background: var(--color-oxblood-wash);
+  border: 1px solid var(--color-taupe); border-radius: 12px;
+  user-select: text; -webkit-user-select: text; overflow-wrap: anywhere;
+}
+.milo-invite-feedback button { min-height: 44px; width: 100%; flex-shrink: 0; }
+.milo-invite-feedback :focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 3px; }
+.milo-invite-error { height: 100%; display: flex; flex-direction: column; overflow-y: auto; }
+.milo-invite-error-content { padding: 24px; margin: auto 0; display: flex; flex-direction: column; gap: 18px; text-align: center; }
+.milo-invite-error-content .milo-headline { font-size: 36px; line-height: 1.1; }
+.milo-invite-error-content .milo-body-text { margin: 0; }
+.milo-invite-seal { margin: 0 auto 12px; width: 72px; height: 72px; display: grid; place-items: center; border: 1px solid var(--color-taupe); border-radius: 50%; color: var(--color-oxblood); font: 400 36px var(--font-serif); }
+.milo-invite-error-note { font: 400 12px/1.5 var(--font-sans); color: var(--color-ink-muted); }
+@media (max-height: 640px) { .milo-invite-error-content { gap: 14px; padding: 16px 24px 28px; } .milo-invite-error-content .milo-headline { font-size: 32px; } }
