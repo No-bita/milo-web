@@ -5,6 +5,7 @@
 // ==========================================================
 
 import { store } from '../domain/store.js';
+import { copyInvite, shareInvite, inviteUrl } from '../components/invite-feedback.js';
 
 // Demo scaffolding (open the partner's side in a new tab) shows only with ?demo
 const isDemo = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo');
@@ -140,18 +141,14 @@ export function attachScreen04Listeners(container, sessionId = 'aarav') {
 
   const sendBtn = container.querySelector('#miloSendInviteBtn');
   if (sendBtn) {
-    sendBtn.addEventListener('click', () => {
-      // Send invite: update shared state and switch Aarav to waiting state
-      store.updateShared({ inviteSent: true });
-      store.setSessionScreen('aarav', 's4_waiting');
-    });
+    sendBtn.addEventListener('click', () => shareInvite());
   }
 
   const whatsappBtn = container.querySelector('#miloShareWhatsappBtn');
   if (whatsappBtn) {
     whatsappBtn.addEventListener('click', () => {
-      const url = window.location.origin + window.location.pathname + '?as=sneha';
-      const text = `Planning tonight with Milo. Add your picks, it takes about a minute and stays private: ${url}`;
+      const url = inviteUrl();
+      const text = `Planning tonight with Milo. Add your picks, it takes about a minute. This link lasts 48 hours: ${url}`;
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
       store.updateShared({ inviteSent: true });
       store.setSessionScreen('aarav', 's4_waiting');
@@ -160,17 +157,7 @@ export function attachScreen04Listeners(container, sessionId = 'aarav') {
 
   const copyBtn = container.querySelector('#miloCopyLinkBtn');
   if (copyBtn) {
-    copyBtn.addEventListener('click', () => {
-      const url = window.location.origin + window.location.pathname + '?as=sneha';
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(() => {
-          copyBtn.textContent = 'Link copied ✓';
-          setTimeout(() => {
-            copyBtn.textContent = 'Copy invite link';
-          }, 2000);
-        }).catch(() => {});
-      }
-    });
+    copyBtn.addEventListener('click', () => copyInvite());
   }
 
   const seeSharedBtn = container.querySelector('#miloSeeSharedBtn');
