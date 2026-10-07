@@ -5,11 +5,15 @@ import './styles/premium-icons.css';
 import './styles/polish.css';
 import './styles/waiting-glasses.css';
 import './styles/deck-labels.css';
+import './styles/first-open.css';
+import { showFirstOpen } from './components/first-open.js';
 import { initApp } from './app.js';
 import { installPremiumIcons } from './components/premium-icons.js';
 
 const app = document.getElementById('app');
 if (app) {
-  initApp(app);
-  installPremiumIcons(app);
+  showFirstOpen(app, () => {
+    initApp(app);
+    installPremiumIcons(app);
+  });
 }
