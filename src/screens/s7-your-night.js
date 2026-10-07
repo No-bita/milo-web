@@ -9,8 +9,6 @@ import { renderSoloNight, attachSoloNightListeners } from './solo-night.js';
 import { store } from '../domain/store.js';
 import { computeSharedOutput } from '../logic/shared.js';
 import { renderNightTiming, attachNightTiming, timingForNight, timingLabel } from '../components/night-timing.js';
-
-<<<<<<< HEAD
 // Mock slot pools, not venue listings. Only the selected beat is replaced.
 const photo = id => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=600&q=80`;
 const SLOT_POOLS = {
