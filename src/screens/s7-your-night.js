@@ -6,12 +6,13 @@
 
 import { store } from '../domain/store.js';
 import { computeSharedOutput } from '../logic/shared.js';
-import { askCalendarDate } from '../components/calendar-export.js';
+import { renderNightTiming, attachNightTiming, timingForNight, timingLabel } from '../components/night-timing.js';
 
-// Plan summary used by the closing state's share and calendar actions.
+// Plan summary used by the closing state share action.
 function planText(night, partnerName) {
   const steps = night.beats.map(b => b.name).join(' \u2192 ');
-  return `Tonight's sorted with ${partnerName}: ${night.name}. ${steps}.`;
+  const timing = timingForNight(night.id);
+  return `Our night with ${partnerName}: ${night.name}. ${steps}.${timing ? ` ${timingLabel(timing)}.` : ''}`;
 }
 
 // "Start over" is demo scaffolding: only shown with ?demo
@@ -61,19 +62,18 @@ export function renderScreen07(sessionId = 'aarav') {
             <div class="milo-mono-circle mono-left">A</div>
             <div class="milo-mono-circle mono-right">S</div>
           </div>
-          <h1 class="milo-headline">Tonight's sorted.</h1>
-          <p class="milo-closing-sub">${night.name}. Have a lovely evening.</p>
+          <h1 class="milo-headline">You're both in.</h1>
+          <p class="milo-closing-sub">${night.name}. A little time for the two of you.</p>
+
+          ${renderNightTiming(night.id, sessionId)}
 
           <div class="milo-closing-plan">
-            <div class="milo-section-label">TONIGHT'S PLAN</div>
+            <div class="milo-section-label">YOUR PLAN</div>
             ${timelineHtml}
           </div>
         </div>
 
         <div class="milo-closing-footer">
-          <button class="milo-pill-btn-primary" id="miloAddCalendar-${sessionId}">
-            Add to calendar
-          </button>
           <button class="milo-pill-btn-secondary" id="miloSharePlan-${sessionId}">
             Share plan on WhatsApp
           </button>
@@ -235,15 +235,12 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
     });
   }
 
-  const calBtn = container.querySelector(`#miloAddCalendar-${sessionId}`);
   const shareBtn = container.querySelector(`#miloSharePlan-${sessionId}`);
-  if (calBtn || shareBtn) {
+  if (shareBtn) {
     const closingNight = sharedData.selectedNights.find(sn => sn.night.id === state.shared.confirmedNightId)?.night
       || sharedData.selectedNights[0].night;
     const partnerName = sessionId === 'sneha' ? 'Aarav' : 'Sneha';
-    if (calBtn) {
-      calBtn.addEventListener('click', () => askCalendarDate(container, calBtn, closingNight, partnerName));
-    }
+    attachNightTiming(container, closingNight.id, sessionId);
     if (shareBtn) {
       shareBtn.addEventListener('click', () => {
         window.open(`https://wa.me/?text=${encodeURIComponent(planText(closingNight, partnerName))}`, '_blank', 'noopener');
