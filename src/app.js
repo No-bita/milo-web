@@ -5,6 +5,7 @@
 // ==========================================================
 
 import { store } from './domain/store.js';
+import { inviteFromParams, renderInviteError } from './domain/invite.js';
 import { attachStorageAdapter } from './domain/storage-adapter.js';
 import { renderScreen00, attachScreen00Listeners } from './screens/s0-invitation.js';
 import { renderScreen01, attachScreen01Listeners, patchScreen01 } from './screens/s1-intent.js';
@@ -110,6 +111,19 @@ export function initApp(container) {
   const isGolden = urlParams.get('golden');
   const vpParam = urlParams.get('vp');
   const screenParam = urlParams.get('screen');
+
+  const inviteStatus = inviteFromParams(urlParams);
+  if (inviteStatus === 'invalid' || inviteStatus === 'expired') {
+    container.innerHTML = `<div class="milo-stage"><div class="milo-viewport">${renderInviteError(inviteStatus)}</div></div>`;
+    return;
+  }
+  if (inviteStatus === 'valid') {
+    const token = urlParams.get('invite');
+    if (store.getState().shared.acceptedInviteToken !== token) {
+      store.updateShared({ inviteSent: true, acceptedInviteToken: token });
+      store.setSessionScreen('sneha', 's0');
+    }
+  }
 
   if (vpParam) {
     document.body.setAttribute('data-viewport', vpParam);
