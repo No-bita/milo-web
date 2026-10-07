@@ -6,6 +6,7 @@
 
 import { store } from '../domain/store.js';
 import { computePlanningOutput, isSoloPlanning } from '../logic/planning.js';
+import { renderNightAccordion, attachNightAccordion } from '../components/night-accordion.js';
 
 export function renderScreen06(sessionId = 'aarav') {
   const state = store.getState();
@@ -15,39 +16,9 @@ export function renderScreen06(sessionId = 'aarav') {
   const sharedData = computePlanningOutput(state, sessionId);
   const suggestion = solo ? null : state.shared.suggestion;
 
-  const rowsHtml = sharedData.selectedNights.map((item, idx) => {
-    const night = item.night;
-    const isPartnerPick = suggestion && suggestion.nightId === night.id && suggestion.by !== sessionId;
-    const isMyPick = suggestion && suggestion.nightId === night.id && suggestion.by === sessionId;
-
-    const pickBadge = isPartnerPick
-      ? `<span class="milo-partner-pick-label">${partnerPickLabel}</span>`
-      : (isMyPick ? `<span class="milo-my-pick-label">YOUR SUGGESTION</span>` : '');
-
-    const beatsStr = night.beats.map(b => b.name).join(' → ');
-
-    return `
-      <div class="milo-night-row" data-night-id="${night.id}" id="nightRow-${night.id}">
-        <div class="milo-night-thumb-wrap">
-          <img src="${night.defaultImage}" alt="${night.name}" class="milo-night-thumb" />
-        </div>
-        <div class="milo-night-info">
-          <div class="milo-night-meta-header">
-            <span class="milo-night-num">${item.num}</span>
-            ${pickBadge}
-          </div>
-          <h2 class="milo-night-name">${night.name}</h2>
-          <p class="milo-night-fit">${item.fitLine}</p>
-          <div class="milo-night-beats">${beatsStr}</div>
-        </div>
-        <div class="milo-night-chevron">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </div>
-      </div>
-    `;
-  }).join('');
+  const rowsHtml = renderNightAccordion(sharedData.selectedNights, {
+    sessionId, suggestion, partnerPickLabel
+  });
 
   return `
     <div class="milo-s6-container" data-session-id="${sessionId}">
@@ -82,14 +53,10 @@ export function attachScreen06Listeners(container, sessionId = 'aarav') {
     });
   }
 
-  const rows = container.querySelectorAll('.milo-night-row');
-  rows.forEach(row => {
-    row.addEventListener('click', () => {
-      const nightId = row.getAttribute('data-night-id');
-      store.updateSession(sessionId, {
-        screen: 's7',
-        activeNightId: nightId
-      });
+  attachNightAccordion(container, sessionId, nightId => {
+    store.updateSession(sessionId, {
+      screen: 's7',
+      activeNightId: nightId
     });
   });
 }
