@@ -1741,3 +1741,31 @@ body[data-viewport="430"] .milo-viewport {
   cursor: pointer;
   padding: 8px 16px;
 }
+
+/* Photo-led itinerary and a parallel feed for one slot at a time. */
+.milo-visual-beat { gap: 10px; }
+.milo-visual-beat .milo-timeline-track { width: 20px; flex: 0 0 20px; }
+.milo-beat-number { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--color-oxblood); color: var(--color-ivory); font: 11px var(--font-sans); margin-top: 10px; }
+.milo-beat-card { flex: 1; min-width: 0; display: flex; overflow: hidden; border: 1px solid var(--color-taupe); border-radius: 12px; margin-bottom: 12px; background: #fffdf9; }
+.milo-beat-image { width: 96px; flex: 0 0 96px; object-fit: cover; }
+.milo-beat-copy { min-width: 0; flex: 1; padding: 12px; display: flex; flex-direction: column; }
+.milo-customise-btn { align-self: flex-start; min-height: 44px; margin-top: 4px; padding: 0; border: 0; background: transparent; color: var(--color-oxblood); font: 600 12px var(--font-sans); cursor: pointer; }
+.milo-customise-btn span { margin-left: 4px; }
+.milo-customise-btn:disabled { opacity: .45; cursor: default; }
+.milo-customise-btn:focus-visible, .milo-slot-feed button:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 3px; }
+.milo-s7-body .milo-s7-skip-callout { margin: 4px 0 28px; padding: 14px 16px 14px 18px; background: var(--color-oxblood-wash); border-left: 3px solid var(--color-oxblood); border-radius: 0 12px 12px 0; font-family: var(--font-serif); font-style: italic; font-size: 17px; line-height: 24px; color: var(--color-oxblood); }
+.milo-slot-feed { box-sizing: border-box; width: min(100% - 24px, 400px); max-height: calc(100dvh - 24px); margin: auto; padding: 0; border: 1px solid var(--color-taupe); border-radius: 18px; background: var(--color-ivory); color: var(--color-ink); overflow-y: auto; }
+.milo-slot-feed::backdrop { background: rgba(35, 20, 22, .55); }
+.milo-slot-feed-inner { padding: 16px; }
+.milo-slot-feed-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 600 11px var(--font-sans); letter-spacing: .06em; color: var(--color-oxblood); }
+.milo-slot-feed-top button, .milo-slot-nav button { flex-shrink: 0; width: 44px; height: 44px; border: 1px solid var(--color-taupe); border-radius: 50%; color: var(--color-oxblood); background: transparent; cursor: pointer; }
+.milo-slot-demo { font: 12px/18px var(--font-sans); color: var(--color-ink-muted); margin: 0 0 12px; }
+.milo-slot-candidate { touch-action: pan-y; }
+.milo-slot-candidate img { width: 100%; height: clamp(120px, 28dvh, 240px); object-fit: cover; border-radius: 10px; }
+.milo-slot-candidate h2 { font: 26px/30px var(--font-serif); margin: 14px 0 6px; }
+.milo-slot-candidate p { font: 14px/20px var(--font-sans); }
+.milo-slot-nav { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; font: 12px var(--font-sans); color: var(--color-ink-muted); }
+.milo-slot-nav button:disabled { opacity: .3; cursor: default; }
+.milo-slot-feed .milo-cta-button { width: 100%; }
+.milo-slot-feed .milo-secondary-link { display: block; margin: 8px auto 0; min-height: 44px; }
+@media (max-width: 350px) { .milo-beat-image { width: 78px; flex-basis: 78px; } .milo-beat-copy { padding: 10px; } }
