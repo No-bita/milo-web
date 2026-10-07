@@ -4,6 +4,10 @@ import { renderImageHtml } from '../assets/manifest.js';
 import { store } from '../domain/store.js';
 import '../styles/s3-motion.css';
 
+function escapeText(text) {
+  return text.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+}
+
 function observationIcon(text) {
   let shape;
   if (/character|smaller|cosy|indoors/.test(text)) {
@@ -18,13 +22,13 @@ function observationIcon(text) {
   return `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${shape}</svg>`;
 }
 
-export function renderScreen03(sessionId = 'aarav') {
+export function renderScreen03(sessionId = 'aarav', readyObservations) {
   const session = store.getState()[sessionId === 'sneha' ? 'sessionB' : 'sessionA'];
-  const observations = computePersonalSynthesis(session.intents || [], session.reactions || []);
+  const observations = readyObservations ?? computePersonalSynthesis(session.intents || [], session.reactions || []);
   const rows = observations.map((obs, i) => `
     <li class="milo-obs-row" style="--i:${i}">
       <span class="milo-obs-icon">${observationIcon(obs)}</span>
-      <p class="milo-obs-text">${obs}</p>
+      <p class="milo-obs-text">${escapeText(obs)}</p>
     </li>
   `).join('');
 
