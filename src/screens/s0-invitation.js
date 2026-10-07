@@ -43,9 +43,8 @@ export function renderScreen00(sessionId = 'sneha') {
         <p class="milo-partner-promise">Good nights for two.<br><em>Less planning for you.</em></p>
         <div class="milo-partner-invitation">
           <h1 id="miloPartnerInviteTitle">Aarav wants to plan<br>tonight with you.</h1>
-          <p class="milo-partner-task">Pick a mood. Tell us what feels like you.<br>Same questions. Your own tastes.<br>About a minute.</p>
+          <p class="milo-partner-task">Pick a mood. Tell us what feels like you.</p>
           <p class="milo-partner-privacy">Your individual picks aren't shown to Aarav in the plan. Just the shared picture.</p>
-          <p class="milo-partner-demo">Same-browser demo. Picks stay in this browser.</p>
         </div>
       </div>
       <button class="milo-cta-button milo-partner-cta" id="miloAcceptInviteBtn" type="button">
