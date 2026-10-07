@@ -5,6 +5,7 @@
 // ==========================================================
 
 import { store } from '../domain/store.js';
+import '../styles/partner-welcome.css';
 
 export function renderScreen00(sessionId = 'sneha') {
   const state = store.getState();
@@ -34,32 +35,22 @@ export function renderScreen00(sessionId = 'sneha') {
     `;
   }
 
-  // Invitation received (S0)
+  // One brand moment, with the invitation context already present.
   return `
-    <div class="milo-s0-container" data-session-id="${sessionId}">
-      <header class="milo-header">
-        <span class="milo-wordmark">milo.</span>
-      </header>
-
-      <div class="milo-s0-content">
-        <!-- Monograms -->
-        <div class="milo-monograms-row">
-          <div class="milo-monogram mono-solid">A</div>
-          <div class="milo-monogram mono-outline">S</div>
-        </div>
-
-        <div class="milo-s0-intro">
-          <div class="milo-context-line">From Aarav</div>
-          <h1 class="milo-headline">Aarav wants to plan tonight with you.</h1>
-          <p class="milo-body-text">Same questions. Different tastes. About a minute.</p>
-          <p class="milo-privacy-line">Aarav won't see what you picked. We'll only share the big picture.</p>
+    <section class="milo-partner-welcome" data-session-id="${sessionId}" aria-labelledby="miloPartnerInviteTitle">
+      <div class="milo-partner-welcome-body">
+        <div class="milo-partner-brand" aria-label="Milo">milo.</div>
+        <p class="milo-partner-promise">Good nights for two.<br><em>Less planning for you.</em></p>
+        <div class="milo-partner-invitation">
+          <h1 id="miloPartnerInviteTitle">Aarav wants to plan<br>tonight with you.</h1>
+          <p class="milo-partner-task">Pick a mood. Tell us what feels like you.</p>
+          <p class="milo-partner-privacy">Your individual picks aren't shown to Aarav in the plan. Just the shared picture.</p>
         </div>
       </div>
-
-      <button class="milo-cta-button" id="miloAcceptInviteBtn">
-        Let's go
+      <button class="milo-cta-button milo-partner-cta" id="miloAcceptInviteBtn" type="button">
+        Let's begin <span aria-hidden="true">→</span>
       </button>
-    </div>
+    </section>
   `;
 }
 
@@ -69,6 +60,11 @@ export function attachScreen00Listeners(container, sessionId = 'sneha') {
     btn.addEventListener('click', () => {
       // Advance Sneha to S1 with context line "Aarav's done. Your turn."
       store.setSessionScreen('sneha', 's1');
+      const heading = document.querySelector('#viewport-sneha .milo-headline');
+      if (heading) {
+        heading.setAttribute('tabindex', '-1');
+        heading.focus({ preventScroll: true });
+      }
     });
   }
 }
