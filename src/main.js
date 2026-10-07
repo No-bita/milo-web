@@ -8,6 +8,7 @@ import './styles/deck-labels.css';
 import './styles/skip-line.css';
 import './styles/s3-compact.css';
 import './styles/first-open.css';
+import './styles/partner-welcome.css';
 import { showFirstOpen } from './components/first-open.js';
 import { initApp } from './app.js';
 import { installPremiumIcons } from './components/premium-icons.js';
