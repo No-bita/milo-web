@@ -1,0 +1,59 @@
+/* The partner gets Milo's brand moment and the invitation in one screen. */
+.milo-partner-welcome {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+.milo-partner-welcome-body {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 24px 0 36px;
+}
+.milo-partner-brand {
+  font-family: var(--font-serif);
+  font-size: clamp(76px, 23vw, 96px);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 1;
+  color: var(--color-oxblood);
+}
+.milo-partner-promise {
+  margin-top: 20px;
+  font-family: var(--font-serif);
+  font-size: clamp(21px, 6vw, 25px);
+  line-height: 1.4;
+}
+.milo-partner-promise em { font-weight: 400; color: var(--color-oxblood); }
+.milo-partner-invitation {
+  width: 100%;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-taupe);
+}
+.milo-partner-invitation h1 {
+  max-width: 330px;
+  margin: 0 auto 12px;
+  font-family: var(--font-serif);
+  font-size: clamp(24px, 6.6vw, 28px);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+.milo-partner-task { font-size: 14px; line-height: 1.6; color: var(--color-ink-muted); }
+.milo-partner-privacy { max-width: 310px; margin: 16px auto 0; font-size: 12px; line-height: 1.5; color: var(--color-ink-muted); }
+.milo-partner-demo { margin: 10px 0 0; font-size: 11px; line-height: 1.5; color: var(--color-ink-muted); }
+.milo-partner-welcome .milo-partner-cta { flex: 0 0 56px; margin-top: 0; gap: 10px; }
+.milo-partner-cta:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 4px; }
+@media (max-height: 640px) {
+  .milo-partner-welcome { padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+  .milo-partner-welcome-body { padding: 8px 0 24px; }
+  .milo-partner-promise { margin-top: 14px; }
+  .milo-partner-invitation { margin-top: 24px; padding-top: 20px; }
+  .milo-partner-privacy { margin-top: 12px; }
+}
