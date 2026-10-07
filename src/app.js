@@ -4,6 +4,7 @@
 // standalone mobile viewport, and domain store subscriptions.
 // ==========================================================
 
+import { loadPersonalSynthesis, mountSynthesisLoader } from './components/synthesis-loader.js';
 import { store } from './domain/store.js';
 import { attachStorageAdapter } from './domain/storage-adapter.js';
 import { renderScreen00, attachScreen00Listeners } from './screens/s0-invitation.js';
@@ -99,7 +100,7 @@ function attachSessionListeners(container, sessionId) {
   }
 }
 
-export function initApp(container) {
+export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {}) {
   // Attach storage adapter for cross-window sync
   attachStorageAdapter(store);
 
@@ -203,6 +204,8 @@ export function initApp(container) {
   }
 
   let mountedKey = null;
+  let synthesisKey = null;
+  let disposeSynthesis = null;
 
   function render() {
     const activeSessionId = asParam === 'sneha' ? 'sneha' : 'aarav';
@@ -210,6 +213,16 @@ export function initApp(container) {
     const key = `${activeSessionId}:${screen}`;
     const patch = SCREEN_PATCHERS[screen];
     const viewport = container.querySelector(`#viewport-${activeSessionId}`);
+
+    // Preserve one gate across unrelated store updates. Restart for changed inputs,
+    // cancel on exit, and never let a late response write into another screen.
+    const session = store.getState()[activeSessionId === 'sneha' ? 'sessionB' : 'sessionA'];
+    const nextSynthesisKey = screen === 's3' && activeSessionId !== 'sneha'
+      ? JSON.stringify([session.intents || [], session.reactions || []]) : null;
+    if (viewport && mountedKey === key && synthesisKey === nextSynthesisKey && disposeSynthesis) return;
+    disposeSynthesis?.();
+    disposeSynthesis = null;
+    synthesisKey = nextSynthesisKey;
 
     // Same screen, state-only change: patch the existing DOM so CSS
     // transitions run and entry animations do not replay.
@@ -222,12 +235,24 @@ export function initApp(container) {
     container.innerHTML = `
       <div class="milo-stage">
         <div class="milo-viewport" id="viewport-${activeSessionId}" data-session-id="${activeSessionId}">
-          ${renderSessionContent(activeSessionId)}
+          ${nextSynthesisKey !== null ? '' : renderSessionContent(activeSessionId)}
         </div>
       </div>
     `;
 
-    attachSessionListeners(container.querySelector(`#viewport-${activeSessionId}`), activeSessionId);
+    const currentViewport = container.querySelector(`#viewport-${activeSessionId}`);
+    if (nextSynthesisKey !== null) {
+      // Do not mount pills or CTAs until the adapter has resolved.
+      disposeSynthesis = mountSynthesisLoader(currentViewport, {
+        session: structuredClone(session),
+        load: loadSynthesis,
+        renderReady: observations => renderScreen03(activeSessionId, observations),
+        attachReady: destination => attachScreen03Listeners(destination, activeSessionId),
+        onBack: () => store.setSessionScreen(activeSessionId, 's2')
+      });
+    } else {
+      attachSessionListeners(currentViewport, activeSessionId);
+    }
   }
 
   // Initial render
