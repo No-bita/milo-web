@@ -62,6 +62,10 @@ export function renderScreen07(sessionId = 'aarav') {
   const activeNightId = sessionData.activeNightId || (sharedData.selectedNights[0]?.night.id || 'middle-ground');
   const nightItem = sharedData.selectedNights.find(sn => sn.night.id === activeNightId) || sharedData.selectedNights[0];
   const night = nightItem.night;
+  // Keep the pitch and why it fits together as one description paragraph.
+  const description = night.id === 'middle-ground'
+    ? 'Quiet enough for a long conversation and interesting enough to feel like a night out, it keeps things intimate, adds something new, and never gets hectic.'
+    : `${night.reasonLine} ${nightItem.whyItWorks}`;
 
   const suggestion = state.shared.suggestion;
   const isConfirmed = state.shared.confirmedNightId === night.id;
@@ -191,11 +195,7 @@ export function renderScreen07(sessionId = 'aarav') {
 
       <!-- Detail Body (on Ivory) -->
       <div class="milo-s7-body">
-        <p class="milo-s7-reason">${night.reasonLine}</p>
-
-        <div class="milo-s7-why-works">
-          <p class="milo-s7-why-text">${nightItem.whyItWorks}</p>
-        </div>
+        <p class="milo-s7-reason">${description}</p>
 
         <div class="milo-timeline-section">
           ${timelineHtml}
