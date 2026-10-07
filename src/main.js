@@ -14,3 +14,5 @@ if (app) {
   initApp(app);
   installPremiumIcons(app);
 }
+
+import './styles/invite-settle.css';
