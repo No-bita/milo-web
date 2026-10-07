@@ -14,6 +14,7 @@ import './styles/invite-feedback.css';
 import './styles/invite-settle.css';
 import './styles/night-accordion.css';
 import './styles/night-timing.css';
+import './styles/candle-loader.css';
 import { showFirstOpen } from './components/first-open.js';
 import { initApp } from './app.js';
 import { installPremiumIcons } from './components/premium-icons.js';

@@ -1,0 +1,49 @@
+/* Full-screen S3 data gate. The candle lights once, then gently holds. */
+.milo-candle-loader {
+  position: absolute; inset: 0; z-index: 20;
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--color-ivory); color: var(--color-oxblood);
+  padding: max(32px, env(safe-area-inset-top)) 24px max(28px, env(safe-area-inset-bottom));
+  opacity: 1; transition: opacity 320ms ease;
+}
+.milo-candle-wordmark { font: 30px/1 var(--font-serif); }
+.milo-candle-scene { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+.milo-candle-art { width: min(240px, 70vw); height: 240px; overflow: visible; flex-shrink: 0; }
+.milo-candle-scene h1 { font: 32px/1.2 var(--font-serif); letter-spacing: -.5px; margin: 10px 0 12px; text-align: center; }
+.milo-candle-scene p { font: 13px/1.6 var(--font-sans); color: var(--color-ink-muted); text-align: center; }
+.milo-candle-caption { font: 11px/1.5 var(--font-sans); color: var(--color-ink-muted); letter-spacing: .3px; }
+.milo-candle-halo { fill: var(--color-oxblood); opacity: 0; animation: milo-candle-glow 3s 1s ease-in-out infinite; }
+.milo-candle-match { transform-origin: 122px 114px; opacity: 0; animation: milo-match-strike 1.5s ease both; }
+.milo-candle-spark { opacity: 0; animation: milo-match-spark 1.5s ease both; }
+.milo-candle-flame { transform-origin: 120px 116px; opacity: 0; animation: milo-flame-light 1.2s .5s ease forwards, milo-flame-breathe 3s 1.7s ease-in-out infinite; }
+.milo-candle-loader.is-ready { opacity: 0; pointer-events: none; }
+.milo-candle-destination { width: 100%; height: 100%; min-height: 0; }
+.milo-candle-destination .milo-s3-container { animation: none; }
+.milo-candle-loader.has-error .milo-candle-art { height: 160px; animation: none; }
+.milo-candle-loader.has-error .milo-candle-match,
+.milo-candle-loader.has-error .milo-candle-spark,
+.milo-candle-loader.has-error .milo-candle-halo,
+.milo-candle-loader.has-error .milo-candle-flame { animation: none; opacity: 0; }
+.milo-candle-loader.has-error .milo-cta-button { margin-top: 24px; width: 100%; }
+.milo-candle-back { margin-top: 16px; border: 0; background: none; font: 13px/1.5 var(--font-sans); color: var(--color-oxblood); cursor: pointer; padding: 8px; }
+@keyframes milo-match-strike {
+  0%, 10% { opacity: 0; transform: translate(32px, 25px) rotate(12deg); }
+  26% { opacity: 1; transform: translate(14px, 14px) rotate(5deg); }
+  40%, 62% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  100% { opacity: 0; transform: translate(32px, 20px) rotate(12deg); }
+}
+@keyframes milo-match-spark { 0%, 32%, 60%, 100% { opacity: 0; } 40% { opacity: .7; } }
+@keyframes milo-flame-light { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: scale(1); } }
+@keyframes milo-flame-breathe { 0%, 100% { transform: scale(1) rotate(-1deg); } 50% { transform: scale(.96, 1.04) rotate(1deg); } }
+@keyframes milo-candle-glow { 0%, 100% { opacity: .025; } 50% { opacity: .06; } }
+@media (max-height: 620px) {
+  .milo-candle-art { width: 190px; height: 190px; }
+  .milo-candle-scene h1 { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .milo-candle-loader { transition-duration: 80ms; }
+  .milo-candle-loader *, .milo-candle-destination * { animation: none !important; }
+  .milo-candle-flame { opacity: 1; }
+  .milo-candle-halo { opacity: .035; }
+  .milo-candle-match, .milo-candle-spark { opacity: 0; }
+}
