@@ -1,0 +1,47 @@
+/* Short phone viewports: keep the full synthesis above the action bar.
+   Taller phones keep the existing editorial spacing and collage sizes.
+   Preserve scrolling as a fallback for enlarged text or longer responses. */
+@media (max-width: 430px) and (max-height: 640px) {
+  .milo-viewport .milo-s3-container .milo-header { margin-bottom: 8px; width: 100%; }
+  .milo-viewport .milo-s3-content {
+    padding-top: 12px;
+    padding-bottom: 8px;
+  }
+  .milo-viewport .milo-s3-collage {
+    height: 140px;
+    width: 224px;
+  }
+  .milo-viewport .milo-s3-photo-food {
+    width: 100px;
+    height: 100px;
+    left: calc(50% - 88px);
+  }
+  .milo-viewport .milo-s3-photo-dining {
+    width: 88px;
+    height: 88px;
+    top: 38px;
+    right: calc(50% - 88px);
+  }
+  .milo-viewport .milo-s3-photo-cafe {
+    width: 72px;
+    height: 72px;
+    top: 68px;
+    left: calc(50% - 68px);
+  }
+  .milo-viewport .milo-s3-intro { margin: 12px 0; }
+  .milo-viewport .milo-s3-intro .milo-headline {
+    font-size: 24px;
+    line-height: 28px;
+  }
+  .milo-viewport .milo-s3-container .milo-observations-list { gap: 6px; }
+  .milo-viewport .milo-s3-container .milo-obs-row {
+    min-height: 48px;
+    padding: 8px 10px;
+    gap: 10px;
+  }
+  .milo-viewport .milo-s3-footer { padding-top: 12px; }
+  .milo-viewport .milo-s3-footer .milo-cta-button {
+    margin-top: 0;
+    min-height: 48px;
+  }
+}
