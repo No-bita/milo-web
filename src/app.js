@@ -4,6 +4,7 @@
 // standalone mobile viewport, and domain store subscriptions.
 // ==========================================================
 
+import { renderPlanningPath, attachPlanningPathListeners } from './screens/planning-path.js';
 import { store } from './domain/store.js';
 import { attachStorageAdapter } from './domain/storage-adapter.js';
 import { renderScreen00, attachScreen00Listeners } from './screens/s0-invitation.js';
@@ -38,6 +39,9 @@ function renderSessionContent(sessionId) {
   switch (screen) {
     case 's0':
       return renderScreen00(sessionId);
+    case 'planning_path':
+    case 'planning_path_review':
+      return renderPlanningPath(sessionId);
     case 'threshold':
       return renderThreshold(sessionId);
     case 's2':
@@ -68,6 +72,10 @@ function attachSessionListeners(container, sessionId) {
   switch (screen) {
     case 's0':
       attachScreen00Listeners(container, sessionId);
+      break;
+    case 'planning_path':
+    case 'planning_path_review':
+      attachPlanningPathListeners(container, sessionId);
       break;
     case 'threshold':
       attachThresholdListeners(container, sessionId);
@@ -153,6 +161,10 @@ export function initApp(container) {
       currentCardIndex: 8,
       screen: screenParam || 's0'
     });
+  }
+
+  if (screenParam === 'planning_path' || screenParam === 'planning_path_review') {
+    store.setSessionScreen('aarav', screenParam);
   }
 
   if (screenParam) {

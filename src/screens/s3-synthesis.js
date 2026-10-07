@@ -77,6 +77,6 @@ export function attachScreen03Listeners(container, sessionId = 'aarav') {
     store.setSessionScreen(sessionId, 's1');
   });
   container.querySelector(`#miloS3Cta-${sessionId}`)?.addEventListener('click', () => {
-    store.setSessionScreen(sessionId, sessionId === 'sneha' ? 's5' : 's4_invite');
+    store.setSessionScreen(sessionId, sessionId === 'sneha' ? 's5' : 'planning_path_review');
   });
 }

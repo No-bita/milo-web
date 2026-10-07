@@ -4,6 +4,8 @@
 // suggestion and agreement state machine.
 // ==========================================================
 
+import { isSoloPlanning } from '../logic/planning.js';
+import { renderSoloNight, attachSoloNightListeners } from './solo-night.js';
 import { store } from '../domain/store.js';
 import { computeSharedOutput } from '../logic/shared.js';
 import { DEMO_TIME_DEFAULT } from '../data/demo-date.js';
@@ -52,6 +54,7 @@ function downloadCalendarFile(night, partnerName) {
 const isDemo = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo');
 
 export function renderScreen07(sessionId = 'aarav') {
+  if (isSoloPlanning(store.getState(), sessionId)) return renderSoloNight(sessionId);
   const state = store.getState();
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
   const sessionData = state[sessionKey] || {};
@@ -217,6 +220,7 @@ export function renderScreen07(sessionId = 'aarav') {
 }
 
 export function attachScreen07Listeners(container, sessionId = 'aarav') {
+  if (isSoloPlanning(store.getState(), sessionId)) return attachSoloNightListeners(container, sessionId);
   const state = store.getState();
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
   const sessionData = state[sessionKey] || {};

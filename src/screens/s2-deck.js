@@ -232,7 +232,7 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
       e.stopPropagation();
       const currentIdx = sessionData.currentCardIndex || 0;
       if (currentIdx === 0) {
-        store.setSessionScreen(sessionId, 's1');
+        store.setSessionScreen(sessionId, sessionId === 'sneha' ? 's1' : 'planning_path');
       } else {
         const last = (sessionData.reactions || [])[(sessionData.reactions || []).length - 1];
         pendingUndoSide = last && last.reaction === 'not_tonight' ? 'left' : last && last.reaction === 'maybe' ? 'below' : 'right';
@@ -353,4 +353,4 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
     }
   };
   window.addEventListener('keydown', onKeyDown, { once: true });
-}
+                                                                                                                                                                           }

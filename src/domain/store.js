@@ -10,6 +10,8 @@ export const INITIAL_STATE = {
     name: 'Aarav',
     partnerName: 'Sneha',
     screen: 's1', // 's1' | 'threshold' | 's2' | 's3' | 's4_invite' | 's4_waiting' | 's5' | 's6' | 's7'
+    planningMode: null, // 'solo' | 'together', chosen by the initiator
+    savedSoloNightId: null, // local draft, not partner agreement
     intents: [],  // array of intent IDs (max 3)
     reactions: [], // array of { cardId, reaction: 'into_it' | 'maybe' | 'not_tonight' }
     currentCardIndex: 0
@@ -103,7 +105,7 @@ class DomainStore {
       ...this.state,
       [sessionKey]: {
         ...this.state[sessionKey],
-        screen: 'threshold'
+        screen: sessionId === 'sneha' ? 'threshold' : 'planning_path'
       }
     };
     this._emit();

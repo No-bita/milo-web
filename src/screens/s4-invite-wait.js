@@ -20,7 +20,7 @@ export function renderScreen04(sessionId = 'aarav') {
       return `
         <div class="milo-s4-container partner-done-state" data-session-id="${sessionId}">
           <header class="milo-header">
-            <button class="milo-header-back" id="miloS4WaitBack-${sessionId}" aria-label="Back to synthesis">
+            <button class="milo-header-back" id="miloS4WaitBack-${sessionId}" aria-label="Back to planning choice">
               <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
                 <polyline points="15 18 9 12 15 6"></polyline>
               </svg>
@@ -53,7 +53,7 @@ export function renderScreen04(sessionId = 'aarav') {
     return `
       <div class="milo-s4-container waiting-state" data-session-id="${sessionId}">
         <header class="milo-header">
-          <button class="milo-header-back" id="miloS4WaitBack-${sessionId}" aria-label="Back to synthesis">
+          <button class="milo-header-back" id="miloS4WaitBack-${sessionId}" aria-label="Back to planning choice">
             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
@@ -69,7 +69,7 @@ export function renderScreen04(sessionId = 'aarav') {
 
           <div class="milo-s4-intro">
             <h1 class="milo-headline">Over to Sneha.</h1>
-            <p class="milo-body-text">We'll let you know when Sneha's done. They'll make their choices privately.</p>
+            <p class="milo-body-text">Waiting for their picks in this browser. This prototype does not sync across devices or send notifications.</p>
           </div>
         </div>
 
@@ -90,7 +90,7 @@ export function renderScreen04(sessionId = 'aarav') {
   return `
     <div class="milo-s4-container invite-state" data-session-id="${sessionId}">
       <header class="milo-header">
-        <button class="milo-header-back" id="miloS4Back-${sessionId}" aria-label="Back to synthesis">
+        <button class="milo-header-back" id="miloS4Back-${sessionId}" aria-label="Back to planning choice">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
@@ -127,14 +127,14 @@ export function attachScreen04Listeners(container, sessionId = 'aarav') {
   const backBtn = container.querySelector(`#miloS4Back-${sessionId}`);
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      store.setSessionScreen(sessionId, 's3');
+      store.setSessionScreen(sessionId, 'planning_path_review');
     });
   }
 
   const waitBackBtn = container.querySelector(`#miloS4WaitBack-${sessionId}`);
   if (waitBackBtn) {
     waitBackBtn.addEventListener('click', () => {
-      store.setSessionScreen(sessionId, 's3');
+      store.setSessionScreen(sessionId, 'planning_path_review');
     });
   }
 
