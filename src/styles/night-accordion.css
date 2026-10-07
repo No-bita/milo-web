@@ -1,0 +1,36 @@
+/* Scoped independently from the old row styles (including their first-row hero). */
+.milo-s6-container .milo-nights-list { gap: 10px; padding-bottom: 4px; }
+.milo-night-option { border: 1px solid var(--color-taupe); border-radius: 18px; background: transparent; transition: background-color 240ms ease, border-color 240ms ease; }
+.milo-night-option.is-expanded { background: #fffdf9; border-color: rgba(110, 34, 40, .22); }
+.milo-night-recommendation { margin: 14px 16px 0; color: var(--color-oxblood); font: 500 12px/18px var(--font-sans); }
+.milo-night-option-heading { margin: 0; font: inherit; }
+.milo-night-toggle { display: flex; align-items: center; gap: 12px; width: 100%; border: 0; background: transparent; padding: 14px 16px; border-radius: 17px; text-align: left; color: var(--color-ink); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.milo-night-toggle:focus-visible, .milo-night-open:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 3px; }
+.milo-night-option-thumb { display: block; flex: 0 0 56px; height: 56px; border-radius: 10px; overflow: hidden; background: var(--color-sand); }
+.milo-night-option-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.milo-night-option-title { flex: 1; min-width: 0; }
+.milo-night-option-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 8px; margin-bottom: 4px; }
+.milo-night-option-name { display: block; font: 400 21px/25px var(--font-serif); }
+.milo-night-option-chevron { flex-shrink: 0; color: var(--color-oxblood); transition: transform 240ms ease; }
+.is-expanded .milo-night-option-chevron { transform: rotate(180deg); }
+.milo-night-panel { display: grid; grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows 260ms ease, visibility 260ms; }
+.is-expanded .milo-night-panel { grid-template-rows: 1fr; visibility: visible; }
+.milo-night-panel-clip { min-height: 0; overflow: hidden; }
+.milo-night-panel-content { padding: 0 16px 16px; }
+.milo-night-option-fit { font: 400 14px/21px var(--font-sans); color: var(--color-ink); margin: 0 0 8px; }
+.milo-night-option-beats { font: 400 12px/19px var(--font-sans); color: var(--color-ink-muted); margin: 0 0 16px; }
+.milo-night-option-beats span { padding: 0 2px; color: var(--color-oxblood); }
+.milo-night-option-why { padding-top: 12px; border-top: 1px solid var(--color-taupe); margin-bottom: 16px; }
+.milo-night-why-label { font: 500 11px/16px var(--font-sans); letter-spacing: .04em; color: var(--color-oxblood); }
+.milo-night-option-why p { font: 400 13px/20px var(--font-sans); color: var(--color-ink-muted); margin: 4px 0 0; }
+.milo-night-open { width: 100%; min-height: 48px; display: flex; justify-content: center; align-items: center; gap: 12px; font-size: 14px; }
+@media (max-width: 360px) {
+  .milo-night-toggle { padding: 12px; gap: 10px; }
+  .milo-night-option-thumb { flex-basis: 44px; height: 44px; }
+  .milo-night-option-name { font-size: 18px; line-height: 22px; }
+  .milo-night-recommendation { margin: 12px 12px 0; }
+  .milo-night-panel-content { padding: 0 12px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .milo-night-option, .milo-night-panel, .milo-night-option-chevron { transition: none; }
+}
