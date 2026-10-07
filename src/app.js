@@ -13,7 +13,7 @@ import { renderScreen01, attachScreen01Listeners, patchScreen01 } from './screen
 import { renderThreshold, attachThresholdListeners } from './screens/threshold.js';
 import { renderScreen02, attachScreen02Listeners } from './screens/s2-deck.js';
 import { renderScreen03, attachScreen03Listeners } from './screens/s3-synthesis.js';
-import { renderScreen04, attachScreen04Listeners } from './screens/s4-invite-wait.js';
+import { renderScreen04, attachScreen04Listeners, patchScreen04 } from './screens/s4-invite-wait.js';
 import { renderScreen05, attachScreen05Listeners } from './screens/s5-shared.js';
 import { renderScreen06, attachScreen06Listeners } from './screens/s6-nights.js';
 import { renderScreen07, attachScreen07Listeners } from './screens/s7-your-night.js';
@@ -201,7 +201,7 @@ export function initApp(container) {
       store.setSessionScreen('aarav', 's4_invite');
       store.setSessionScreen('sneha', 's0');
     } else if (screenParam === 's4_waiting') {
-      store.updateShared({ inviteSent: true });
+      store.updateShared({ invitePrepared: true });
       store.setSessionScreen('aarav', 's4_waiting');
       store.setSessionScreen('sneha', 's0');
     } else if (screenParam === 's5') {
@@ -236,6 +236,13 @@ export function initApp(container) {
     const key = `${activeSessionId}:${screen}`;
     const patch = SCREEN_PATCHERS[screen];
     const viewport = container.querySelector(`#viewport-${activeSessionId}`);
+
+    const inviteFamily = ['s4_invite', 's4_waiting'];
+    if (viewport && inviteFamily.includes(screen) && inviteFamily.some(s => mountedKey === `${activeSessionId}:${s}`) && patchScreen04(viewport)) {
+      mountedKey = key;
+      return;
+    }
+    viewport?.inviteCleanup?.();
 
     // Same screen, state-only change: patch the existing DOM so CSS
     // transitions run and entry animations do not replay.

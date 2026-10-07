@@ -1,4 +1,3 @@
-import './styles/invite-feedback.css';
 import './styles/milo.css';
 import './styles/ux-fixes.css';
 import './styles/ux-context.css';
@@ -10,6 +9,9 @@ import './styles/skip-line.css';
 import './styles/s3-compact.css';
 import './styles/first-open.css';
 import './styles/partner-welcome.css';
+import './styles/planning-path.css';
+import './styles/invite-feedback.css';
+import './styles/invite-settle.css';
 import { showFirstOpen } from './components/first-open.js';
 import { initApp } from './app.js';
 import { installPremiumIcons } from './components/premium-icons.js';

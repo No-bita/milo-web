@@ -14,7 +14,7 @@ export function inviteUrl() {
   return url.href;
 }
 
-function feedback(title, detail, url, manual = false) {
+export function feedback(title, detail, url, manual = false) {
   document.querySelector('#miloInviteFeedback')?.remove();
   const dialog = document.createElement('dialog');
   dialog.id = 'miloInviteFeedback';
@@ -57,11 +57,12 @@ function readyToSend() {
   store.setSessionScreen('aarav', 's4_waiting');
 }
 
-export async function copyInvite({ sharingUnavailable = false, prepare = false } = {}) {
+export async function copyInvite({ sharingUnavailable = false, prepare = false, onPrepared } = {}) {
   const url = inviteUrl();
   try {
     if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
     await navigator.clipboard.writeText(url);
+    if (onPrepared) { onPrepared(); return true; }
     if (prepare) readyToSend();
     feedback(sharingUnavailable ? 'Sharing is taking the night off.' : 'Link copied.',
       sharingUnavailable ? 'The invite link is copied. Paste it into a message to your date.' : 'Paste it into a message. A little anticipation never hurt.', url);
