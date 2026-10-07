@@ -1,0 +1,31 @@
+/* Existing Milo palette and typography, equal-weight path choices. */
+.milo-path-container {
+  height: 100%; display: flex; flex-direction: column; padding: 24px;
+  background: var(--color-ivory); overflow-y: auto;
+}
+.milo-path-container .milo-header { flex-shrink: 0; margin-bottom: 28px; }
+.milo-path-content { margin: auto 0; padding-bottom: 16px; }
+.milo-path-eyebrow { font-size: 10px; letter-spacing: .15em; color: var(--color-oxblood); font-weight: 600; margin-bottom: 14px; }
+.milo-path-container .milo-headline { font-size: 32px; line-height: 1.12; margin-bottom: 14px; }
+.milo-path-intro { font-size: 14px; line-height: 1.6; color: var(--color-ink-muted); max-width: 350px; }
+.milo-path-options { display: grid; gap: 12px; margin: 28px 0 18px; }
+.milo-path-option { display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 18px; border: 1px solid var(--color-taupe); border-radius: 16px; background: transparent; color: var(--color-ink); font-family: var(--font-sans); cursor: pointer; }
+.milo-path-option.is-selected { background: var(--color-oxblood-wash); border-color: var(--color-oxblood); }
+.milo-path-option-top { display: flex; justify-content: space-between; align-items: center; min-height: 14px; }
+.milo-path-symbol { color: var(--color-ink-muted); font-size: 10px; letter-spacing: .1em; }
+.milo-path-picked { font-size: 10px; color: var(--color-oxblood); font-weight: 600; }
+.milo-path-option-title { font-family: var(--font-serif); font-size: 23px; line-height: 1.2; font-weight: 400; }
+.milo-path-option-copy { font-size: 13px; line-height: 1.5; color: var(--color-ink-muted); }
+.milo-path-option-action { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; line-height: 20px; font-weight: 600; color: var(--color-oxblood); }
+.milo-path-footnote { font-size: 11px; line-height: 1.6; color: var(--color-ink-muted); }
+.milo-path-option:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 3px; }
+.milo-path-option:active { background: var(--color-oxblood-wash); }
+@media (max-width: 350px), (max-height: 700px) {
+  .milo-path-container { padding: 16px 20px; }
+  .milo-path-container .milo-header { margin-bottom: 18px; }
+  .milo-path-container .milo-headline { font-size: 28px; }
+  .milo-path-eyebrow { margin-bottom: 10px; }
+  .milo-path-options { margin-top: 20px; }
+  .milo-path-option { padding: 14px 16px; gap: 6px; }
+  .milo-path-option-title { font-size: 21px; }
+}
