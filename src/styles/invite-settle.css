@@ -1,0 +1,25 @@
+/* One scene, two states. The invitation gently makes room for waiting. */
+.milo-viewport .invite-journey { overflow-y: auto; }
+.milo-invite-copy-stack { display: grid; width: 100%; }
+.milo-invite-copy-stack .milo-s4-intro { grid-area: 1 / 1; align-self: center; transition: opacity 650ms ease, transform 850ms cubic-bezier(.2,.65,.3,1); }
+.invite-journey .wait-copy { opacity: 0; transform: translateY(10px); visibility: hidden; }
+.invite-journey.is-waiting .invite-copy { opacity: 0; transform: translateY(-8px); visibility: hidden; transition: opacity 400ms ease, transform 650ms ease, visibility 0s 650ms; }
+.invite-journey.is-waiting .wait-copy { opacity: 1; transform: translateY(0); visibility: visible; transition-delay: 180ms; }
+.milo-viewport .invite-journey .milo-s4-illustration-wrap { mix-blend-mode: multiply; transition: transform 1200ms ease, opacity 1200ms ease; }
+.milo-viewport .invite-journey.is-waiting .milo-s4-illustration-wrap { transform: scale(.97); opacity: .88; }
+.milo-invite-status { min-height: 36px; max-width: 280px; margin: 18px 0 0; font: 400 12px/1.5 var(--font-sans); color: var(--color-oxblood); opacity: 0; transition: opacity 800ms ease 450ms; }
+.invite-journey.is-waiting .milo-invite-status { opacity: 1; }
+.milo-viewport .invite-journey .milo-s4-reassure { max-width: 285px; font-size: 11px; line-height: 1.5; }
+@media (max-height: 640px) {
+  .milo-viewport .invite-journey .milo-s4-illustration-wrap { height: 130px; max-width: 190px; margin-bottom: 16px; }
+  .milo-viewport .invite-journey .milo-s4-content { padding: 12px 0; }
+  .milo-viewport .invite-journey .milo-s4-intro .milo-headline { font-size: 26px; }
+  .milo-invite-status { margin-top: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .invite-journey *, .invite-journey.is-waiting * { transition: none !important; animation: none !important; transform: none !important; }
+}
+@media (max-height: 640px) {
+  .milo-viewport .invite-journey .milo-s4-content { padding: 0; }
+  .milo-viewport .invite-journey .milo-s4-actions { gap: 8px; padding-top: 8px; }
+}
