@@ -1,0 +1,33 @@
+/* Inline post-confirmation feed. Same connected track as the itinerary. */
+.milo-closing-state { display: block; text-align: left; padding: 0 20px max(24px, env(safe-area-inset-bottom)); }
+.milo-closing-state .milo-header { padding-left: 0; padding-right: 0; }
+.milo-closing-content { display: block; padding: 20px 0 0; text-align: left; }
+.milo-closing-monograms { justify-content: flex-start; margin-bottom: 18px; }
+.milo-closing-state .milo-headline { font-size: 34px; line-height: 1.1; }
+.milo-closing-sub { font-size: 14px; line-height: 21px; margin-top: 8px; }
+.milo-timing-feed { margin-top: 28px; padding: 24px 0; border-top: 1px solid var(--color-taupe); border-bottom: 1px solid var(--color-taupe); }
+.milo-timing-feed h2 { font-family: var(--font-serif); font-size: 28px; font-weight: 400; line-height: 1.15; margin: 8px 0; }
+.milo-timing-intro, .milo-timing-zone, .milo-timing-note, .milo-timing-error { font-size: 13px; line-height: 19px; color: var(--color-ink-muted); }
+.milo-timing-intro { margin-bottom: 20px; }
+.milo-timing-form .milo-timeline-track { flex-shrink: 0; }
+.milo-timing-form .milo-timeline-dot { margin-top: 6px; }
+.milo-timing-form .milo-timeline-content { flex: 1; min-width: 0; padding-bottom: 20px; gap: 8px; }
+.milo-timing-form label { font-size: 14px; font-weight: 600; }
+.milo-timing-form input { display: block; box-sizing: border-box; min-width: 0; width: 100%; height: 48px; padding: 10px 12px; border: 1px solid var(--color-taupe); border-radius: 12px; background: var(--color-ivory); color: var(--color-ink); font: 16px var(--font-sans); color-scheme: light; user-select: auto; }
+.milo-timing-zone { margin: 0 0 16px 26px; font-size: 12px; }
+.milo-timing-form .milo-pill-btn-primary { width: 100%; min-height: 48px; }
+.milo-timing-note { margin-top: 12px; font-size: 11px; line-height: 16px; }
+.milo-timing-error { margin: 0 0 12px; color: var(--color-oxblood); }
+.milo-timing-saved { font-size: 16px; line-height: 24px; font-weight: 600; color: var(--color-oxblood); }
+.milo-timing-change { margin: 8px 0 0; padding: 10px 0; min-height: 44px; }
+.milo-timing-feed [hidden] { display: none !important; }
+.milo-timing-feed :focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 3px; }
+.milo-closing-plan { margin-top: 28px; }
+.milo-closing-plan .milo-section-label { margin-bottom: 18px; }
+.milo-closing-footer { width: 100%; padding: 8px 0 0; display: flex; flex-direction: column; gap: 12px; }
+.milo-closing-footer button { width: 100%; min-height: 48px; }
+@media (max-height: 640px) {
+  .milo-closing-content { padding-top: 8px; }
+  .milo-closing-monograms { margin-bottom: 12px; }
+  .milo-timing-feed { margin-top: 20px; padding: 20px 0; }
+}

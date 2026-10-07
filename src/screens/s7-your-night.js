@@ -8,8 +8,9 @@ import { isSoloPlanning } from '../logic/planning.js';
 import { renderSoloNight, attachSoloNightListeners } from './solo-night.js';
 import { store } from '../domain/store.js';
 import { computeSharedOutput } from '../logic/shared.js';
-import { DEMO_TIME_DEFAULT } from '../data/demo-date.js';
+import { renderNightTiming, attachNightTiming, timingForNight, timingLabel } from '../components/night-timing.js';
 
+<<<<<<< HEAD
 // Mock slot pools, not venue listings. Only the selected beat is replaced.
 const photo = id => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=600&q=80`;
 const SLOT_POOLS = {
@@ -58,44 +59,11 @@ function resolvedNight(night, state) {
   return { ...night, beats: night.beats.map((beat, i) => swaps[i] || beat) };
 }
 
-// Plan summary used by the closing state's share and calendar actions.
+// Plan summary used by the closing state share action.
 function planText(night, partnerName) {
   const steps = night.beats.map(b => b.name).join(' \u2192 ');
-  return `Tonight's sorted with ${partnerName}: ${night.name}. ${steps}.`;
-}
-
-// Builds an .ics for tonight at the default start time. The time is a
-// placeholder the user adjusts in their calendar app; no venues exist yet.
-function downloadCalendarFile(night, partnerName) {
-  const pad = n => String(n).padStart(2, '0');
-  const [h, m] = DEMO_TIME_DEFAULT.split(':').map(Number);
-  const start = new Date();
-  start.setHours(h, m, 0, 0);
-  const end = new Date(start.getTime() + 3 * 60 * 60 * 1000);
-  const fmt = d => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
-  const desc = night.beats.map(b => `${b.name}: ${b.desc}`).join('\\n');
-  const ics = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Milo//Tonight//EN',
-    'BEGIN:VEVENT',
-    `UID:milo-${night.id}-${fmt(start)}@milo`,
-    `DTSTAMP:${fmt(new Date())}`,
-    `DTSTART:${fmt(start)}`,
-    `DTEND:${fmt(end)}`,
-    `SUMMARY:${night.name} with ${partnerName}`,
-    `DESCRIPTION:${desc}`,
-    'END:VEVENT',
-    'END:VCALENDAR'
-  ].join('\r\n');
-  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'tonight.ics';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const timing = timingForNight(night.id);
+  return `Our night with ${partnerName}: ${night.name}. ${steps}.${timing ? ` ${timingLabel(timing)}.` : ''}`;
 }
 
 // "Start over" is demo scaffolding: only shown with ?demo
@@ -155,19 +123,18 @@ export function renderScreen07(sessionId = 'aarav') {
             <div class="milo-mono-circle mono-left">A</div>
             <div class="milo-mono-circle mono-right">S</div>
           </div>
-          <h1 class="milo-headline">Tonight's sorted.</h1>
-          <p class="milo-closing-sub">${night.name}. Have a lovely evening.</p>
+          <h1 class="milo-headline">You're both in.</h1>
+          <p class="milo-closing-sub">${night.name}. A little time for the two of you.</p>
+
+          ${renderNightTiming(night.id, sessionId)}
 
           <div class="milo-closing-plan">
-            <div class="milo-section-label">TONIGHT'S PLAN</div>
+            <div class="milo-section-label">YOUR PLAN</div>
             ${timelineHtml}
           </div>
         </div>
 
         <div class="milo-closing-footer">
-          <button class="milo-pill-btn-primary" id="miloAddCalendar-${sessionId}">
-            Add to calendar
-          </button>
           <button class="milo-pill-btn-secondary" id="miloSharePlan-${sessionId}">
             Share plan on WhatsApp
           </button>
@@ -382,15 +349,12 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
     });
   }
 
-  const calBtn = container.querySelector(`#miloAddCalendar-${sessionId}`);
   const shareBtn = container.querySelector(`#miloSharePlan-${sessionId}`);
-  if (calBtn || shareBtn) {
+  if (shareBtn) {
     const closingNight = resolvedNight(sharedData.selectedNights.find(sn => sn.night.id === state.shared.confirmedNightId)?.night
       || sharedData.selectedNights[0].night, store.getState());
     const partnerName = sessionId === 'sneha' ? 'Aarav' : 'Sneha';
-    if (calBtn) {
-      calBtn.addEventListener('click', () => downloadCalendarFile(closingNight, partnerName));
-    }
+    attachNightTiming(container, closingNight.id, sessionId);
     if (shareBtn) {
       shareBtn.addEventListener('click', () => {
         window.open(`https://wa.me/?text=${encodeURIComponent(planText(closingNight, partnerName))}`, '_blank', 'noopener');
