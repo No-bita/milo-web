@@ -7,6 +7,7 @@
 import { isSoloPlanning } from '../logic/planning.js';
 import { renderSoloNight, attachSoloNightListeners } from './solo-night.js';
 import { renderItinerary, attachItinerary } from '../components/itinerary.js';
+import { updateSlotAndRestore } from '../logic/slot-update.js';
 import { store } from '../domain/store.js';
 import { computeSharedOutput } from '../logic/shared.js';
 import { renderNightTiming, attachNightTiming, timingForNight, timingLabel } from '../components/night-timing.js';
@@ -189,8 +190,9 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
     return { original, night: original && resolvedNight(original, live), locked: live.shared.suggestion?.nightId === activeNightId || live.shared.confirmedNightId === activeNightId };
   }, (slot, option) => {
     const overrides = store.getState().shared.itineraryOverrides || {};
-    store.updateShared({ itineraryOverrides: { ...overrides, [activeNightId]: { ...overrides[activeNightId], [slot]: option } } });
-    container.querySelector(`[data-customise-slot="${slot}"]`)?.focus();
+    updateSlotAndRestore(container, sessionId, slot, () => {
+      store.updateShared({ itineraryOverrides: { ...overrides, [activeNightId]: { ...overrides[activeNightId], [slot]: option } } });
+    });
   });
 
   const backBtn = container.querySelector(`#miloS7Back-${sessionId}`);
