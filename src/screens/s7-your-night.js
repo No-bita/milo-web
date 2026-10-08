@@ -46,7 +46,7 @@ export function renderScreen07(sessionId = 'aarav') {
   const isConfirmed = state.shared.confirmedNightId === night.id;
 
   const timelineHtml = renderItinerary(night, nightItem.night, {
-    editable: !isConfirmed, lockedSlots: Boolean(suggestion?.nightId === night.id)
+    stacked: !isConfirmed, editable: !isConfirmed, lockedSlots: Boolean(suggestion?.nightId === night.id)
   });
 
   // Closing state (§2.9 & Acceptance Criteria)
@@ -131,13 +131,12 @@ export function renderScreen07(sessionId = 'aarav') {
   }
 
   return `
-    <div class="milo-s7-container" data-session-id="${sessionId}">
+    <div class="milo-s7-container milo-visual-plan" data-session-id="${sessionId}">
       ${partnerBannerHtml}
 
       <!-- Top Hero Section -->
       <div class="milo-s7-hero">
-        <img src="${night.defaultImage}" alt="${night.name}" class="milo-s7-hero-img" />
-        <div class="milo-s7-scrim"></div>
+        
 
         <button class="milo-s7-back-btn" id="miloS7Back-${sessionId}" aria-label="Back to three nights">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
@@ -157,13 +156,13 @@ export function renderScreen07(sessionId = 'aarav') {
 
       <!-- Detail Body (on Ivory) -->
       <div class="milo-s7-body">
-        <p class="milo-s7-reason">${description}</p>
+        <div class="milo-plan-label">YOUR NIGHT, IN THREE STOPS</div>
 
-        <div class="milo-timeline-section">
+        <div class="milo-plan-grid">
           ${timelineHtml}
         </div>
 
-        <aside class="milo-s7-skip-line milo-s7-skip-callout">Skip this one if ${night.skipIf}</aside>
+        <details class="milo-plan-why"><summary>Why this night fits <span aria-hidden="true">+</span></summary><p>${description}</p><p>Skip this one if ${night.skipIf}</p></details>
 
         <div class="milo-s7-actions">
           <button class="milo-secondary-link" id="miloSeeOtherNights-${sessionId}">
