@@ -17,7 +17,7 @@ export function renderScreen06(sessionId = 'aarav') {
   const suggestion = solo ? null : state.shared.suggestion;
 
   const rowsHtml = renderNightAccordion(sharedData.selectedNights, {
-    sessionId, suggestion, partnerPickLabel
+    sessionId, suggestion, partnerPickLabel, showWhy: !solo
   });
 
   return `
@@ -35,7 +35,7 @@ export function renderScreen06(sessionId = 'aarav') {
 
       <div class="milo-s6-intro">
         <h1 class="milo-headline">${solo ? 'Three nights, shaped by you' : 'Three nights for the two of you'}</h1>
-        <p class="milo-subline">${solo ? 'Your picks are the starting point. No partner input yet.' : 'Different vibes, all a good fit.'}</p>
+        ${solo ? '<p class="milo-subline">Your picks are the starting point. No partner input yet.</p>' : ''}
       </div>
 
       <div class="milo-nights-list">
