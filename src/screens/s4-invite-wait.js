@@ -76,10 +76,10 @@ export function renderScreen04(sessionId = 'aarav') {
         <p class="milo-invite-status" role="status" aria-live="polite">${isWaiting ? preparedCopy(state.shared.inviteMethod) : ''}</p>
       </div>
       <div class="milo-s4-actions">
-        <p class="milo-s4-reassure">Same-browser preview. No live delivery or notifications yet.</p>
+        <p class="milo-s4-reassure">No live delivery or notifications yet.</p>
         <button class="milo-pill-btn-primary" id="miloShareWhatsappBtn">Share via WhatsApp</button>
         <button class="milo-pill-btn-secondary" id="miloCopyLinkBtn">Copy invite link</button>
-        ${isDemo() ? `<a href="?as=sneha" target="_blank" class="milo-pill-btn-ghost">Try your date's side in this browser ↗</a>` : ''}
+        ${isDemo() ? `<a href="?as=sneha" target="_blank" class="milo-pill-btn-ghost">Try your date's side ↗</a>` : ''}
       </div>
     </div>
   `;
