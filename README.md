@@ -1,80 +1,33 @@
-# milo — Better dates. Less planning.
+# Milo frontend prototype
 
-> *You picked the person. I'll handle the plans.*  
-> *Not a dating app. Just better dates.*
+A mobile-first date-planning preview built with vanilla JavaScript and Vite.
 
-Milo is an emotionally intelligent, conversational date planning web application designed mobile-first. Once you and your date have agreed to meet, Milo balances both preferences, handles Bangalore localities, checks venue availability, and locks in the evening without the planning fatigue.
+## Current flows
 
----
+Mood selection, solo/together planning, discovery cards, reflection, invite preparation, shared recommendations, per-slot alternatives, local agreement and date/time selection.
 
-## ✨ Features
+The demo uses fixed Aarav/Sneha identities and same-browser localStorage. Invite metadata is unsigned, not authentication. There is no cross-device sync, notification service, venue availability, booking, payment or calendar creation. Solo saves are local drafts, not partner agreement.
 
-- **Conversational Milo Voice**: Milo behaves like a thoughtful, observant friend who takes ownership of the logistics.
-- **Option A Flexible Date & Time**: Quick anchors (`Tonight`, `Tomorrow`, `This Weekend`, `Next Week`), native date picker (`📅 Pick any date`), vibe time windows (`Afternoon`, `Sunset`, `Evening`, `Late Night`), exact time picker, and `±30m flexible` toggle.
-- **Locality Matching**: Curated Bangalore areas (`Indiranagar`, `Koramangala`, `HSR Layout`, `Church Street / CBD`, `JP Nagar`, `Whitefield`, `Anywhere in Bangalore`) without false traffic promises.
-- **Two-Sided Preference Matching**: Two people share preferences and hard no's independently.
-- **Deterministic Recommendation Engine**: Filters dealbreakers and curates 3 distinct date concepts with personalized "Why I picked this" insights.
-- **Booking & Day-of-Date Logistics**: Seamless confirmation, calendar integration, directions, and pre-date reminders.
-- **Responsive Mobile-First Architecture**: 100% native mobile feel on smartphones (`< 768px`) with clean centered presentation on desktop, zero artificial phone bezels.
-- **All 16 Screens Showcase Grid**: Includes a gallery view to inspect the entire end-to-end journey.
+## Run locally
 
----
-
-## 🚀 Quick Start
-
-### 1. Install dependencies
-```bash
-npm install
-```
-
-### 2. Run local development server
-```bash
+```sh
+npm ci
 npm run dev
-```
-
-### 3. Build for production
-```bash
 npm run build
+npm run preview
 ```
 
----
+## Source map
 
-## 📁 Project Structure
+- `src/main.js`: styles, first-open entry and app mounting
+- `src/app.js`: screen controller and subscriptions
+- `src/domain/`: store, invite contract and browser persistence
+- `src/logic/`: discovery, synthesis and recommendation logic
+- `src/screens/`: current journey screens and solo draft
+- `src/components/`: timing, invite feedback, loader and UI helpers
+- `src/data/mockData.js`: prototype moods, cards and night concepts
+- `src/styles/`: layered current styling
 
-```
-milo-web/
-├── index.html                  # HTML entry point
-├── package.json                # Dependencies & scripts
-├── vite.config.js              # Vite configuration
-└── src/
-    ├── main.js                 # App mounting entry point
-    ├── v2-app.js               # Master screen router & navigation controller
-    ├── state.js                # Central reactive state store
-    ├── COPY.md                 # Complete conversational copy deck
-    ├── styles/
-    │   └── milo.css            # Responsive design tokens & styles
-    ├── data/
-    │   ├── venues.js           # Curated Bangalore venues dataset
-    │   └── recommendations.js  # Recommendation engine & rationales
-    ├── components/
-    │   ├── mobile-shell.js     # Responsive container wrapper
-    │   ├── nav-toolbar.js      # Developer controls & screen switcher
-    │   └── all-screens-grid.js # 16-screen showcase gallery
-    └── screens/
-        ├── screen-01-welcome.js
-        ├── screen-02-date-context.js
-        ├── screen-03-location.js
-        ├── screen-04-invite.js
-        ├── screen-05-invitee-welcome.js
-        ├── screen-06-preferences.js
-        ├── screen-07-practical.js
-        ├── screen-08-overlap.js
-        ├── screen-09-options.js
-        ├── screen-10-both-chosen.js
-        ├── screen-11-confirmed.js
-        ├── screen-12-details.js
-        ├── screen-13-day-of-date.js
-        ├── screen-14-reminders.js
-        ├── screen-15-feedback.js
-        └── screen-16-next-date.js
-```
+Explicit `?screen=s7&golden=1` links open a controlled demo state. `?as=sneha` selects the partner preview; these query parameters are not access control.
+
+Removed legacy controllers, data and showcase helpers were unreachable from `src/main.js` and referenced screens no longer in the repository. Their removal does not reduce the production bundle. CSS consolidation is intentionally excluded to avoid changing the current design.
