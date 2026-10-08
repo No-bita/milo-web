@@ -25,6 +25,13 @@ const SCREEN_PATCHERS = {
   s1: patchScreen01
 };
 
+function focusHeading(viewport) {
+  const heading = viewport.querySelector('h1, h2');
+  if (!heading) return;
+  heading.tabIndex = -1;
+  heading.focus({ preventScroll: true });
+}
+
 function getCurrentScreen(sessionId) {
   const state = store.getState();
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
@@ -265,6 +272,10 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
     }
 
     viewport?.deckCleanup?.();
+    const isNavigation = mountedKey !== null && mountedKey !== key;
+    const previousFocus = viewport?.contains(document.activeElement) ? document.activeElement : null;
+    const focusKey = previousFocus?.id || previousFocus?.getAttribute('data-customise-slot');
+    const focusSlot = previousFocus?.hasAttribute('data-customise-slot');
     mountedKey = key;
     container.innerHTML = `
       <div class="milo-stage">
@@ -281,11 +292,21 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
         session: structuredClone(session),
         load: loadSynthesis,
         renderReady: observations => renderScreen03(activeSessionId, observations),
-        attachReady: destination => attachScreen03Listeners(destination, activeSessionId),
+        attachReady: destination => {
+          attachScreen03Listeners(destination, activeSessionId);
+          if (isNavigation) focusHeading(destination);
+        },
         onBack: () => store.setSessionScreen(activeSessionId, 's2')
       });
     } else {
       attachSessionListeners(currentViewport, activeSessionId);
+      if (isNavigation) focusHeading(currentViewport);
+      else if (focusKey != null) {
+        const target = focusSlot
+          ? currentViewport.querySelector(`[data-customise-slot="${focusKey}"]`)
+          : document.getElementById(focusKey);
+        target?.focus({ preventScroll: true });
+      }
     }
   }
 

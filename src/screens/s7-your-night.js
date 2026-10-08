@@ -96,10 +96,10 @@ export function renderScreen07(sessionId = 'aarav') {
     const suggestedNight = sharedData.selectedNights.find(sn => sn.night.id === suggestion.nightId)?.night;
     const nameStr = suggestedNight ? suggestedNight.name : 'a night';
     partnerBannerHtml = `
-      <div class="milo-partner-banner" id="miloBannerOtherNight-${sessionId}">
+      <button type="button" class="milo-partner-banner" id="miloBannerOtherNight-${sessionId}">
         <span>${partnerName} suggested ${nameStr}. Take a look.</span>
-        <span class="milo-banner-arrow">→</span>
-      </div>
+        <span class="milo-banner-arrow" aria-hidden="true">→</span>
+      </button>
     `;
   }
 
