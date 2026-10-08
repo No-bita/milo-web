@@ -30,3 +30,35 @@
 .milo-reset-confirm button { min-height: 44px; padding: 0 16px; border-radius: 9999px; font: 500 13px var(--font-sans); cursor: pointer; background: transparent; color: var(--color-ink-muted); border: 1px solid var(--color-taupe); }
 .milo-reset-confirm button.milo-reset-yes { color: var(--color-oxblood); border-color: var(--color-oxblood); }
 .milo-closing-footer .milo-text-button { color: var(--color-ink-muted); font-size: 13px; min-height: 44px; }
+
+/* Stacked photo cards for the unconfirmed together itinerary only. */
+.milo-visual-plan .milo-s7-body { padding: 20px 20px 0; }
+.milo-plan-label { margin: 0 0 14px; color: var(--color-ink-muted); font: 600 10px/16px var(--font-sans); letter-spacing: .12em; }
+.milo-plan-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.milo-plan-tile { aspect-ratio: 2 / 1; height:auto; width: auto; border-radius: 14px; position: relative; overflow: hidden; }
+.milo-plan-tile .milo-tile-img { width: 100%; height: 100%; object-fit: cover; }
+.milo-plan-tile .milo-tile-scrim { background: linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.03) 30%, rgba(0,0,0,.84) 100%); }
+.milo-plan-step { position:absolute;top:12px;left:12px;color:#fff;font:600 11px var(--font-sans); }
+.milo-plan-edit { position:absolute;top:4px;right:4px;min-width:44px;min-height:44px;border:0;background:none;color:#fff;font-size:22px;cursor:pointer; }
+.milo-plan-caption { position:absolute;bottom:14px;left:14px;right:12px;display:flex;flex-direction:column;gap:5px;color:#fff; }
+.milo-plan-caption .milo-tile-label { position:static;transform:none;font:600 20px/22px var(--font-sans); }
+.milo-plan-detail { font:12px/17px var(--font-sans);color:rgba(255,255,255,.9); }
+.milo-plan-why { margin:20px 0 0;border-top:1px solid var(--color-taupe);padding:16px 0; }
+.milo-plan-why summary { display:flex;justify-content:space-between;cursor:pointer;font:500 13px var(--font-sans);color:var(--color-ink-muted);list-style:none; }
+.milo-plan-why p {font:14px/22px var(--font-sans);margin-top:12px;}
+.milo-visual-plan .milo-s7-actions { gap:6px; }
+.milo-visual-plan .milo-secondary-link { min-height:44px; }
+
+
+.milo-visual-plan .milo-s7-hero { height:auto; min-height:0; background:var(--color-ivory); padding:54px 20px 0; }
+.milo-visual-plan .milo-s7-hero-img, .milo-visual-plan .milo-s7-scrim { display:none; }
+.milo-visual-plan .milo-s7-hero-text { position:static; }
+.milo-visual-plan .milo-s7-num-row { display:none; }
+.milo-visual-plan .milo-s7-night-name { color:var(--color-ink);font-size:32px;line-height:38px;text-shadow:none; }
+.milo-visual-plan .milo-s7-back-btn {top:10px;left:10px;background:transparent;color:var(--color-ink);}
+.milo-visual-plan .milo-s7-body { padding-top:16px; }
+
+.milo-plan-tile { border:0; padding:0; text-align:left; cursor:pointer; font-family:var(--font-sans); }
+.milo-plan-tile:focus-visible { outline:3px solid var(--color-oxblood);outline-offset:3px; }
+.milo-plan-tile:disabled { cursor:default; }
+.milo-plan-tile:disabled .milo-plan-edit { display:none; }
