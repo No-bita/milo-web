@@ -16,18 +16,16 @@ export function renderPlanningPath(sessionId = 'aarav') {
         <span class="milo-wordmark">milo.</span><div class="milo-header-space"></div>
       </header>
       <main class="milo-path-content">
-        <p class="milo-path-eyebrow">${isEcho ? 'YOUR NIGHT, YOUR CALL' : 'TWO WAYS TO PLAN'}</p>
         <h1 class="milo-headline">${isEcho ? 'Keep the reins.<br>Or make it together.' : 'How would you like<br>to plan this?'}</h1>
-        <p class="milo-path-intro">${isEcho ? "We've got a feel for your night. Want to choose the plan yourself, or add their picks too?" : 'Take the lead, or let your partner help shape the night. Either way, Milo helps with the plan.'}</p>
         <div class="milo-path-options" role="group" aria-label="How to plan your night">
           <button type="button" class="milo-path-option ${mode === 'solo' ? 'is-selected' : ''}" data-planning-mode="solo" aria-pressed="${mode === 'solo'}">
-            <span class="milo-path-option-top"><span class="milo-path-symbol" aria-hidden="true">01</span>${mode === 'solo' ? '<span class="milo-path-picked">Your choice</span>' : ''}</span>
+            <span class="milo-path-option-top"><span class="milo-path-symbol" aria-hidden="true">01</span></span>
             <span class="milo-path-option-title">I'll plan it myself</span>
             <span class="milo-path-option-copy">${isEcho ? 'See nights shaped by your picks. No invite, no waiting.' : 'You make the picks. Keep the plan a little surprise.'}</span>
             <span class="milo-path-option-action">${isEcho ? 'See my nights' : 'Keep going'} <span aria-hidden="true">→</span></span>
           </button>
           <button type="button" class="milo-path-option ${mode === 'together' ? 'is-selected' : ''}" data-planning-mode="together" aria-pressed="${mode === 'together'}">
-            <span class="milo-path-option-top"><span class="milo-path-symbol" aria-hidden="true">02</span>${mode === 'together' ? '<span class="milo-path-picked">Your choice</span>' : ''}</span>
+            <span class="milo-path-option-top"><span class="milo-path-symbol" aria-hidden="true">02</span></span>
             <span class="milo-path-option-title">Bring in my partner</span>
             <span class="milo-path-option-copy">${isEcho ? 'Invite them to add their picks before choosing a night.' : "Start with your picks. You'll invite them after."}</span>
             <span class="milo-path-option-action">${isEcho ? 'Go to the invite' : 'Keep going'} <span aria-hidden="true">→</span></span>

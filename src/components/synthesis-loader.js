@@ -53,7 +53,6 @@ export function mountSynthesisLoader(container, { session, load, renderReady, at
         <h1>Setting the mood.</h1>
         <p role="status" aria-live="polite">Getting a feel for your night...</p>
       </div>
-      <span class="milo-candle-caption" aria-hidden="true">A little thought. A better night.</span>
     </section>`;
     const overlay = container.firstElementChild;
     const timeout = new Promise((_, reject) => {

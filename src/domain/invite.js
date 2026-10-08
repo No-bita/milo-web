@@ -30,9 +30,7 @@ export function renderInviteError(reason) {
     <header class="milo-header"><span class="milo-wordmark">milo.</span></header>
     <div class="milo-invite-error-content">
       <div class="milo-invite-seal" aria-hidden="true">m.</div>
-      <p class="milo-context-line">A SMALL DETOUR</p>
       <h1 class="milo-headline">${expired ? 'This invite has expired.' : "This invite isn't quite right."}</h1>
-      <p class="milo-body-text">${expired ? 'The link had a curfew. Your night still has potential.' : 'A little lost on the way to date night.'}</p>
       <p class="milo-body-text">Ask your date to send a fresh invite link.</p>
       <p class="milo-invite-error-note">${expired ? 'Invite links last 48 hours.' : 'The link may be incomplete or damaged.'}</p>
     </div>

@@ -64,7 +64,7 @@ export function renderScreen07(sessionId = 'aarav') {
             <div class="milo-mono-circle mono-right">S</div>
           </div>
           <h1 class="milo-headline">You're both in.</h1>
-          <p class="milo-closing-sub">${night.name}. A little time for the two of you.</p>
+          <p class="milo-closing-sub">${night.name}.</p>
 
           ${renderNightTiming(night.id, sessionId)}
 
@@ -157,7 +157,6 @@ export function renderScreen07(sessionId = 'aarav') {
 
       <!-- Detail Body (on Ivory) -->
       <div class="milo-s7-body">
-        <div class="milo-plan-label">YOUR NIGHT, IN THREE STOPS</div>
 
         <div class="milo-plan-grid">
           ${timelineHtml}

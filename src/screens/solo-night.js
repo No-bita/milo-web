@@ -23,7 +23,6 @@ export function renderSoloNight(sessionId = 'aarav') {
     </div>
     <div class="milo-s7-body">
       <p class="milo-s7-reason">${night.reasonLine}</p>
-      <div class="milo-s7-why-works"><p class="milo-s7-why-text">${item.whyItWorks}</p></div>
       <div class="milo-timeline-section">${renderItinerary(night, item.night)}</div>
       <p class="milo-s7-skip-line">Skip this one if ${night.skipIf}</p>
       <div class="milo-s7-actions">
