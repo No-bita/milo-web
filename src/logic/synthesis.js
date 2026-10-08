@@ -83,7 +83,7 @@ export function computePersonalSynthesis(intents, reactions) {
   if (totalReactions > 0) {
     const allNotTonight = reactions.every(r => r.reaction === 'not_tonight');
     if (allNotTonight) {
-      return ["Nothing quite landed. That's useful too. We'll keep tonight simple."];
+      return ["Nothing quite landed. We'll keep tonight simple."];
     }
 
     const allIntoIt = reactions.every(r => r.reaction === 'into_it');
