@@ -10,8 +10,9 @@ export function parseNightStart(date, time) {
   return start;
 }
 
-export function timingForNight(nightId) {
-  const timing = store.getState().shared.timing;
+export function timingForNight(nightId, { solo = false } = {}) {
+  const state = store.getState();
+  const timing = solo ? state.sessionA.soloTimings?.[nightId] : state.shared.timing;
   return timing?.nightId === nightId && parseNightStart(timing.date, timing.time) && typeof timing.timeZone === 'string' ? timing : null;
 }
 
@@ -23,15 +24,15 @@ export function timingLabel(timing) {
 
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-export function renderNightTiming(nightId, sessionId) {
-  const timing = timingForNight(nightId);
+export function renderNightTiming(nightId, sessionId, { solo = false } = {}) {
+  const timing = timingForNight(nightId, { solo });
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Device local time';
   const id = `milo-timing-${sessionId}`;
   return `
     <section class="milo-timing-feed" aria-labelledby="${id}-title">
       <div class="milo-section-label">MAKE TIME FOR IT</div>
       <h2 id="${id}-title">When's your night?</h2>
-      <p class="milo-timing-intro">The plan's picked. Choose when it happens.</p>
+      <p class="milo-timing-intro">${solo ? 'Choose a time for this draft. Your partner has not agreed to it.' : "The plan's picked. Choose when it happens."}</p>
       <p class="milo-timing-saved" role="status" ${timing ? '' : 'hidden'}>${timing ? escape(timingLabel(timing)) : ''}</p>
       <form class="milo-timing-form" ${timing ? 'hidden' : ''}>
         <div class="milo-timeline-item">
@@ -53,11 +54,11 @@ export function renderNightTiming(nightId, sessionId) {
         <button type="submit" class="milo-pill-btn-primary">Set date &amp; time</button>
       </form>
       <button type="button" class="milo-secondary-link milo-timing-change" ${timing ? '' : 'hidden'}>Change date &amp; time</button>
-      <p class="milo-timing-note">Saved on this device only. No booking or calendar event.</p>
+      <p class="milo-timing-note">No booking or calendar event.</p>
     </section>`;
 }
 
-export function attachNightTiming(container, nightId, sessionId) {
+export function attachNightTiming(container, nightId, sessionId, { solo = false } = {}) {
   const feed = container.querySelector('.milo-timing-feed');
   if (!feed) return;
   const form = feed.querySelector('form');
@@ -78,11 +79,13 @@ export function attachNightTiming(container, nightId, sessionId) {
       error.hidden = false;
       return;
     }
-    const scroll = container.querySelector('.milo-closing-state').scrollTop;
-    store.updateShared({ timing: { version: 1, nightId, date: date.value, time: time.value, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Device local time', startAt: start.toISOString(), chosenBy: sessionId } });
+    const scroll = container.querySelector('.milo-s7-container')?.scrollTop || 0;
+    const timing = { version: 1, nightId, date: date.value, time: time.value, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Device local time', startAt: start.toISOString(), chosenBy: sessionId };
+    if (solo) store.updateSession(sessionId, { soloTimings: { ...store.getState().sessionA.soloTimings, [nightId]: timing } });
+    else store.updateShared({ timing });
     // The store renders synchronously. Restore position and focus in the replacement view.
     const replacement = document.querySelector(`#viewport-${sessionId}`);
-    replacement?.querySelector('.milo-closing-state')?.scrollTo(0, scroll);
+    replacement?.querySelector('.milo-s7-container')?.scrollTo(0, scroll);
     replacement?.querySelector('.milo-timing-change')?.focus({ preventScroll: true });
   });
 }

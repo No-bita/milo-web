@@ -1,3 +1,5 @@
+import { renderItinerary, attachItinerary } from '../components/itinerary.js';
+import { renderNightTiming, attachNightTiming } from '../components/night-timing.js';
 import { store } from '../domain/store.js';
 import { computePlanningOutput } from '../logic/planning.js';
 
@@ -5,8 +7,14 @@ export function renderSoloNight(sessionId = 'aarav') {
   const state = store.getState();
   const nights = computePlanningOutput(state, sessionId).selectedNights;
   const item = nights.find(item => item.night.id === state.sessionA.activeNightId) || nights[0];
-  const night = item.night;
+  const overrides = state.sessionA.soloItineraryOverrides?.[item.night.id] || {};
+  const night = { ...item.night, beats: item.night.beats.map((beat, i) => overrides[i] || beat) };
   const saved = state.sessionA.savedSoloNightId === night.id;
+  const timingStep = state.sessionA.soloTimingStep === night.id;
+  if (timingStep) return `<div class="milo-s7-container milo-closing-state" data-session-id="${sessionId}">
+    <header class="milo-header"><button class="milo-header-back" id="miloSoloTimingBack" aria-label="Back to itinerary">←</button><span class="milo-wordmark">milo.</span></header>
+    <div class="milo-s7-body"><h1 class="milo-headline">Draft saved.</h1><p class="milo-body-text">${night.name}</p>${renderNightTiming(night.id, sessionId, { solo: true })}</div>
+  </div>`;
   return `<div class="milo-s7-container" data-session-id="${sessionId}">
     <div class="milo-s7-hero">
       <img src="${night.defaultImage}" alt="${night.name}" class="milo-s7-hero-img"><div class="milo-s7-scrim"></div>
@@ -16,17 +24,37 @@ export function renderSoloNight(sessionId = 'aarav') {
     <div class="milo-s7-body">
       <p class="milo-s7-reason">${night.reasonLine}</p>
       <div class="milo-s7-why-works"><p class="milo-s7-why-text">${item.whyItWorks}</p></div>
-      <div class="milo-timeline-section">${night.beats.map((beat, i) => `<div class="milo-timeline-item"><div class="milo-timeline-track"><div class="milo-timeline-dot"></div>${i < night.beats.length - 1 ? '<div class="milo-timeline-line"></div>' : ''}</div><div class="milo-timeline-content"><span class="milo-timeline-name">${beat.name}</span><span class="milo-timeline-desc">${beat.desc}</span></div></div>`).join('')}</div>
+      <div class="milo-timeline-section">${renderItinerary(night, item.night)}</div>
       <p class="milo-s7-skip-line">Skip this one if ${night.skipIf}</p>
       <div class="milo-s7-actions">
         <button class="milo-secondary-link" id="miloSoloOther">See the other two</button>
-        ${saved ? '<p class="milo-path-footnote" role="status">Draft saved in this browser. Nothing booked or sent to your partner.</p>' : '<button class="milo-cta-button" id="miloSoloSave">Save this draft</button>'}
+        <button class="milo-cta-button" id="miloSoloSave">${saved ? 'Continue to date &amp; time' : 'Save this draft'}</button>
       </div>
     </div>
   </div>`;
 }
 
 export function attachSoloNightListeners(container, sessionId = 'aarav') {
+  const state = store.getState();
+  const nights = computePlanningOutput(state, sessionId).selectedNights;
+  const item = nights.find(item => item.night.id === state.sessionA.activeNightId) || nights[0];
+  if (state.sessionA.soloTimingStep === item.night.id) {
+    attachNightTiming(container, item.night.id, sessionId, { solo: true });
+    container.querySelector('#miloSoloTimingBack')?.addEventListener('click', () => store.updateSession(sessionId, { soloTimingStep: null }));
+    return;
+  }
+  attachItinerary(container, () => {
+    const overrides = store.getState().sessionA.soloItineraryOverrides?.[item.night.id] || {};
+    return { original: item.night, night: { ...item.night, beats: item.night.beats.map((beat, i) => overrides[i] || beat) }, locked: false };
+  }, (slot, option) => {
+    const scrollTop = container.querySelector('.milo-s7-container').scrollTop;
+    const overrides = store.getState().sessionA.soloItineraryOverrides || {};
+    store.updateSession(sessionId, { soloItineraryOverrides: { ...overrides, [item.night.id]: { ...overrides[item.night.id], [slot]: option } } });
+    const replacement = document.getElementById(`viewport-${sessionId}`);
+    const itinerary = replacement?.querySelector('.milo-s7-container');
+    if (itinerary) itinerary.scrollTop = scrollTop;
+    replacement?.querySelector(`[data-customise-slot="${slot}"]`)?.focus({ preventScroll: true });
+  });
   const back = () => store.setSessionScreen(sessionId, 's6');
   container.querySelector('#miloSoloBack')?.addEventListener('click', back);
   container.querySelector('#miloSoloOther')?.addEventListener('click', back);
@@ -34,6 +62,6 @@ export function attachSoloNightListeners(container, sessionId = 'aarav') {
     const state = store.getState();
     const nights = computePlanningOutput(state, sessionId).selectedNights;
     const item = nights.find(item => item.night.id === state.sessionA.activeNightId) || nights[0];
-    store.updateSession(sessionId, { savedSoloNightId: item.night.id });
+    store.updateSession(sessionId, { savedSoloNightId: item.night.id, soloTimingStep: item.night.id });
   });
 }
