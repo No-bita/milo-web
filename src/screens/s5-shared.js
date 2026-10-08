@@ -60,7 +60,6 @@ export function renderScreen05(sessionId = 'aarav') {
         </div>
 
         <div class="milo-shared-section">
-          <div class="milo-section-label">YOU BOTH WANT</div>
           <div class="milo-shared-list">
             ${rowsHtml}
           </div>
@@ -69,7 +68,6 @@ export function renderScreen05(sessionId = 'aarav') {
         ${differenceHtml}
 
         <div class="milo-bridge-section">
-          <div class="milo-section-label">SO WE'RE LOOKING FOR…</div>
           <div class="milo-bridge-block">
             <p class="milo-bridge-text">${sharedData.bridgeSentence}</p>
           </div>
