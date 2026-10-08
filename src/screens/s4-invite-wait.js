@@ -37,12 +37,10 @@ export function renderScreen04(sessionId = 'aarav') {
 
           <div class="milo-s4-intro">
             <h1 class="milo-headline">Sneha's done.</h1>
-            <p class="milo-body-text">See what you're both looking for.</p>
           </div>
         </div>
 
         <div class="milo-s4-actions">
-          <p class="milo-s4-reassure">You'll see where you naturally overlap.</p>
           <button class="milo-pill-btn-primary" id="miloSeeSharedBtn">
             See what you're both looking for →
           </button>
@@ -86,7 +84,7 @@ export function renderScreen04(sessionId = 'aarav') {
 }
 
 function preparedCopy(method) {
-  return method === 'copy' ? 'Link copied. A good night starts with a little hello.' : 'Your link is ready. No rush.';
+  return method === 'copy' ? 'Link copied.' : 'Your link is ready.';
 }
 
 // Preserve the header, illustration and buttons across the seam. Only the copy settles.
