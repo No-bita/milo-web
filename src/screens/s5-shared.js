@@ -92,7 +92,7 @@ export function attachScreen05Listeners(container, sessionId = 'aarav') {
       if (sessionId === 'aarav') {
         store.setSessionScreen('aarav', 's4_waiting');
       } else {
-        store.setSessionScreen('sneha', 's3');
+        confirmReturnToMoods(container);
       }
     });
   }
@@ -103,4 +103,31 @@ export function attachScreen05Listeners(container, sessionId = 'aarav') {
       store.setSessionScreen(sessionId, 's6');
     });
   }
+}
+
+
+// Only partner Back from the shared picture. Other Back routes stay unchanged.
+export function confirmReturnToMoods(container) {
+  if (container.querySelector('.milo-overlap-back-dialog')) return;
+  const dialog = document.createElement('dialog');
+  dialog.className = 'milo-slot-feed milo-overlap-back-dialog';
+  dialog.setAttribute('aria-labelledby', 'miloOverlapBackTitle');
+  dialog.innerHTML = `<div class="milo-slot-feed-inner">
+    <h2 id="miloOverlapBackTitle">Back to your moods?</h2>
+    <p class="milo-body-text">Your current picks will stay here until you start the swipes again.</p>
+    <button type="button" class="milo-secondary-link" data-back-confirm>Back to moods</button>
+    <button type="button" class="milo-cta-button" data-back-cancel autofocus>Stay here</button>
+  </div>`;
+  const close = () => { dialog.close(); dialog.remove(); container.querySelector('#miloS5Back-sneha')?.focus({ preventScroll: true }); };
+  dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
+  dialog.querySelector('[data-back-cancel]').addEventListener('click', close);
+  dialog.querySelector('[data-back-confirm]').addEventListener('click', () => {
+    dialog.close(); dialog.remove();
+    store.setSessionScreen('sneha', 's1');
+    const heading = document.querySelector('#viewport-sneha h1');
+    if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
+  });
+  container.appendChild(dialog);
+  dialog.showModal();
+  dialog.querySelector('[data-back-cancel]').focus();
 }
