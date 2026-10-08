@@ -108,7 +108,7 @@ export function renderScreen07(sessionId = 'aarav') {
   if (isMyPick) {
     ctaAreaHtml = `
       <div class="milo-cta-suggested-notice">
-        Suggested. We'll let you know when ${partnerName}'s in.
+        Suggested. Check back here for ${partnerName}'s response. No notification will be sent.
       </div>
     `;
   } else if (isPartnerPick) {

@@ -33,7 +33,7 @@ export function renderPlanningPath(sessionId = 'aarav') {
             <span class="milo-path-option-action">${isEcho ? 'Go to the invite' : 'Keep going'} <span aria-hidden="true">→</span></span>
           </button>
         </div>
-        <p class="milo-path-footnote">${isEcho ? 'Prototype note: partner picks sync only in this browser. No cross-device sync or notifications yet.' : "No invite goes out now. You can change your mind after your picks."}</p>
+        <p class="milo-path-footnote">${isEcho ? 'No notifications yet.' : "No invite goes out now. You can change your mind after your picks."}</p>
       </main>
     </div>`;
 }
