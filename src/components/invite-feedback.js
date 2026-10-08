@@ -23,7 +23,6 @@ export function feedback(title, detail, url, manual = false) {
   dialog.setAttribute('aria-describedby', 'miloInviteFeedbackDetail');
   dialog.innerHTML = `
     <form method="dialog">
-      <p class="milo-context-line">THE INVITE</p>
       <h2 id="miloInviteFeedbackTitle"></h2>
       <p id="miloInviteFeedbackDetail"></p>
       ${manual ? `<label for="miloManualInviteLink">Your invite link</label>
@@ -65,7 +64,7 @@ export async function copyInvite({ sharingUnavailable = false, prepare = false, 
     if (onPrepared) { onPrepared(); return true; }
     if (prepare) readyToSend();
     feedback(sharingUnavailable ? 'Sharing is taking the night off.' : 'Link copied.',
-      sharingUnavailable ? 'The invite link is copied. Paste it into a message to your date.' : 'Paste it into a message. A little anticipation never hurt.', url);
+      sharingUnavailable ? 'The invite link is copied. Paste it into a message to your date.' : 'Paste it into a message.', url);
     return true;
   } catch {
     feedback("Couldn't copy the link.", sharingUnavailable
