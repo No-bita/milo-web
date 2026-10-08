@@ -264,6 +264,7 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
       return;
     }
 
+    viewport?.deckCleanup?.();
     mountedKey = key;
     container.innerHTML = `
       <div class="milo-stage">

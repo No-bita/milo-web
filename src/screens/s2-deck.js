@@ -6,6 +6,7 @@
 
 import { buildDeck } from '../logic/deck.js';
 import { store } from '../domain/store.js';
+import { createDeckInteraction } from '../logic/deck-interaction.js';
 import '../styles/s2-motion.css';
 
 // Motion state kept at module level so it survives the deck's full re-render on every store update.
@@ -138,6 +139,10 @@ export function renderScreen02(sessionId = 'aarav') {
 }
 
 export function attachScreen02Listeners(container, sessionId = 'aarav') {
+  container.deckCleanup?.();
+  const controller = new AbortController();
+  const listen = (element, type, listener, options = {}) => element.addEventListener(type, listener, { ...options, signal: controller.signal });
+  let hintTimer = null;
   const card = container.querySelector(`#miloActiveCard-${sessionId}`);
   const undoBtn = container.querySelector(`#miloDeckUndo-${sessionId}`);
   const btnNot = container.querySelector(`#btnNotTonight-${sessionId}`);
@@ -149,6 +154,31 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
   const sessionData = state[sessionKey];
   const deck = buildDeck(sessionData.intents || []);
   const activeCard = deck[sessionData.currentCardIndex || 0];
+  const mountedIndex = sessionData.currentCardIndex || 0;
+  const interaction = createDeckInteraction({
+    isCurrent: () => {
+      const current = store.getState()[sessionKey];
+      return card?.isConnected && current.screen === 's2'
+        && (current.currentCardIndex || 0) === mountedIndex
+        && buildDeck(current.intents || [])[mountedIndex]?.id === activeCard?.id;
+    },
+    record: reaction => store.recordReaction(sessionId, { cardId: activeCard.id, reaction }),
+    onLock: () => {
+      if (hintTimer !== null) clearTimeout(hintTimer);
+      hintTimer = null;
+      [btnNot, btnMaybe, btnInto].forEach(button => { if (button) button.disabled = true; });
+    },
+    target: window,
+    isTyping: element => Boolean(element?.closest?.('input, textarea, select, [contenteditable="true"], dialog'))
+  });
+  const cleanup = () => {
+    interaction.dispose();
+    if (hintTimer !== null) clearTimeout(hintTimer);
+    hintTimer = null;
+    controller.abort();
+    if (container.deckCleanup === cleanup) container.deckCleanup = null;
+  };
+  container.deckCleanup = cleanup;
 
   // Item 19: if this render follows an undo, fly the card back in from the side it left.
   if (card && pendingUndoSide) {
@@ -156,18 +186,18 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
     pendingUndoSide = null;
     if (!prefersReducedMotion()) {
       card.classList.add(`milo-card-undo-${side}`);
-      card.addEventListener('animationend', () => card.classList.remove(`milo-card-undo-${side}`), { once: true });
+      listen(card, 'animationend', () => card.classList.remove(`milo-card-undo-${side}`), { once: true });
     }
   }
 
   // First card only: after ~1s of idle pause, a quiet directional nudge (5px). Once only.
   if (card && !firstCardHintShown && (sessionData.currentCardIndex || 0) === 0 && !prefersReducedMotion()) {
-    let hintTimer = setTimeout(() => {
+    hintTimer = setTimeout(() => {
       hintTimer = null;
       if (!card.isConnected || firstCardHintShown) return;
       firstCardHintShown = true;
       card.classList.add('milo-card-nudge');
-      card.addEventListener('animationend', () => card.classList.remove('milo-card-nudge'), { once: true });
+      listen(card, 'animationend', () => card.classList.remove('milo-card-nudge'), { once: true });
     }, 1100);
     const cancelHint = () => {
       if (hintTimer) { clearTimeout(hintTimer); hintTimer = null; }
@@ -175,61 +205,56 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
       card.classList.remove('milo-card-nudge');
     };
     // Any interaction immediately silences the hint.
-    ['touchstart', 'mousedown', 'pointerdown'].forEach(evt => card.addEventListener(evt, cancelHint, { passive: true, once: true }));
-    [btnNot, btnMaybe, btnInto, undoBtn].forEach(btn => btn && btn.addEventListener('click', cancelHint, { once: true }));
+    ['touchstart', 'mousedown', 'pointerdown'].forEach(evt => listen(card, evt, cancelHint, { passive: true, once: true }));
+    [btnNot, btnMaybe, btnInto, undoBtn].forEach(btn => btn && listen(btn, 'click', cancelHint, { once: true }));
   }
 
   function commitReaction(reaction, exitType = 'fly') {
-    if (!card) return;
+    interaction.commit(reaction, () => {
+      if (exitType === 'fly-right') {
+        card.style.transition = 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease';
+        card.style.transform = 'translate3d(120%, 0, 0) rotate(16deg)';
+        card.style.opacity = '0';
+      } else if (exitType === 'fly-left') {
+        card.style.transition = 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease';
+        card.style.transform = 'translate3d(-120%, 0, 0) rotate(-16deg)';
+        card.style.opacity = '0';
+      } else if (exitType === 'sink') {
+        // Maybe sinks: drops 24px, scales to 0.94, fades out
+        card.style.transition = 'transform 240ms ease, opacity 240ms ease';
+        card.style.transform = 'translate3d(0, 24px, 0) scale(0.94)';
+        card.style.opacity = '0';
+      }
 
-    if (exitType === 'fly-right') {
-      card.style.transition = 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease';
-      card.style.transform = 'translate3d(120%, 0, 0) rotate(16deg)';
-      card.style.opacity = '0';
-    } else if (exitType === 'fly-left') {
-      card.style.transition = 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease';
-      card.style.transform = 'translate3d(-120%, 0, 0) rotate(-16deg)';
-      card.style.opacity = '0';
-    } else if (exitType === 'sink') {
-      // Maybe sinks: drops 24px, scales to 0.94, fades out
-      card.style.transition = 'transform 240ms ease, opacity 240ms ease';
-      card.style.transform = 'translate3d(0, 24px, 0) scale(0.94)';
-      card.style.opacity = '0';
-    }
-
-    setTimeout(() => {
-      store.recordReaction(sessionId, {
-        cardId: activeCard ? activeCard.id : 'unknown',
-        reaction
-      });
     }, exitType === 'sink' ? 240 : 260);
   }
 
   // Button actions
   if (btnNot) {
-    btnNot.addEventListener('click', (e) => {
+    listen(btnNot, 'click', (e) => {
       e.stopPropagation();
       commitReaction('not_tonight', 'fly-left');
     });
   }
 
   if (btnMaybe) {
-    btnMaybe.addEventListener('click', (e) => {
+    listen(btnMaybe, 'click', (e) => {
       e.stopPropagation();
       commitReaction('maybe', 'sink');
     });
   }
 
   if (btnInto) {
-    btnInto.addEventListener('click', (e) => {
+    listen(btnInto, 'click', (e) => {
       e.stopPropagation();
       commitReaction('into_it', 'fly-right');
     });
   }
 
   if (undoBtn) {
-    undoBtn.addEventListener('click', (e) => {
+    listen(undoBtn, 'click', (e) => {
       e.stopPropagation();
+      cleanup();
       const currentIdx = sessionData.currentCardIndex || 0;
       if (currentIdx === 0) {
         store.setSessionScreen(sessionId, sessionId === 'sneha' ? 's1' : 'planning_path');
@@ -251,6 +276,7 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
     const badgeNot = card.querySelector('.milo-badge-not-tonight');
 
     function onStart(clientX, clientY) {
+      if (!interaction.canInteract()) return;
       startX = clientX;
       startY = clientY;
       currentX = 0;
@@ -259,7 +285,7 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
     }
 
     function onMove(clientX, clientY) {
-      if (!isDragging) return;
+      if (!isDragging || !interaction.canInteract()) return;
       const deltaX = clientX - startX;
       const deltaY = clientY - startY;
 
@@ -289,7 +315,7 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
     }
 
     function onEnd() {
-      if (!isDragging) return;
+      if (!isDragging || !interaction.canInteract()) return;
       isDragging = false;
       const cardWidth = card.offsetWidth || 300;
       const threshold = cardWidth * 0.30;
@@ -311,19 +337,19 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
     }
 
     // Touch events
-    card.addEventListener('touchstart', (e) => {
+    listen(card, 'touchstart', (e) => {
       onStart(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
 
-    card.addEventListener('touchmove', (e) => {
+    listen(card, 'touchmove', (e) => {
       onMove(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
 
-    card.addEventListener('touchend', onEnd);
-    card.addEventListener('touchcancel', onEnd);
+    listen(card, 'touchend', onEnd);
+    listen(card, 'touchcancel', onEnd);
 
     // Mouse events
-    card.addEventListener('mousedown', (e) => {
+    listen(card, 'mousedown', (e) => {
       onStart(e.clientX, e.clientY);
       const onMouseMove = (moveEvent) => onMove(moveEvent.clientX, moveEvent.clientY);
       const onMouseUp = () => {
@@ -331,26 +357,19 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
         window.removeEventListener('mousemove', onMouseMove);
         window.removeEventListener('mouseup', onMouseUp);
       };
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
+      listen(window, 'mousemove', onMouseMove);
+      listen(window, 'mouseup', onMouseUp);
     });
 
     // CRITICAL: Tapping card does NOT vote Maybe or anything!
-    card.addEventListener('click', (e) => {
+    listen(card, 'click', (e) => {
       e.preventDefault();
       // No reaction on tap
     });
   }
 
-  // Keyboard navigation
-  const onKeyDown = (e) => {
-    if (e.key === 'ArrowLeft') {
-      commitReaction('not_tonight', 'fly-left');
-    } else if (e.key === 'ArrowDown') {
-      commitReaction('maybe', 'sink');
-    } else if (e.key === 'ArrowRight') {
-      commitReaction('into_it', 'fly-right');
-    }
-  };
-  window.addEventListener('keydown', onKeyDown, { once: true });
-                                                                                                                                                                           }
+  interaction.bindKeyboard(reaction => {
+    commitReaction(reaction, reaction === 'maybe' ? 'sink' : reaction === 'into_it' ? 'fly-right' : 'fly-left');
+  });
+  return cleanup;
+}
