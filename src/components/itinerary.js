@@ -42,10 +42,17 @@ export function slotKey(name) {
   return 'cosy';
 }
 
-export function renderItinerary(night, original, { editable = true, lockedSlots = false } = {}) {
+export function renderItinerary(night, original, { editable = true, lockedSlots = false, stacked = false } = {}) {
   return night.beats.map((beat, i) => {
     const image = beat.image || SLOT_POOLS[slotKey(original.beats[i].name)][0].image;
     const locked = lockedSlots;
+    if (stacked) return `<button type="button" class="milo-tile milo-plan-tile" data-customise-slot="${i}" aria-label="Customise ${beat.name}" ${locked ? 'disabled title="This night has already been suggested"' : ''}>
+      <img src="${image}" alt="" class="milo-tile-img" loading="lazy" />
+      <span class="milo-tile-scrim" aria-hidden="true"></span>
+      <span class="milo-plan-step" aria-hidden="true">0${i + 1}</span>
+      <span class="milo-plan-edit" aria-hidden="true">↗</span>
+      <span class="milo-plan-caption"><span class="milo-tile-label">${beat.name}</span><span class="milo-plan-detail">${beat.desc}</span></span>
+    </button>`;
     return `
       <div class="milo-timeline-item milo-visual-beat">
         <div class="milo-timeline-track" aria-hidden="true">
