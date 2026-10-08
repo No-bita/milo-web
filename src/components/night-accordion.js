@@ -3,7 +3,7 @@ import '../styles/night-accordion.css';
 // Keep browsing local to each view: expanding is not a selection or a store write.
 const expandedBySession = new Map();
 
-export function renderNightAccordion(items, { sessionId, suggestion, partnerPickLabel }) {
+export function renderNightAccordion(items, { sessionId, suggestion, partnerPickLabel, showWhy = true }) {
   const remembered = expandedBySession.get(sessionId);
   const openId = items.some(item => item.night.id === remembered) ? remembered : items[0]?.night.id;
   return items.map((item, index) => {
@@ -33,7 +33,7 @@ export function renderNightAccordion(items, { sessionId, suggestion, partnerPick
             <div class="milo-night-panel-content">
               <p class="milo-night-option-fit">${item.fitLine}</p>
               <p class="milo-night-option-beats">${night.beats.map(beat => beat.name).join(' <span aria-hidden="true">→</span> ')}</p>
-              <div class="milo-night-option-why"><span class="milo-night-why-label">Why it fits</span><p>${item.whyItWorks}</p></div>
+              ${showWhy ? `<div class="milo-night-option-why"><span class="milo-night-why-label">Why it fits</span><p>${item.whyItWorks}</p></div>` : ''}
               <button type="button" class="milo-night-open milo-pill-btn-primary" data-open-night="${night.id}">Open this night <span aria-hidden="true">→</span></button>
             </div>
           </div>
