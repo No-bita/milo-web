@@ -30,9 +30,8 @@ export function renderNightTiming(nightId, sessionId, { solo = false } = {}) {
   const id = `milo-timing-${sessionId}`;
   return `
     <section class="milo-timing-feed" aria-labelledby="${id}-title">
-      <div class="milo-section-label">MAKE TIME FOR IT</div>
       <h2 id="${id}-title">When's your night?</h2>
-      <p class="milo-timing-intro">${solo ? 'Choose a time for this draft. Your partner has not agreed to it.' : "The plan's picked. Choose when it happens."}</p>
+      ${solo ? '<p class="milo-timing-intro">Choose a time for this draft. Your partner has not agreed to it.</p>' : ''}
       <p class="milo-timing-saved" role="status" ${timing ? '' : 'hidden'}>${timing ? escape(timingLabel(timing)) : ''}</p>
       <form class="milo-timing-form" ${timing ? 'hidden' : ''}>
         <div class="milo-timeline-item">
