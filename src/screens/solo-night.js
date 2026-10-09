@@ -13,7 +13,7 @@ export function renderSoloNight(sessionId = 'aarav') {
   const timingStep = state.sessionA.soloTimingStep === night.id;
   if (timingStep) return `<div class="milo-s7-container milo-closing-state" data-session-id="${sessionId}">
     <header class="milo-header"><button class="milo-header-back" id="miloSoloTimingBack" aria-label="Back to itinerary">←</button><span class="milo-wordmark">milo.</span></header>
-    <div class="milo-s7-body"><h1 class="milo-headline">Draft saved.</h1><p class="milo-body-text">${night.name}</p>${renderNightTiming(night.id, sessionId, { solo: true })}</div>
+    <div class="milo-s7-body">${renderNightTiming(night.id, sessionId, { solo: true })}</div>
   </div>`;
   return `<div class="milo-s7-container" data-session-id="${sessionId}">
     <div class="milo-s7-hero">
