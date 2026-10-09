@@ -1,6 +1,7 @@
 import { store } from '../domain/store.js';
 import { homeSummary } from '../logic/home.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
+import { renderTabBar, attachTabBar } from '../components/tab-bar.js';
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -36,7 +37,7 @@ export function renderHome(sessionId = 'aarav') {
        <div class="milo-home-row"><span class="milo-home-avatar milo-home-avatar-plus" aria-hidden="true">+</span><div><b>Invite your person</b><span>Plan together. Both of you say yes.</span></div></div>`
     : `${planCard(summary, state)}
        <div class="milo-home-row"><span class="milo-home-avatar" aria-hidden="true">${escape(summary.partner.charAt(0).toUpperCase())}</span><div><b>${partner}</b><span>${escape(summary.partnerStatus)}</span></div></div>`;
-  return `<div class="milo-home" data-session-id="${sessionId}">
+  return `<div class="milo-home milo-tabscreen" data-session-id="${sessionId}">
     <header class="milo-header"><span class="milo-wordmark">milo.</span></header>
     <div class="milo-home-body">
       <p class="milo-home-greet">${greeting()}</p>
@@ -44,13 +45,13 @@ export function renderHome(sessionId = 'aarav') {
       ${lead}
       ${body}
     </div>
-    <div class="milo-home-cta"><button class="milo-cta-button" type="button" id="miloHomeStart">Start a new night</button></div>
+    ${renderTabBar('home')}
   </div>`;
 }
 
 export function attachHomeListeners(container, sessionId = 'aarav') {
+  attachTabBar(container, sessionId);
   const summary = homeSummary(store.getState());
-  container.querySelector('#miloHomeStart')?.addEventListener('click', () => store.setSessionScreen(sessionId, 's1'));
   container.querySelector('#miloHomeOpen')?.addEventListener('click', () => {
     if (summary.action === 'open-waiting') store.setSessionScreen(sessionId, 's4_waiting');
     else store.updateSession(sessionId, { screen: 's7', activeNightId: summary.nightId });
