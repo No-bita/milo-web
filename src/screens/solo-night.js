@@ -1,5 +1,5 @@
 import { renderItinerary, attachItinerary } from '../components/itinerary.js';
-import { renderNightTiming, attachNightTiming } from '../components/night-timing.js';
+import { renderNightTiming, attachNightTiming, timingForNight } from '../components/night-timing.js';
 import { store } from '../domain/store.js';
 import { computePlanningOutput } from '../logic/planning.js';
 
@@ -13,7 +13,9 @@ export function renderSoloNight(sessionId = 'aarav') {
   const timingStep = state.sessionA.soloTimingStep === night.id;
   if (timingStep) return `<div class="milo-s7-container milo-closing-state" data-session-id="${sessionId}">
     <header class="milo-header"><button class="milo-header-back" id="miloSoloTimingBack" aria-label="Back to itinerary">←</button><span class="milo-wordmark">milo.</span></header>
-    <div class="milo-s7-body">${renderNightTiming(night.id, sessionId, { solo: true })}</div>
+    <div class="milo-s7-body">${renderNightTiming(night.id, sessionId, { solo: true })}
+      ${timingForNight(night.id, { solo: true }) ? '<div class="milo-s7-actions"><button class="milo-cta-button" id="miloSoloContinue">Continue</button></div>' : ''}
+    </div>
   </div>`;
   return `<div class="milo-s7-container" data-session-id="${sessionId}">
     <div class="milo-s7-hero">
@@ -39,6 +41,7 @@ export function attachSoloNightListeners(container, sessionId = 'aarav') {
   const item = nights.find(item => item.night.id === state.sessionA.activeNightId) || nights[0];
   if (state.sessionA.soloTimingStep === item.night.id) {
     attachNightTiming(container, item.night.id, sessionId, { solo: true });
+    container.querySelector('#miloSoloContinue')?.addEventListener('click', () => store.setSessionScreen(sessionId, 's4_waiting'));
     container.querySelector('#miloSoloTimingBack')?.addEventListener('click', () => store.updateSession(sessionId, { soloTimingStep: null }));
     return;
   }
