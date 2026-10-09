@@ -11,3 +11,11 @@
 .milo-tabbar { overflow: visible; }
 .milo-tab[data-tab="plan"] { color: var(--color-oxblood); font-weight: 600; }
 .milo-tab[data-tab="plan"] svg { box-sizing: content-box; width: 22px; height: 22px; padding: 11px; margin-top: -22px; border-radius: 50%; background: var(--color-oxblood); color: #fff; stroke-width: 2; box-shadow: 0 6px 14px rgba(107, 33, 38, 0.3), 0 0 0 5px var(--color-ivory); }
+.milo-tabbar.has-group { grid-template-columns: 1fr 1fr 1fr 1fr 1.3fr; overflow: visible; }
+.milo-group-tile { align-self: end; margin: -6px -8px 0 6px; height: 58px; border: 0; border-radius: 18px 0 0 18px; background: linear-gradient(160deg, #2b2623, #1C1917); color: var(--color-ivory); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 -4px 14px rgba(28, 25, 23, .2); cursor: pointer; }
+.milo-group-dots { display: flex; gap: 3px; }
+.milo-group-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--color-ivory); opacity: .9; }
+.milo-group-dots i:nth-child(2) { opacity: .55; }
+.milo-group-word { font: italic 400 21px/1 var(--font-serif); letter-spacing: -.02em; }
+.milo-group-sub { font: 600 8px var(--font-sans); letter-spacing: .12em; opacity: .8; }
+.milo-group-tile:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 2px; }
