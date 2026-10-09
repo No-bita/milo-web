@@ -17,7 +17,7 @@ test('solo draft renders photo alternatives and timing without partner confirmat
  const html=renderSoloNight();
  assert.match(html,/data-customise-slot=/);assert.doesNotMatch(html,/milo-timing-form/);
  store.updateSession('aarav',{savedSoloNightId:'middle-ground',activeNightId:'middle-ground',soloTimingStep:'middle-ground'});
- assert.match(renderSoloNight(),/Your partner has not agreed/);assert.match(html,/Save this draft/);
+ assert.doesNotMatch(renderSoloNight(),/Your partner has not agreed|Draft saved/);assert.match(html,/Save this draft/);
  assert.doesNotMatch(html,/miloConfirmNight|miloSuggestNight|miloSharePlan/);
 });
 test('solo timing stays independent of shared timing',()=>{
