@@ -21,6 +21,12 @@ export function renderBooked(sessionId = 'aarav') {
   const partner = state.sessionA.partnerName || 'your partner';
   const timing = timingForNight(night.id) || timingForNight(night.id, { solo: true });
   const beats = night.beats.map((beat) => `<li>${escape(beat.name)}</li>`).join('');
+  const notes = (state.sessionA.bookingRequests || '').trim();
+  const lock = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  const privateBox = notes ? `<section class="milo-booked-private" aria-label="Private requests">
+        <p class="milo-booked-label">${lock}PRIVATE REQUESTS · ONLY YOU</p>
+        <p>${escape(notes)}</p>
+      </section>` : '';
   return `<div class="milo-booked" data-session-id="${sessionId}">
     <header class="milo-header"><span class="milo-wordmark">milo.</span></header>
     <div class="milo-booked-body">
@@ -34,6 +40,7 @@ export function renderBooked(sessionId = 'aarav') {
         <p class="milo-booked-ref">Ref MLO-DEMO</p>
         <div class="milo-booked-seal" aria-hidden="true"><span>m.</span></div>
       </article>
+      ${privateBox}
     </div>
     <div class="milo-booked-cta">
       <button class="milo-cta-button" type="button" id="miloBookedCalendar">Add to calendar</button>
