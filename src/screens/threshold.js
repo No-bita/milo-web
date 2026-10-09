@@ -26,6 +26,8 @@ export function attachThresholdListeners(container, sessionId = 'aarav') {
     store.advanceToS2(sessionId);
   };
 
+  container.thresholdCleanup = () => { if (timer) clearTimeout(timer); timer = null; };
+
   // Auto-advance after 1.8s
   timer = setTimeout(advance, 1800);
 
