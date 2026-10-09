@@ -1,0 +1,16 @@
+.milo-req { height: 100%; display: flex; flex-direction: column; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)); overflow-y: auto; }
+.milo-req-body { flex: 1 0 auto; padding-top: 12px; }
+.milo-req-title { font-family: var(--font-serif); font-weight: 400; font-size: 32px; line-height: 1.1; }
+.milo-req-note { display: block; width: 100%; margin-top: 22px; min-height: 92px; padding: 14px; border: 1px solid var(--color-taupe); border-radius: 14px; background: #fff; font: 400 14px/20px var(--font-sans); color: var(--color-ink); resize: none; box-sizing: border-box; }
+.milo-req-note:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 2px; }
+.milo-req-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.milo-req-chip { padding: 11px 16px; border-radius: 999px; border: 1px solid var(--color-taupe); background: #fff; font: 500 14px var(--font-sans); color: var(--color-ink); cursor: pointer; }
+.milo-req-secret { margin-top: 22px; padding: 14px 16px; border-radius: 14px; background: #EFE8DE; }
+.milo-req-secret b { display: block; font: 600 14px var(--font-sans); }
+.milo-req-secret span { display: block; margin-top: 2px; font-size: 12px; line-height: 17px; color: var(--color-ink-muted); }
+.milo-req-cta { flex: none; padding-top: 16px; text-align: center; }
+.milo-req-cta .milo-cta-button { width: 100%; }
+.milo-req-cta .milo-text-button { margin-top: 12px; }
+.milo-booked-private { margin: 56px 12px 0; padding: 16px; text-align: left; border: 1px dashed rgba(110, 34, 40, .45); border-radius: 14px; background: rgba(110, 34, 40, .04); }
+.milo-booked-private .milo-booked-label { display: flex; align-items: center; gap: 8px; }
+.milo-booked-private p:not(.milo-booked-label) { margin-top: 8px; font-size: 14px; line-height: 20px; white-space: pre-line; }
