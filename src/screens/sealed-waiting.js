@@ -48,6 +48,6 @@ export function renderSealedWaiting(sessionId = 'aarav') {
 }
 
 export function attachSealedWaitingListeners(container, sessionId = 'aarav') {
-  container.querySelector('#miloBookedBook')?.addEventListener('click', () => store.setSessionScreen(sessionId, 'booked'));
+  container.querySelector('#miloBookedBook')?.addEventListener('click', () => store.setSessionScreen(sessionId, 'requests'));
   container.querySelector('#miloBookedInvite')?.addEventListener('click', () => copyInvite({ onPrepared: () => {} }));
 }
