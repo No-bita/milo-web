@@ -63,3 +63,6 @@
   0% { opacity: 0.35; transform: scale(0.1); }
   100% { opacity: 1; transform: scale(70); background: var(--color-ivory); }
 }
+
+/* The journey heading takes programmatic focus after the splash. It is not interactive, so no ring. */
+.milo-headline[tabindex="-1"]:focus { outline: none; }
