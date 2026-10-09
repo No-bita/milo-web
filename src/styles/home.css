@@ -15,5 +15,3 @@
 .milo-home-row span:not(.milo-home-avatar) { font-size: 13px; line-height: 19px; color: var(--color-ink-muted); }
 .milo-home-avatar { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--color-oxblood); color: #fff; font-size: 12px; display: grid; place-items: center; }
 .milo-home-avatar-plus { background: var(--color-taupe); color: var(--color-ink); }
-.milo-home-cta { flex: none; padding-top: 16px; }
-.milo-home-cta .milo-cta-button { width: 100%; }
