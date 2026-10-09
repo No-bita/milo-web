@@ -23,6 +23,7 @@ import { renderHome, attachHomeListeners } from './screens/home.js';
 import { renderNights, attachNightsListeners } from './screens/nights-tab.js';
 import { renderYou, attachYouListeners } from './screens/you-tab.js';
 import { shouldShowHome } from './logic/home.js';
+import { renderRequests, attachRequestsListeners } from './screens/requests.js';
 import { renderBooked, attachBookedListeners } from './screens/booked.js';
 import { renderGroupSoon, attachGroupSoonListeners } from './screens/group-soon.js';
 import { renderSealedWaiting, attachSealedWaitingListeners } from './screens/sealed-waiting.js';
@@ -86,6 +87,8 @@ function renderSessionContent(sessionId) {
       return renderYou(sessionId);
     case 'group':
       return renderGroupSoon(sessionId);
+    case 'requests':
+      return renderRequests(sessionId);
     case 'booked':
       return renderBooked(sessionId);
     case 's7':
@@ -144,6 +147,9 @@ function attachSessionListeners(container, sessionId) {
       break;
     case 'group':
       attachGroupSoonListeners(container, sessionId);
+      break;
+    case 'requests':
+      attachRequestsListeners(container, sessionId);
       break;
     case 'booked':
       attachBookedListeners(container, sessionId);
