@@ -1,0 +1,22 @@
+.milo-strip { display: flex; gap: 8px; overflow-x: auto; margin: 4px -20px 20px; padding: 4px 20px 8px; scroll-snap-type: x proximity; scrollbar-width: none; }
+.milo-strip::-webkit-scrollbar { display: none; }
+.milo-strip-day { flex: 0 0 64px; min-height: 76px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 8px 4px; border: 1px solid var(--color-taupe); border-radius: 14px; background: var(--color-ivory); color: var(--color-ink); font: 12px var(--font-sans); cursor: pointer; }
+.milo-strip-day strong { font: 600 20px/1 var(--font-sans); }
+.milo-strip-day em { font-style: normal; font-size: 11px; color: var(--color-ink-muted); }
+.milo-strip-day.is-on { background: var(--color-oxblood); border-color: var(--color-oxblood); color: #fff; }
+.milo-strip-day.is-on em { color: rgba(255,255,255,.8); }
+.milo-clock { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 20px; }
+.milo-clock-readout { display: flex; align-items: center; gap: 6px; font: 600 34px/1 var(--font-sans); }
+.milo-clock-part { min-width: 64px; min-height: 48px; border: 0; border-radius: 12px; background: var(--color-ivory); font: inherit; color: var(--color-ink-muted); cursor: pointer; }
+.milo-clock-part.is-on { background: var(--color-taupe); color: var(--color-ink); }
+.milo-meridiem { display: flex; flex-direction: column; margin-left: 8px; border: 1px solid var(--color-taupe); border-radius: 10px; overflow: hidden; }
+.milo-meridiem button { min-width: 48px; min-height: 44px; border: 0; background: transparent; font: 600 13px var(--font-sans); color: var(--color-ink); cursor: pointer; }
+.milo-meridiem button[aria-checked=true] { background: var(--color-oxblood); color: #fff; }
+.milo-clock { position: relative; }
+.milo-clock-face { width: 196px; height: 196px; display: block; }
+.milo-clock-ring { fill: var(--color-ivory); stroke: var(--color-taupe); }
+.milo-clock-hand { stroke: var(--color-oxblood); stroke-width: 2; stroke-linecap: round; }
+.milo-clock-nums { position: relative; width: 196px; height: 196px; margin-top: -208px; }
+.milo-clock-num { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border: 0; border-radius: 50%; background: transparent; font: 500 15px var(--font-sans); color: var(--color-ink); cursor: pointer; }
+.milo-clock-num.is-on { background: var(--color-oxblood); color: #fff; }
+.milo-clock-num:disabled { color: var(--color-taupe); cursor: not-allowed; text-decoration: line-through; }
