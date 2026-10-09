@@ -24,6 +24,7 @@ import { renderNights, attachNightsListeners } from './screens/nights-tab.js';
 import { renderYou, attachYouListeners } from './screens/you-tab.js';
 import { shouldShowHome } from './logic/home.js';
 import { renderBooked, attachBookedListeners } from './screens/booked.js';
+import { renderGroupSoon, attachGroupSoonListeners } from './screens/group-soon.js';
 import { renderSealedWaiting, attachSealedWaitingListeners } from './screens/sealed-waiting.js';
 
 // Partner A waits on the sealed screen until the partner's half lands.
@@ -83,6 +84,8 @@ function renderSessionContent(sessionId) {
       return renderNights(sessionId);
     case 'you':
       return renderYou(sessionId);
+    case 'group':
+      return renderGroupSoon(sessionId);
     case 'booked':
       return renderBooked(sessionId);
     case 's7':
@@ -138,6 +141,9 @@ function attachSessionListeners(container, sessionId) {
       break;
     case 'you':
       attachYouListeners(container, sessionId);
+      break;
+    case 'group':
+      attachGroupSoonListeners(container, sessionId);
       break;
     case 'booked':
       attachBookedListeners(container, sessionId);
