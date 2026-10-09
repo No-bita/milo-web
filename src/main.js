@@ -18,6 +18,7 @@ import './styles/timing-picker.css';
 import './styles/home.css';
 import './styles/tab-bar.css';
 import './styles/candle-loader.css';
+import './styles/booked.css';
 import { showFirstOpen } from './components/first-open.js';
 import { initApp } from './app.js';
 import { installPremiumIcons } from './components/premium-icons.js';
