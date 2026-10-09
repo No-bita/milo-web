@@ -19,6 +19,13 @@ import { renderScreen04, attachScreen04Listeners, patchScreen04 } from './screen
 import { renderScreen05, attachScreen05Listeners, confirmReturnToMoods } from './screens/s5-shared.js';
 import { renderScreen06, attachScreen06Listeners } from './screens/s6-nights.js';
 import { renderScreen07, attachScreen07Listeners } from './screens/s7-your-night.js';
+import { renderBooked, attachBookedListeners } from './screens/booked.js';
+import { renderSealedWaiting, attachSealedWaitingListeners } from './screens/sealed-waiting.js';
+
+// Partner A waits on the sealed screen until the partner's half lands.
+function showSealedWaiting() {
+  return !['s5', 's6', 's7'].includes(store.getState().sessionB?.screen);
+}
 
 // Screens that can update in place when only state (not the screen) changes.
 // Screens without a patcher fall back to a full re-render, as before.
@@ -59,12 +66,15 @@ function renderSessionContent(sessionId) {
     case 's3':
       return sessionId === 'sneha' ? renderScreen05(sessionId) : renderScreen03(sessionId);
     case 's4_invite':
-    case 's4_waiting':
       return renderScreen04(sessionId);
+    case 's4_waiting':
+      return showSealedWaiting() ? renderSealedWaiting(sessionId) : renderScreen04(sessionId);
     case 's5':
       return renderScreen05(sessionId);
     case 's6':
       return renderScreen06(sessionId);
+    case 'booked':
+      return renderBooked(sessionId);
     case 's7':
       return renderScreen07(sessionId);
     case 's1':
@@ -98,14 +108,20 @@ function attachSessionListeners(container, sessionId) {
       else attachScreen03Listeners(container, sessionId);
       break;
     case 's4_invite':
-    case 's4_waiting':
       attachScreen04Listeners(container, sessionId);
+      break;
+    case 's4_waiting':
+      if (showSealedWaiting()) attachSealedWaitingListeners(container, sessionId);
+      else attachScreen04Listeners(container, sessionId);
       break;
     case 's5':
       attachScreen05Listeners(container, sessionId);
       break;
     case 's6':
       attachScreen06Listeners(container, sessionId);
+      break;
+    case 'booked':
+      attachBookedListeners(container, sessionId);
       break;
     case 's7':
       attachScreen07Listeners(container, sessionId);
@@ -211,6 +227,7 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
       store.setSessionScreen('sneha', 's0');
     } else if (screenParam === 's4_waiting') {
       store.updateShared({ invitePrepared: true });
+      if (new URLSearchParams(location.search).has('demo')) store.updateSession('aarav', { intents: ['intimate', 'fun'], savedSoloNightId: 'middle-ground', soloTimings: { 'middle-ground': { nightId: 'middle-ground', date: '2026-10-17', time: '19:30', timeZone: 'Asia/Calcutta' } } });
       store.setSessionScreen('aarav', 's4_waiting');
       store.setSessionScreen('sneha', 's0');
     } else if (screenParam === 's5') {
@@ -227,13 +244,15 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
         suggestion: { by: 'sneha', nightId: 'middle-ground' }
       });
       store.updateSession('aarav', { screen: 's6' });
-      store.updateSession('sneha', { screen: 's7', activeNightId: 'middle-ground' });
+      store.updateSession('sneha', { screen: 's7' });
+    } else if (screenParam === 'booked') {
+      store.updateSession('aarav', { screen: 'booked', savedSoloNightId: 'middle-ground', activeNightId: 'middle-ground', soloTimings: { 'middle-ground': { nightId: 'middle-ground', date: '2026-10-17', time: '19:30', timeZone: 'Asia/Calcutta' } } });
     } else if (screenParam === 'closed') {
       store.updateShared({
         confirmedNightId: 'middle-ground'
       });
-      store.updateSession('aarav', { screen: 's7', activeNightId: 'middle-ground' });
-      store.updateSession('sneha', { screen: 's7', activeNightId: 'middle-ground' });
+      store.updateSession('aarav', { screen: 's7' });
+      store.updateSession('sneha', { screen: 's7' });
     }
   }
 
