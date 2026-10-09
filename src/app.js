@@ -7,6 +7,7 @@
 import { renderPlanningPath, attachPlanningPathListeners } from './screens/planning-path.js';
 import { loadPersonalSynthesis, mountSynthesisLoader } from './components/synthesis-loader.js';
 import { store } from './domain/store.js';
+import { attachJourneyHistory } from './domain/journey-history.js';
 import { inviteFromParams, renderInviteError } from './domain/invite.js';
 import { attachStorageAdapter } from './domain/storage-adapter.js';
 import { renderScreen00, attachScreen00Listeners } from './screens/s0-invitation.js';
@@ -15,7 +16,7 @@ import { renderThreshold, attachThresholdListeners } from './screens/threshold.j
 import { renderScreen02, attachScreen02Listeners } from './screens/s2-deck.js';
 import { renderScreen03, attachScreen03Listeners } from './screens/s3-synthesis.js';
 import { renderScreen04, attachScreen04Listeners, patchScreen04 } from './screens/s4-invite-wait.js';
-import { renderScreen05, attachScreen05Listeners } from './screens/s5-shared.js';
+import { renderScreen05, attachScreen05Listeners, confirmReturnToMoods } from './screens/s5-shared.js';
 import { renderScreen06, attachScreen06Listeners } from './screens/s6-nights.js';
 import { renderScreen07, attachScreen07Listeners } from './screens/s7-your-night.js';
 
@@ -272,6 +273,7 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
     }
 
     viewport?.deckCleanup?.();
+    viewport?.thresholdCleanup?.();
     const isNavigation = mountedKey !== null && mountedKey !== key;
     const previousFocus = viewport?.contains(document.activeElement) ? document.activeElement : null;
     const focusKey = previousFocus?.id || previousFocus?.getAttribute('data-customise-slot');
@@ -310,11 +312,22 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
     }
   }
 
+  const activeSessionId = asParam === 'sneha' ? 'sneha' : 'aarav';
+  const detachHistory = attachJourneyHistory(store, {
+    sessionId: activeSessionId, root: container,
+    confirmPartnerBack: () => confirmReturnToMoods(container.querySelector('#viewport-sneha'))
+  });
+
   // Initial render
   render();
 
   // Re-render on store updates
-  store.subscribe(() => {
+  const stopRender = store.subscribe(() => {
     render();
   });
+  return () => {
+    stopRender(); detachHistory(); disposeSynthesis?.();
+    const viewport = container.querySelector(`#viewport-${activeSessionId}`);
+    viewport?.deckCleanup?.(); viewport?.inviteCleanup?.(); viewport?.thresholdCleanup?.();
+  };
 }
