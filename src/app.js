@@ -20,6 +20,8 @@ import { renderScreen05, attachScreen05Listeners, confirmReturnToMoods } from '.
 import { renderScreen06, attachScreen06Listeners } from './screens/s6-nights.js';
 import { renderScreen07, attachScreen07Listeners } from './screens/s7-your-night.js';
 import { renderHome, attachHomeListeners } from './screens/home.js';
+import { renderNights, attachNightsListeners } from './screens/nights-tab.js';
+import { renderYou, attachYouListeners } from './screens/you-tab.js';
 import { shouldShowHome } from './logic/home.js';
 
 // Screens that can update in place when only state (not the screen) changes.
@@ -69,6 +71,10 @@ function renderSessionContent(sessionId) {
       return renderScreen06(sessionId);
     case 'home':
       return renderHome(sessionId);
+    case 'nights':
+      return renderNights(sessionId);
+    case 'you':
+      return renderYou(sessionId);
     case 's7':
       return renderScreen07(sessionId);
     case 's1':
@@ -113,6 +119,12 @@ function attachSessionListeners(container, sessionId) {
       break;
     case 'home':
       attachHomeListeners(container, sessionId);
+      break;
+    case 'nights':
+      attachNightsListeners(container, sessionId);
+      break;
+    case 'you':
+      attachYouListeners(container, sessionId);
       break;
     case 's7':
       attachScreen07Listeners(container, sessionId);
