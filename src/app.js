@@ -19,6 +19,10 @@ import { renderScreen04, attachScreen04Listeners, patchScreen04 } from './screen
 import { renderScreen05, attachScreen05Listeners, confirmReturnToMoods } from './screens/s5-shared.js';
 import { renderScreen06, attachScreen06Listeners } from './screens/s6-nights.js';
 import { renderScreen07, attachScreen07Listeners } from './screens/s7-your-night.js';
+import { renderHome, attachHomeListeners } from './screens/home.js';
+import { renderNights, attachNightsListeners } from './screens/nights-tab.js';
+import { renderYou, attachYouListeners } from './screens/you-tab.js';
+import { shouldShowHome } from './logic/home.js';
 
 // Screens that can update in place when only state (not the screen) changes.
 // Screens without a patcher fall back to a full re-render, as before.
@@ -65,6 +69,12 @@ function renderSessionContent(sessionId) {
       return renderScreen05(sessionId);
     case 's6':
       return renderScreen06(sessionId);
+    case 'home':
+      return renderHome(sessionId);
+    case 'nights':
+      return renderNights(sessionId);
+    case 'you':
+      return renderYou(sessionId);
     case 's7':
       return renderScreen07(sessionId);
     case 's1':
@@ -106,6 +116,15 @@ function attachSessionListeners(container, sessionId) {
       break;
     case 's6':
       attachScreen06Listeners(container, sessionId);
+      break;
+    case 'home':
+      attachHomeListeners(container, sessionId);
+      break;
+    case 'nights':
+      attachNightsListeners(container, sessionId);
+      break;
+    case 'you':
+      attachYouListeners(container, sessionId);
       break;
     case 's7':
       attachScreen07Listeners(container, sessionId);
@@ -235,6 +254,11 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
       store.updateSession('aarav', { screen: 's7', activeNightId: 'middle-ground' });
       store.updateSession('sneha', { screen: 's7', activeNightId: 'middle-ground' });
     }
+  }
+
+  // Open on the homepage unless a link or invite points somewhere specific.
+  if (!screenParam && isGolden !== '1' && asParam !== 'sneha' && inviteStatus !== 'valid' && shouldShowHome(store.getState())) {
+    store.setSessionScreen('aarav', 'home');
   }
 
   let mountedKey = null;

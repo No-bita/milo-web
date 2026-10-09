@@ -113,7 +113,7 @@ for(const width of [320,420]){
    await b.locator('.milo-timing-saved:visible').waitFor();assert.equal((await state(b)).shared.timing.chosenBy,'aarav');assert.equal((await state(b)).shared.timing.time,'19:30');assert.match(await b.locator('.milo-timing-saved').textContent(),/19:30/);
    await b.reload();await b.locator('.milo-closing-state').waitFor();assert.equal((await state(b)).shared.timing.time,'19:30');
    // Reset is demo-only, exercised explicitly rather than exposed in the normal UI.
-   await a.evaluate(()=>localStorage.setItem('milo_intro_seen_v1','1'));await a.goto(origin+'/?demo=1');await a.locator('#miloResetBtn-aarav').click();await a.locator('.milo-reset-no').click();assert.ok((await state(a)).shared.confirmedNightId);
+   await a.evaluate(()=>localStorage.setItem('milo_intro_seen_v1','1'));await a.goto(origin+'/?demo=1');await a.locator('.milo-home').waitFor();await a.locator('#miloHomeOpen').click();await a.locator('#miloResetBtn-aarav').click();await a.locator('.milo-reset-no').click();assert.ok((await state(a)).shared.confirmedNightId);
    await a.locator('#miloResetBtn-aarav').click();await a.locator('.milo-reset-yes').click();await screen(b,'sessionB','s1');assert.equal((await state(b)).shared.confirmedNightId,null);
   }finally{await context.close();}
  });
