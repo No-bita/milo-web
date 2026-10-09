@@ -41,13 +41,25 @@
   color: var(--color-oxblood);
 }
 
-.milo-first-open .milo-first-open-cta {
-  flex: 0 0 56px;
-  gap: 10px;
-  margin-top: 0;
+.milo-first-open { position: relative; overflow: hidden; cursor: pointer; }
+.milo-first-open-brand { display: flex; align-items: flex-end; }
+.milo-first-open-brand > span { display: flex; align-items: flex-end; }
+.milo-first-open-i { position: relative; display: inline-block; }
+.milo-first-open-tit {
+  position: absolute; left: 50%; top: 0.205em; display: block;
+  width: 0.155em; height: 0.155em; margin-left: -0.0775em;
+  border-radius: 50%; background: var(--color-oxblood);
 }
-
-.milo-first-open-cta:focus-visible {
-  outline: 2px solid var(--color-oxblood);
-  outline-offset: 4px;
+.milo-first-open-period {
+  display: inline-block; width: 0.16em; height: 0.16em;
+  margin: 0 0 0.12em 0.02em; border-radius: 50%; background: var(--color-oxblood);
+}
+.milo-first-open-ripple {
+  position: absolute; width: 40px; height: 40px; border-radius: 50%;
+  background: var(--color-oxblood); opacity: 0; transform: scale(0); pointer-events: none;
+}
+.milo-first-open-ripple.is-on { animation: milo-first-open-ripple 0.8s ease-out forwards; }
+@keyframes milo-first-open-ripple {
+  0% { opacity: 0.35; transform: scale(0.1); }
+  100% { opacity: 1; transform: scale(70); background: var(--color-ivory); }
 }
