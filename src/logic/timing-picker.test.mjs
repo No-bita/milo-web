@@ -24,8 +24,8 @@ test('12h <-> 24h conversion incl. noon and midnight', () => {
   assert.deepEqual(from24h('19:30'), { hour12: 7, minute: 30, meridiem: 'PM' }); assert.equal(from24h('7:30'), null);
   assert.equal(snapMinute(58), 0); assert.equal(snapMinute(32), 30);
 });
-test('default start is the next 5 minutes, strictly in the future, across midnight', () => {
-  assert.deepEqual(defaultStart(new Date(2026, 9, 9, 19, 12, 30)), { date: '2026-10-09', time: '19:15' });
-  assert.deepEqual(defaultStart(new Date(2026, 9, 9, 19, 15, 0)), { date: '2026-10-09', time: '19:20' });
-  assert.deepEqual(defaultStart(new Date(2026, 9, 9, 23, 58)), { date: '2026-10-10', time: '00:00' });
+test('default start is 7:30 PM today, or tomorrow once that has passed', () => {
+  assert.deepEqual(defaultStart(new Date(2026, 9, 9, 12, 12, 30)), { date: '2026-10-09', time: '19:30' });
+  assert.deepEqual(defaultStart(new Date(2026, 9, 9, 19, 30, 0)), { date: '2026-10-10', time: '19:30' });
+  assert.deepEqual(defaultStart(new Date(2026, 9, 9, 23, 58)), { date: '2026-10-10', time: '19:30' });
 });
