@@ -18,3 +18,8 @@
 .milo-booked-ref { margin-top: 30px; max-width: 62%; font-size: 12px; line-height: 17px; color: var(--color-ink-muted); }
 .milo-booked-cta-row { display: flex; gap: 10px; }
 .milo-booked-cta-row > button { flex: 1 1 0; min-width: 0; margin: 0; }
+
+/* The seal stamps in once: a soft scale-and-settle. */
+@keyframes milo-seal-stamp { 0% { opacity: 0; transform: scale(1.35); } 60% { opacity: 1; transform: scale(.96); } 100% { opacity: 1; transform: scale(1); } }
+.milo-booked-seal { animation: milo-seal-stamp 400ms cubic-bezier(.2, .7, .3, 1) 150ms both; }
+@media (prefers-reduced-motion: reduce) { .milo-booked-seal { animation: none; } }
