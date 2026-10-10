@@ -31,7 +31,7 @@ export function renderRequests(sessionId = 'aarav') {
     <header class="milo-header"><button class="milo-header-back" id="miloReqBack" aria-label="Back">‹</button><span class="milo-wordmark">milo.</span><div class="milo-header-space"></div></header>
     <div class="milo-req-body">
       <h1 class="milo-req-title">Anything special we should know?</h1>
-      <textarea id="miloReqNote" class="milo-req-note" rows="4" placeholder="Flowers, a quiet table, something to celebrate..." aria-label="Anything special we should know" maxlength="1000">${escape(me.bookingRequests || '')}</textarea>
+      <textarea id="miloReqNote" class="milo-req-note" rows="4" placeholder="Flowers, a quiet table, something to celebrate..." aria-label="Anything special we should know" maxlength="1000">${escape(me.bookingDraft ?? me.bookingRequests ?? '')}</textarea>
       <div class="milo-req-chips">${chips}</div>
       <div class="milo-req-secret">
         <div><b>Keep this secret from ${partner}</b><span>${pronoun} won't see these requests. Pinky promise.</span></div>
@@ -51,9 +51,17 @@ export function attachRequestsListeners(container, sessionId = 'aarav') {
     note.focus();
     note.setSelectionRange(note.value.length, note.value.length);
   }));
-  container.querySelector('#miloReqBack')?.addEventListener('click', () => store.setSessionScreen(sessionId, 's4_waiting'));
+  const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
+  // Keep what they type in their own session. Silent write while typing, so the box keeps focus.
+  const saveDraft = () => {
+    const state = store.getState();
+    store.setState({ ...state, [sessionKey]: { ...state[sessionKey], bookingDraft: note.value } }, false);
+  };
+  note.addEventListener('input', saveDraft);
+  container.querySelectorAll('.milo-req-chip').forEach((chip) => chip.addEventListener('click', saveDraft));
+  container.querySelector('#miloReqBack')?.addEventListener('click', () => store.updateSession(sessionId, { bookingDraft: note.value, screen: 's4_waiting' }));
   // Demo only: the note stays in app state. Nothing is sent to a venue.
-  const go = (text) => store.updateSession(sessionId, { bookingRequests: text.trim().slice(0, REQUEST_MAX), screen: 'booked' });
+  const go = (text) => store.updateSession(sessionId, { bookingRequests: text.trim().slice(0, REQUEST_MAX), bookingDraft: null, screen: 'booked' });
   container.querySelector('#miloReqBook')?.addEventListener('click', () => go(note.value));
   container.querySelector('#miloReqSkip')?.addEventListener('click', () => go(''));
 }
