@@ -81,6 +81,9 @@ export function attachScreen03Listeners(container, sessionId = 'aarav') {
     store.setSessionScreen(sessionId, 's1');
   });
   container.querySelector(`#miloS3Cta-${sessionId}`)?.addEventListener('click', () => {
-    store.setSessionScreen(sessionId, sessionId === 'sneha' ? 's5' : 'planning_path_review');
+    if (sessionId === 'sneha') return store.setSessionScreen(sessionId, 's5');
+    // The solo or together choice is made once, at the start. Only ask here if it was never made.
+    const mode = store.getState().sessionA.planningMode;
+    store.setSessionScreen(sessionId, mode === 'solo' ? 's6' : mode === 'together' ? 's4_invite' : 'planning_path_review');
   });
 }
