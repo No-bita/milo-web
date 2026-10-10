@@ -22,10 +22,14 @@ export function timingForNight(nightId, { solo = false } = {}) {
   return timing?.nightId === nightId && parseNightStart(timing.date, timing.time) && typeof timing.timeZone === 'string' ? timing : null;
 }
 
+// One format everywhere: time first, then day, then date. "7:30 PM, Sat, Oct 17"
 export function timingLabel(timing) {
+  const [h, m] = timing.time.split(':').map(Number);
+  const clock = `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
   const date = new Date(`${timing.date}T12:00:00`);
-  const day = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(date);
-  return `${day} at ${timing.time} (${timing.timeZone.replace(/_/g, ' ')})`;
+  const day = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date);
+  const md = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
+  return `${clock}, ${day}, ${md}`;
 }
 
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -52,7 +56,7 @@ export function renderNightTiming(nightId, sessionId, { solo = false } = {}) {
           <div class="milo-clock-nums"></div>
         </div>
         <p class="milo-timing-error" role="alert" hidden></p>
-        <button type="submit" class="milo-pill-btn-primary">Set date &amp; time</button>
+        <button type="submit" class="milo-pill-btn-primary">Set the time</button>
       </form>
       <button type="button" class="milo-secondary-link milo-timing-change" ${timing ? '' : 'hidden'}>Change date &amp; time</button>
     </section>`;
