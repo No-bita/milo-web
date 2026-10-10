@@ -22,10 +22,23 @@ export function timingForNight(nightId, { solo = false } = {}) {
   return timing?.nightId === nightId && parseNightStart(timing.date, timing.time) && typeof timing.timeZone === 'string' ? timing : null;
 }
 
+// One format everywhere: time first, then day, then date. "7:30 PM IST, Sat, Oct 17"
 export function timingLabel(timing) {
+  const [h, m] = timing.time.split(':').map(Number);
+  const clock = `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
   const date = new Date(`${timing.date}T12:00:00`);
-  const day = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(date);
-  return `${day} at ${timing.time} (${timing.timeZone.replace(/_/g, ' ')})`;
+  const day = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date);
+  const md = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
+  return `${clock} ${zoneAbbr(timing)}, ${day}, ${md}`;
+}
+
+function zoneAbbr(timing) {
+  const zone = timing.timeZone;
+  if (/^Asia\/(Calcutta|Kolkata)$/.test(zone)) return 'IST';
+  try {
+    const part = new Intl.DateTimeFormat('en-US', { timeZone: zone, timeZoneName: 'short' }).formatToParts(new Date(`${timing.date}T12:00:00Z`)).find(x => x.type === 'timeZoneName');
+    return part ? part.value : zone.replace(/_/g, ' ');
+  } catch { return zone.replace(/_/g, ' '); }
 }
 
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
