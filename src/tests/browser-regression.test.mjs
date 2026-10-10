@@ -110,7 +110,7 @@ for(const width of [320,420]){
    assert.deepEqual((await state(a)).sessionA.intents,before.sessionA.intents);assert.deepEqual((await state(a)).sessionB.reactions,before.sessionB.reactions);
    await capture(a,'confirmation',width);await noOverflow(a,width);
    await a.locator('.milo-strip-day').last().click();await a.locator('.milo-clock-num',{hasText:/^7$/}).click();await a.locator('.milo-clock-num',{hasText:/^30$/}).click();await a.locator('.milo-timing-form button[type=submit]').click();
-   await b.locator('.milo-timing-saved:visible').waitFor();assert.equal((await state(b)).shared.timing.chosenBy,'aarav');assert.equal((await state(b)).shared.timing.time,'19:30');assert.match(await b.locator('.milo-timing-saved').textContent(),/19:30/);
+   await b.locator('.milo-timing-saved:visible').waitFor();assert.equal((await state(b)).shared.timing.chosenBy,'aarav');assert.equal((await state(b)).shared.timing.time,'19:30');assert.match(await b.locator('.milo-timing-saved').textContent(),/7:30 PM/);
    await b.reload();await b.locator('.milo-closing-state').waitFor();assert.equal((await state(b)).shared.timing.time,'19:30');
    // Reset is demo-only, exercised explicitly rather than exposed in the normal UI.
    await a.evaluate(()=>localStorage.setItem('milo_intro_seen_v1','1'));await a.goto(origin+'/?demo=1');await a.locator('.milo-home').waitFor();await a.locator('#miloHomeOpen').click();await a.locator('#miloResetBtn-aarav').click();await a.locator('.milo-reset-no').click();assert.ok((await state(a)).shared.confirmedNightId);
