@@ -18,10 +18,10 @@ export function renderBooked(sessionId = 'aarav') {
   const state = store.getState();
   const nightId = state.sessionA.savedSoloNightId || state.shared.confirmedNightId || state.sessionA.activeNightId || NIGHTS_POOL[0].id;
   const night = NIGHTS_POOL.find((n) => n.id === nightId) || NIGHTS_POOL[0];
-  const partner = state.sessionA.partnerName || 'your partner';
+  const partner = sessionId === 'sneha' ? 'Aarav' : (state.sessionA.partnerName || 'your partner');
   const timing = timingForNight(night.id) || timingForNight(night.id, { solo: true });
   const beats = night.beats.map((beat) => `<li>${escape(beat.name)}</li>`).join('');
-  const notes = (state.sessionA.bookingRequests || '').trim();
+  const notes = ((sessionId === 'sneha' ? state.sessionB : state.sessionA).bookingRequests || '').trim();
   const lock = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
   const privateBox = notes ? `<section class="milo-booked-private" aria-label="Private requests">
         <p class="milo-booked-label">${lock}PRIVATE REQUESTS · ONLY YOU</p>
