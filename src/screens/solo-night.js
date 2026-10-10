@@ -17,16 +17,14 @@ export function renderSoloNight(sessionId = 'aarav') {
       ${timingForNight(night.id, { solo: true }) ? '<div class="milo-s7-actions"><button class="milo-cta-button" id="miloSoloContinue">Continue</button></div>' : ''}
     </div>
   </div>`;
-  return `<div class="milo-s7-container" data-session-id="${sessionId}">
+  return `<div class="milo-s7-container milo-visual-plan" data-session-id="${sessionId}">
     <div class="milo-s7-hero">
-      <img src="${night.defaultImage}" alt="${night.name}" class="milo-s7-hero-img"><div class="milo-s7-scrim"></div>
       <button class="milo-s7-back-btn" id="miloSoloBack" aria-label="Back to your nights"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg></button>
-      <div class="milo-s7-hero-text"><div class="milo-s7-num-row"><span class="milo-s7-num">${item.num}</span></div><h1 class="milo-s7-night-name">${night.name}</h1></div>
+      <div class="milo-s7-hero-text"><h1 class="milo-s7-night-name">${night.name}</h1></div>
     </div>
     <div class="milo-s7-body">
-      <p class="milo-s7-reason">${night.reasonLine}</p>
-      <div class="milo-timeline-section">${renderItinerary(night, item.night)}</div>
-      <p class="milo-s7-skip-line">Skip this one if ${night.skipIf}</p>
+      <div class="milo-plan-grid">${renderItinerary(night, item.night, { stacked: true, editable: true })}</div>
+      <details class="milo-plan-why"><summary>Why this night fits <span aria-hidden="true">+</span></summary><p>${night.reasonLine}</p><p>Skip this one if ${night.skipIf}</p></details>
       <div class="milo-s7-actions">
         <button class="milo-secondary-link" id="miloSoloOther">See the other two</button>
         <button class="milo-cta-button" id="miloSoloSave">${saved ? 'Continue to date &amp; time' : 'Save this draft'}</button>
