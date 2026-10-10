@@ -1,15 +1,11 @@
 import { store } from '../domain/store.js';
 import { NIGHTS_POOL } from '../data/mockData.js';
-import { timingForNight } from '../components/night-timing.js';
+import { timingForNight, timingLabel } from '../components/night-timing.js';
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 function whenLine(timing) {
-  if (!timing) return 'Time to be set';
-  const day = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date(`${timing.date}T12:00:00`));
-  const [h, m] = timing.time.split(':').map(Number);
-  const clock = `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
-  return `${day} · ${clock}`;
+  return timing ? timingLabel(timing) : 'Time to be set';
 }
 
 // Sealed booking confirmation. Night, time and partner come from app state.

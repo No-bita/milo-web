@@ -1,15 +1,12 @@
 import { store } from '../domain/store.js';
 import { NIGHTS_POOL, INTENTS } from '../data/mockData.js';
-import { timingForNight } from '../components/night-timing.js';
+import { timingForNight, timingLabel } from '../components/night-timing.js';
 import { copyInvite } from '../components/invite-feedback.js';
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 function whenLine(timing) {
-  if (!timing) return '';
-  const day = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date(`${timing.date}T12:00:00`));
-  const [h, m] = timing.time.split(':').map(Number);
-  return `${day} · ${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+  return timing ? timingLabel(timing) : '';
 }
 
 // Partner A's sealed waiting state. A sees a preview of their own half (night,
