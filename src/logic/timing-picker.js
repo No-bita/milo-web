@@ -48,9 +48,9 @@ export function disabledTimes(date, now = new Date()) {
   return time => isPastStart(date, time, now);
 }
 
-// Default start: now rounded up to the next 5 minutes (always strictly in the future).
+// Default start: 7:30 PM today, or tomorrow if that has already passed.
 export function defaultStart(now = new Date()) {
-  const ms = 5 * 60 * 1000;
-  const t = new Date(Math.floor(now.getTime() / ms) * ms + ms);
-  return { date: toDateKey(t), time: `${pad(t.getHours())}:${pad(t.getMinutes())}` };
+  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 19, 30);
+  if (t.getTime() <= now.getTime()) t.setDate(t.getDate() + 1);
+  return { date: toDateKey(t), time: '19:30' };
 }

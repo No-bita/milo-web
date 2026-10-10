@@ -1,6 +1,7 @@
 import { renderItinerary, attachItinerary } from '../components/itinerary.js';
 import { renderNightTiming, attachNightTiming, timingForNight } from '../components/night-timing.js';
 import { store } from '../domain/store.js';
+import { partnerLabel } from '../logic/partner.js';
 import { computePlanningOutput } from '../logic/planning.js';
 
 export function renderSoloNight(sessionId = 'aarav') {
@@ -14,7 +15,7 @@ export function renderSoloNight(sessionId = 'aarav') {
   if (timingStep) return `<div class="milo-s7-container milo-closing-state" data-session-id="${sessionId}">
     <header class="milo-header"><button class="milo-header-back" id="miloSoloTimingBack" aria-label="Back to itinerary">←</button><span class="milo-wordmark">milo.</span></header>
     <div class="milo-s7-body">${renderNightTiming(night.id, sessionId, { solo: true })}
-      ${timingForNight(night.id, { solo: true }) ? '<div class="milo-s7-actions"><button class="milo-cta-button" id="miloSoloContinue">Continue</button></div>' : ''}
+      ${timingForNight(night.id, { solo: true }) ? '<div class="milo-s7-actions"><button class="milo-cta-button" id="miloSoloContinue">Seal it</button></div>' : ''}
     </div>
   </div>`;
   return `<div class="milo-s7-container milo-visual-plan" data-session-id="${sessionId}">
@@ -29,7 +30,7 @@ export function renderSoloNight(sessionId = 'aarav') {
         <button class="milo-secondary-link" id="miloSoloOther">See the other two</button>
         <button class="milo-cta-button" id="miloSoloSave">${saved ? 'Continue to date &amp; time' : 'Save this draft'}</button>
       </div>
-      <button type="button" class="milo-text-button milo-bring-in" id="miloSoloBringIn">Bring ${state.sessionA.partnerName || 'Sneha'} in</button>
+      <button type="button" class="milo-text-button milo-bring-in" id="miloSoloBringIn">Bring ${partnerLabel(state)} in</button>
     </div>
   </div>`;
 }

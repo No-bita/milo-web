@@ -1,4 +1,5 @@
 import { store } from '../domain/store.js';
+import { partnerLabel } from '../logic/partner.js';
 import { NIGHTS_POOL, INTENTS } from '../data/mockData.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
 import { copyInvite } from '../components/invite-feedback.js';
@@ -14,7 +15,7 @@ function whenLine(timing) {
 export function renderSealedWaiting(sessionId = 'aarav') {
   const a = store.getState().sessionA;
   const solo = !store.getState().shared.invitePrepared;
-  const partner = a.partnerName || 'your partner';
+  const partner = partnerLabel(store.getState());
   const night = NIGHTS_POOL.find((n) => n.id === (a.savedSoloNightId || a.activeNightId)) || NIGHTS_POOL[0];
   const when = whenLine(timingForNight(night.id, { solo: true }));
   const moods = (a.intents || []).map((id) => INTENTS.find((i) => i.id === id)?.label).filter(Boolean);

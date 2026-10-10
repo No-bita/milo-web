@@ -30,11 +30,15 @@ export function renderHome(sessionId = 'aarav') {
   const summary = homeSummary(state);
   const fresh = summary.kind === 'fresh';
   const partner = escape(summary.partner);
-  const headline = fresh ? 'Nothing planned yet' : `Your night with ${partner}`;
+  const alone = !fresh && summary.invited === false;
+  const headline = fresh ? 'A quiet week' : alone ? 'Your night' : `Your night with ${partner}`;
   const lead = fresh ? '<p class="milo-home-lead">Pick a mood and Milo does the rest.</p>' : '';
   const body = fresh
-    ? `<section class="milo-home-card milo-home-card-empty" aria-label="Your plan"><p>No night on the calendar this week.</p></section>
+    ? `<section class="milo-home-card milo-home-card-empty" aria-label="Your plan"><p>Nothing on yet. Want to plan something?</p></section>
        <div class="milo-home-row"><span class="milo-home-avatar milo-home-avatar-plus" aria-hidden="true">+</span><div><b>Invite your person</b><span>Plan together. Both of you say yes.</span></div></div>`
+    : alone
+    ? `${planCard(summary, state)}
+       <div class="milo-home-row"><span class="milo-home-avatar milo-home-avatar-plus" aria-hidden="true">+</span><div><b>Bring your person in</b><span>Whenever you're ready.</span></div></div>`
     : `${planCard(summary, state)}
        <div class="milo-home-row"><span class="milo-home-avatar" aria-hidden="true">${escape(summary.partner.charAt(0).toUpperCase())}</span><div><b>${partner}</b><span>${escape(summary.partnerStatus)}</span></div></div>`;
   return `<div class="milo-home milo-tabscreen" data-session-id="${sessionId}">

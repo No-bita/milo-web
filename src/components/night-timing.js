@@ -56,7 +56,7 @@ export function renderNightTiming(nightId, sessionId, { solo = false } = {}) {
           <div class="milo-clock-nums"></div>
         </div>
         <p class="milo-timing-error" role="alert" hidden></p>
-        <button type="submit" class="milo-pill-btn-primary">Set date &amp; time</button>
+        <button type="submit" class="milo-pill-btn-primary">Set the time</button>
       </form>
       <button type="button" class="milo-secondary-link milo-timing-change" ${timing ? '' : 'hidden'}>Change date &amp; time</button>
     </section>`;

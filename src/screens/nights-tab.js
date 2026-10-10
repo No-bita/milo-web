@@ -9,7 +9,7 @@ const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp
 export function renderNights(sessionId = 'aarav') {
   const summary = homeSummary(store.getState());
   const upcoming = summary.kind === 'fresh'
-    ? '<p class="milo-nights-empty">No upcoming nights.</p>'
+    ? '<p class="milo-nights-empty">Nothing coming up yet.</p>'
     : (() => {
         const timing = summary.nightId ? timingForNight(summary.nightId, { solo: summary.kind === 'draft' }) : null;
         return `<button type="button" class="milo-nights-item" id="miloNightsOpen"><b>${escape(summary.planName)}</b><span>${escape(timing ? timingLabel(timing) : 'Time not set yet')}</span><span>${escape(summary.planStatus)}</span></button>`;
@@ -19,7 +19,7 @@ export function renderNights(sessionId = 'aarav') {
     <div class="milo-home-body">
       <h1 class="milo-headline milo-home-headline">Nights</h1>
       <p class="milo-home-label milo-nights-heading">UPCOMING</p>${upcoming}
-      <p class="milo-home-label milo-nights-heading">PAST</p><p class="milo-nights-empty">Nothing here yet.</p>
+      <p class="milo-home-label milo-nights-heading">PAST</p><p class="milo-nights-empty">Nothing here yet. The good ones go here.</p>
     </div>
     ${renderTabBar('nights')}
   </div>`;
