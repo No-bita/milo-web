@@ -22,13 +22,13 @@ export function renderPlanningPath(sessionId = 'aarav') {
             <span class="milo-path-option-top"><span class="milo-path-symbol" aria-hidden="true">01</span></span>
             <span class="milo-path-option-title">I'll plan it myself</span>
             <span class="milo-path-option-copy">${isEcho ? 'See nights shaped by your picks. No invite, no waiting.' : 'You make the picks. Keep the plan a little surprise.'}</span>
-            <span class="milo-path-option-action">${isEcho ? 'See my nights' : 'Continue'} <span aria-hidden="true">→</span></span>
+            <span class="milo-path-option-action">${isEcho ? 'See my nights' : "Let's go"} <span aria-hidden="true">→</span></span>
           </button>
           <button type="button" class="milo-path-option ${mode === 'together' ? 'is-selected' : ''}" data-planning-mode="together" aria-pressed="${mode === 'together'}">
             <span class="milo-path-option-top"><span class="milo-path-symbol" aria-hidden="true">02</span></span>
             <span class="milo-path-option-title">Bring in my partner</span>
             <span class="milo-path-option-copy">${isEcho ? 'Invite them to add their picks before choosing a night.' : "Start with your picks. You'll invite them after."}</span>
-            <span class="milo-path-option-action">${isEcho ? 'Go to the invite' : 'Continue'} <span aria-hidden="true">→</span></span>
+            <span class="milo-path-option-action">${isEcho ? 'Go to the invite' : "Let's go"} <span aria-hidden="true">→</span></span>
           </button>
         </div>
         <p class="milo-path-footnote">${isEcho ? 'No notifications yet.' : "No invite goes out now. You can change your mind after your picks."}</p>
