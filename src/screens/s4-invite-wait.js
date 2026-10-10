@@ -15,7 +15,7 @@ export function renderScreen04(sessionId = 'aarav') {
   const sessionData = state.sessionA;
   const isWaiting = sessionData.screen === 's4_waiting';
   const isPartnerDone = state.sessionB && (state.sessionB.screen === 's5' || state.sessionB.screen === 's6' || state.sessionB.screen === 's7');
-  const backLabel = sessionData.planningMode ? 'Back to planning choice' : 'Back to synthesis';
+  const backLabel = 'Back to your reflection';
 
   if (isWaiting && isPartnerDone) {
     return `
@@ -114,16 +114,14 @@ export function attachScreen04Listeners(container, sessionId = 'aarav') {
   const backBtn = container.querySelector(`#miloS4Back-${sessionId}`);
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      const mode = store.getState().sessionA.planningMode;
-      store.setSessionScreen(sessionId, mode ? 'planning_path_review' : 's3');
+      store.setSessionScreen(sessionId, 's3');
     });
   }
 
   const waitBackBtn = container.querySelector(`#miloS4WaitBack-${sessionId}`);
   if (waitBackBtn) {
     waitBackBtn.addEventListener('click', () => {
-      const mode = store.getState().sessionA.planningMode;
-      store.setSessionScreen(sessionId, mode ? 'planning_path_review' : 's3');
+      store.setSessionScreen(sessionId, 's3');
     });
   }
 

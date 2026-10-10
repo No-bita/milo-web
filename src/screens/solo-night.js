@@ -31,6 +31,7 @@ export function renderSoloNight(sessionId = 'aarav') {
         <button class="milo-secondary-link" id="miloSoloOther">See the other two</button>
         <button class="milo-cta-button" id="miloSoloSave">${saved ? 'Continue to date &amp; time' : 'Save this draft'}</button>
       </div>
+      <button type="button" class="milo-text-button milo-bring-in" id="miloSoloBringIn">Bring ${state.sessionA.partnerName || 'Sneha'} in</button>
     </div>
   </div>`;
 }
@@ -57,6 +58,7 @@ export function attachSoloNightListeners(container, sessionId = 'aarav') {
     if (itinerary) itinerary.scrollTop = scrollTop;
     replacement?.querySelector(`[data-customise-slot="${slot}"]`)?.focus({ preventScroll: true });
   });
+  container.querySelector('#miloSoloBringIn')?.addEventListener('click', () => store.updateSession(sessionId, { planningMode: 'together', screen: 's4_invite' }));
   const back = () => store.setSessionScreen(sessionId, 's6');
   container.querySelector('#miloSoloBack')?.addEventListener('click', back);
   container.querySelector('#miloSoloOther')?.addEventListener('click', back);
