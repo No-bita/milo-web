@@ -19,14 +19,15 @@ export function addStarter(current, text) {
 
 export function renderRequests(sessionId = 'aarav') {
   const a = store.getState().sessionA;
-  const partner = escape(a.partnerName || 'your partner');
+  const me = sessionId === 'sneha' ? store.getState().sessionB : a;
+  const partner = escape(sessionId === 'sneha' ? 'Aarav' : (a.partnerName || 'your partner'));
   const night = NIGHTS_POOL.find((n) => n.id === (a.savedSoloNightId || a.activeNightId)) || NIGHTS_POOL[0];
   const chips = REQUEST_STARTERS.map((c, i) => `<button type="button" class="milo-req-chip" data-starter="${i}">+ ${escape(c.label)}</button>`).join('');
   return `<div class="milo-req" data-session-id="${sessionId}">
     <header class="milo-header"><button class="milo-header-back" id="miloReqBack" aria-label="Back">‹</button><span class="milo-wordmark">milo.</span><div class="milo-header-space"></div></header>
     <div class="milo-req-body">
       <h1 class="milo-req-title">Anything we should tell them?</h1>
-      <textarea id="miloReqNote" class="milo-req-note" rows="4" placeholder="Write a note for the venue" aria-label="Note for the venue">${escape(a.bookingRequests || '')}</textarea>
+      <textarea id="miloReqNote" class="milo-req-note" rows="4" placeholder="Write a note for the venue" aria-label="Note for the venue">${escape(me.bookingRequests || '')}</textarea>
       <div class="milo-req-chips">${chips}</div>
       <div class="milo-req-secret">
         <div><b>Keep this secret from ${partner}</b><span>${partner} won't see these requests. Pinky promise.</span></div>
