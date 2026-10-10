@@ -10,7 +10,7 @@ export function renderThreshold(sessionId = 'aarav') {
   return `
     <div class="milo-threshold-container" data-session-id="${sessionId}">
       <div class="milo-threshold-content">
-        <h1 class="milo-threshold-title">Got it.</h1>
+        <h1 class="milo-threshold-title">Got it. Let's find you something.</h1>
       </div>
     </div>
   `;
