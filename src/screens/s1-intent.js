@@ -106,7 +106,7 @@ export function renderScreen01(sessionId = 'aarav') {
         id="miloCta-${sessionId}" 
         ${isCtaDisabled ? 'disabled' : ''}
       >
-        Continue →
+        Show me what fits →
       </button>
     </div>
   `;
