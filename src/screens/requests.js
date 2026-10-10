@@ -12,9 +12,11 @@ export const REQUEST_STARTERS = [
 ];
 
 
+export const REQUEST_MAX = 1000;
+
 export function addStarter(current, text) {
   const base = String(current || '').replace(/\s+$/, '');
-  return base ? `${base}\n${text}` : text;
+  return (base ? `${base}\n${text}` : text).slice(0, REQUEST_MAX);
 }
 
 export function renderRequests(sessionId = 'aarav') {
@@ -27,7 +29,7 @@ export function renderRequests(sessionId = 'aarav') {
     <header class="milo-header"><button class="milo-header-back" id="miloReqBack" aria-label="Back">‹</button><span class="milo-wordmark">milo.</span><div class="milo-header-space"></div></header>
     <div class="milo-req-body">
       <h1 class="milo-req-title">Anything we should tell them?</h1>
-      <textarea id="miloReqNote" class="milo-req-note" rows="4" placeholder="Write a note for the venue" aria-label="Note for the venue">${escape(me.bookingRequests || '')}</textarea>
+      <textarea id="miloReqNote" class="milo-req-note" rows="4" placeholder="Write a note for the venue" aria-label="Note for the venue" maxlength="1000">${escape(me.bookingRequests || '')}</textarea>
       <div class="milo-req-chips">${chips}</div>
       <div class="milo-req-secret">
         <div><b>Keep this secret from ${partner}</b><span>${partner} won't see these requests. Pinky promise.</span></div>
@@ -49,7 +51,7 @@ export function attachRequestsListeners(container, sessionId = 'aarav') {
   }));
   container.querySelector('#miloReqBack')?.addEventListener('click', () => store.setSessionScreen(sessionId, 's4_waiting'));
   // Demo only: the note stays in app state. Nothing is sent to a venue.
-  const go = (text) => store.updateSession(sessionId, { bookingRequests: text.trim(), screen: 'booked' });
+  const go = (text) => store.updateSession(sessionId, { bookingRequests: text.trim().slice(0, REQUEST_MAX), screen: 'booked' });
   container.querySelector('#miloReqBook')?.addEventListener('click', () => go(note.value));
   container.querySelector('#miloReqSkip')?.addEventListener('click', () => go(''));
 }
