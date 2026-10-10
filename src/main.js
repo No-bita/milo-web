@@ -5,7 +5,6 @@ import './styles/premium-icons.css';
 import './styles/polish.css';
 import './styles/waiting-glasses.css';
 import './styles/deck-labels.css';
-import './styles/skip-line.css';
 import './styles/s3-compact.css';
 import './styles/first-open.css';
 import './styles/partner-welcome.css';

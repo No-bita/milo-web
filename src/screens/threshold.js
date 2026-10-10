@@ -23,14 +23,27 @@ export function attachThresholdListeners(container, sessionId = 'aarav') {
   let timer = null;
   const advance = () => {
     if (timer) clearTimeout(timer);
+    timer = null;
     store.advanceToS2(sessionId);
   };
 
   container.thresholdCleanup = () => { if (timer) clearTimeout(timer); timer = null; };
 
-  // Auto-advance after 1.8s
-  timer = setTimeout(advance, 1800);
+  const reduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Auto-advance after 900ms (or 100ms if reduced motion is preferred)
+  timer = setTimeout(advance, reduced ? 100 : 900);
 
   // Tap anywhere to skip
   el.addEventListener('click', advance);
+
+  // Keyboard accessibility to skip
+  el.setAttribute('tabindex', '0');
+  el.setAttribute('role', 'region');
+  el.setAttribute('aria-label', 'Continue to discovery deck');
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+      e.preventDefault();
+      advance();
+    }
+  });
 }

@@ -20,26 +20,27 @@ export function icon(name) {
 // and action IDs intact, so independent motion / footer PRs remain isolated.
 export function installPremiumIcons(root) {
   function decorate() {
-    root.querySelectorAll('.milo-header-back, .milo-s7-back-btn').forEach(button => {
+    root.querySelectorAll('.milo-header-back:not(.milo-icon-back), .milo-s7-back-btn:not(.milo-icon-back)').forEach(button => {
       button.innerHTML = icon('back');
       button.classList.add('milo-icon-back');
     });
     // Keep the deck's original chevron node and listener intact: back on
     // card one, undo after a reaction. This also preserves PR #3's fly-back.
-    root.querySelectorAll('.milo-reaction-btn').forEach(button => {
+    root.querySelectorAll('.milo-reaction-btn:not([data-icon-decorated])').forEach(button => {
       const label = button.querySelector('.milo-btn-label');
       if (!label) return;
       const name = button.classList.contains('btn-into-it') ? 'heart'
         : button.classList.contains('btn-maybe') ? 'more' : 'dismiss';
       button.innerHTML = `<span class="milo-btn-circle">${icon(name)}</span><span class="milo-btn-label">${label.textContent}</span>`;
+      button.setAttribute('data-icon-decorated', 'true');
     });
-    // Repeated decorative symbols add no information beside these sentences.
-    root.querySelectorAll('.milo-obs-icon, .milo-shared-row-icon').forEach(element => element.remove());
-    root.querySelectorAll('.milo-night-chevron').forEach(element => {
+    root.querySelectorAll('.milo-night-chevron:not([data-icon-decorated])').forEach(element => {
       element.innerHTML = icon('forward');
+      element.setAttribute('data-icon-decorated', 'true');
     });
-    root.querySelectorAll('.milo-banner-arrow').forEach(element => {
+    root.querySelectorAll('.milo-banner-arrow:not([data-icon-decorated])').forEach(element => {
       element.innerHTML = icon('forward');
+      element.setAttribute('data-icon-decorated', 'true');
     });
   }
   decorate();

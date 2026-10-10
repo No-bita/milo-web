@@ -8,26 +8,11 @@ function escapeText(text) {
   return text.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 }
 
-function observationIcon(text) {
-  let shape;
-  if (/character|smaller|cosy|indoors/.test(text)) {
-    shape = '<path d="M8 3v6a4 4 0 0 0 8 0V3M8 6h8M12 13v7M8 20h8" />';
-  } else if (/outdoors|moves|packed/.test(text)) {
-    shape = '<path d="M12 21s7-7 7-12a7 7 0 1 0-14 0c0 5 7 12 7 12Z" /><circle cx="12" cy="9" r="2" />';
-  } else if (/novelty|familiar|open/.test(text)) {
-    shape = '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z" />';
-  } else {
-    shape = '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" fill="currentColor" stroke="none" />';
-  }
-  return `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${shape}</svg>`;
-}
-
 export function renderScreen03(sessionId = 'aarav', readyObservations) {
   const session = store.getState()[sessionId === 'sneha' ? 'sessionB' : 'sessionA'];
   const observations = readyObservations ?? computePersonalSynthesis(session.intents || [], session.reactions || []);
   const rows = observations.map((obs, i) => `
     <li class="milo-obs-row" style="--i:${i}">
-      <span class="milo-obs-icon">${observationIcon(obs)}</span>
       <p class="milo-obs-text">${escapeText(obs)}</p>
     </li>
   `).join('');

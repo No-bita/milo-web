@@ -66,9 +66,12 @@ export function mountSynthesisLoader(container, { session, load, renderReady, at
       if (!alive || request !== attempt) return;
       // Stop the network timeout once data is ready; allow the lighting gesture to finish.
       clearTimers();
-      const remaining = Math.max(0, (reduced ? 0 : 1800) - (performance.now() - started));
-      later(() => {
-        if (!alive || request !== attempt) return;
+      const remaining = Math.max(0, (reduced ? 0 : 750) - (performance.now() - started));
+      let revealed = false;
+      const reveal = () => {
+        if (!alive || request !== attempt || revealed) return;
+        revealed = true;
+        clearTimers();
         const destination = document.createElement('div');
         destination.className = 'milo-candle-destination';
         destination.inert = true;
@@ -84,7 +87,22 @@ export function mountSynthesisLoader(container, { session, load, renderReady, at
           destination.inert = false;
           destination.removeAttribute('aria-hidden');
         }, reduced ? 80 : 320);
-      }, remaining);
+      };
+
+      // Tap or keyboard to skip waiting once data is loaded
+      overlay.style.cursor = 'pointer';
+      overlay.setAttribute('tabindex', '0');
+      overlay.setAttribute('role', 'region');
+      overlay.setAttribute('aria-label', 'Setting the mood loader');
+      overlay.addEventListener('click', reveal, { once: true });
+      overlay.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+          e.preventDefault();
+          reveal();
+        }
+      }, { once: true });
+
+      later(reveal, remaining);
     } catch (error) {
       if (!alive || request !== attempt) return;
       clearTimers();

@@ -16,12 +16,6 @@ export function renderScreen05(sessionId = 'aarav') {
   const rowsHtml = sharedData.sharedRows.map(row => {
     return `
       <div class="milo-shared-row">
-        <div class="milo-shared-row-icon">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none">
-            <circle cx="12" cy="12" r="9"></circle>
-            <path d="M12 7v5l3 3"></path>
-          </svg>
-        </div>
         <div class="milo-shared-row-text">${row.text}</div>
       </div>
     `;
