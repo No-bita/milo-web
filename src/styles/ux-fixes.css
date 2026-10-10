@@ -78,3 +78,6 @@
     animation: none !important; transition: none !important;
   }
 }
+
+.milo-bring-in { display: block; margin: 6px auto 0; color: var(--color-ink-muted); font-size: 13px; min-height: 44px; }
+.milo-s6-intro .milo-bring-in { margin: 0; padding: 0; text-align: left; min-height: 36px; }
