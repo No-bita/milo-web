@@ -71,3 +71,19 @@ test('legacy planning fork link opens choices over Home', async () => {
   const page = await browser.newPage();
   try { await page.goto(origin + '?screen=planning_path'); await page.locator('.milo-planning-sheet').waitFor(); assert.equal(await page.locator('.milo-home').count(), 1); assert.equal(await page.locator('.milo-path-container').count(), 0); } finally { await page.close(); }
 });
+
+test('saved legacy fork with confirmed night opens choices without losing agreement', async () => {
+  const page = await browser.newPage();
+  try {
+    await page.goto(origin + '?golden=1&screen=closed');
+    const saved = await state(page);
+    await page.evaluate(k => { const s = JSON.parse(localStorage.getItem(k)); s.sessionA.screen = 'planning_path'; localStorage.setItem(k, JSON.stringify(s)); localStorage.setItem('milo_intro_seen_v1', '1'); }, key);
+    await page.goto(origin);
+    await page.locator('.milo-planning-sheet').waitFor();
+    assert.equal(await page.locator('.milo-home').count(), 1);
+    assert.deepEqual((await state(page)).shared, saved.shared);
+    await page.getByRole('button', { name: 'Close planning choices' }).click();
+    await page.locator('dialog').waitFor({ state: 'detached' });
+    assert.deepEqual((await state(page)).shared, saved.shared);
+  } finally { await page.close(); }
+});
