@@ -286,14 +286,14 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
     }
   }
 
+  // Old fork links and saved sessions reopen the choices over Home instead.
+  const legacyPlanningPath = store.getState()[asParam === 'sneha' ? 'sessionB' : 'sessionA'].screen === 'planning_path';
+  if (legacyPlanningPath) store.setSessionScreen(asParam === 'sneha' ? 'sneha' : 'aarav', 'home');
+
   // Open on the homepage unless a link or invite points somewhere specific.
   if (!screenParam && isGolden !== '1' && asParam !== 'sneha' && inviteStatus !== 'valid' && shouldShowHome(store.getState())) {
     store.setSessionScreen('aarav', 'home');
   }
-
-  // Old fork links and saved sessions reopen the choices over Home instead.
-  const legacyPlanningPath = store.getState()[asParam === 'sneha' ? 'sessionB' : 'sessionA'].screen === 'planning_path';
-  if (legacyPlanningPath) store.setSessionScreen(asParam === 'sneha' ? 'sneha' : 'aarav', 'home');
 
   let mountedKey = null;
   let synthesisKey = null;
