@@ -257,7 +257,7 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
       cleanup();
       const currentIdx = sessionData.currentCardIndex || 0;
       if (currentIdx === 0) {
-        store.setSessionScreen(sessionId, sessionId === 'sneha' ? 's1' : 'planning_path');
+        store.setSessionScreen(sessionId, 's1');
       } else {
         const last = (sessionData.reactions || [])[(sessionData.reactions || []).length - 1];
         pendingUndoSide = last && last.reaction === 'not_tonight' ? 'left' : last && last.reaction === 'maybe' ? 'below' : 'right';
