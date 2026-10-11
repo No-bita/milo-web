@@ -50,7 +50,7 @@ for(const width of [320,420]){
    await page.locator('#miloS5Back-sneha').click();await page.locator('[data-back-confirm]').click();await screen(page,'sessionB','s1');
    const moods=await state(page);assert.deepEqual(moods.sessionB.reactions,original.sessionB.reactions);assert.deepEqual(moods.sessionB.intents,original.sessionB.intents);assert.deepEqual(moods.sessionA,original.sessionA);assert.deepEqual(moods.shared,original.shared);
    assert.equal(await page.locator('h1').evaluate(e=>e===document.activeElement),true);
-   await page.locator('#miloCta-sneha').click();await page.locator('.milo-threshold-container').click();await screen(page,'sessionB','s2');
+   for(const id of ['intimate','fun','novelty']){if(!(await state(page)).sessionB.intents.includes(id))await page.locator(`[data-intent-id=${id}]`).click();}await page.locator('#miloCta-sneha').click();await page.locator('.milo-threshold-container').click();await screen(page,'sessionB','s2');
    const restarted=await state(page);assert.deepEqual(restarted.sessionB.reactions,[]);assert.equal(restarted.sessionB.currentCardIndex,0);assert.deepEqual(restarted.sessionA,original.sessionA);
   }finally{await context.close();}
  });
