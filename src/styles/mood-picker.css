@@ -1,0 +1,36 @@
+/* Scoped to moods: keep other journey screens on the existing design system. */
+.milo-viewport .milo-s1-container { background: #fff; padding: max(12px,env(safe-area-inset-top)) 20px max(16px,env(safe-area-inset-bottom)); overflow-y: auto; }
+.milo-s1-container .milo-header { flex: none; justify-content: space-between; margin-bottom: 16px; }
+.milo-s1-container .milo-wordmark { color: var(--color-oxblood); opacity: 1; font-size: 25px; }
+.milo-s1-container .milo-header-back { width: 36px; height: 36px; margin-left: -8px; }
+.milo-s1-container .milo-s1-intro { flex: none; margin-bottom: 14px; }
+.milo-mood-heading { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.milo-s1-container .milo-headline { font-size: 25px; line-height: 30px; color: #111; font-weight: 400; }
+.milo-s1-container .milo-subline { font-size: 12px; line-height: 18px; }
+.milo-mood-progress { flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--color-ink-muted); font-size: 10px; line-height: 14px; }
+.milo-mood-dots { display: flex; gap: 4px; padding-top: 3px; }
+.milo-mood-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--color-taupe); }
+.milo-mood-dots .is-filled { background: var(--color-oxblood); }
+.milo-s1-container .milo-tiles-grid { flex: 1; min-height: 608px; grid-template-rows: repeat(4,minmax(0,1fr)); gap: 9px 24px; margin-bottom: 16px; }
+.milo-s1-container .milo-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 0; overflow: visible; background: none; box-shadow: none; font: inherit; padding: 0; }
+.milo-mood-photo { position: relative; display: block; width: min(100%,120px); aspect-ratio: 1; border: 1.5px solid transparent; border-radius: 50%; padding: 4px; }
+.milo-s1-container .milo-tile-img { position: static; height: 100%; width: 100%; border-radius: 50%; object-fit: cover; transform: none; }
+.milo-s1-container .milo-tile.selected { box-shadow: none; }
+.milo-s1-container .milo-tile.selected .milo-mood-photo { border-color: var(--color-oxblood); }
+.milo-s1-container .milo-tile.selected .milo-tile-img { outline: 1.5px solid var(--color-oxblood); outline-offset: 2px; transform: none; }
+.milo-s1-container .milo-tile-label { position: static; color: #111; text-shadow: none; font-size: 12px; line-height: 16px; font-weight: 400; }
+.milo-s1-container .milo-tile-check { top: auto; bottom: 1px; right: 1px; width: 23px; height: 23px; border: 2px solid white; box-shadow: none; }
+.milo-s1-container .milo-tile-check svg { width: 12px; height: 12px; }
+.milo-s1-container .milo-tile:focus-visible { outline: none; }
+.milo-s1-container .milo-tile:focus-visible .milo-mood-photo { outline: 2px solid var(--color-ink); outline-offset: 3px; }
+.milo-s1-container .milo-cta-button { flex: none; min-height: 48px; height: 48px; margin-top: auto; font-size: 13px; }
+@media(max-width:350px) { .milo-s1-container .milo-tiles-grid { gap: 9px 16px; min-height: 568px; } .milo-mood-photo { width: min(100%,110px); } .milo-s1-container .milo-headline { font-size: 23px; } }
+@media(min-height:900px) { .milo-mood-photo { width: min(100%,140px); } }
+.milo-viewport .milo-s1-container .milo-header { display: flex; justify-content: space-between; }
+.milo-viewport .milo-s1-container .milo-header > .milo-wordmark { font-size: 25px; margin-left: auto; }
+.milo-viewport .milo-s1-container .milo-cta-button:not(:disabled) { background: var(--color-oxblood); color: #fff; }
+.milo-viewport .milo-s1-container .milo-mood-photo { height: 120px; min-height: 120px; flex: none; }
+.milo-viewport .milo-s1-container .milo-mood-photo .milo-tile-img { position: absolute; inset: 5px; width: calc(100% - 10px); height: calc(100% - 10px); }
+@media(max-width:350px) { .milo-viewport .milo-s1-container .milo-mood-photo { height: 110px; min-height: 110px; } }
+@media(min-height:900px) { .milo-viewport .milo-s1-container .milo-mood-photo { height: 140px; min-height: 140px; } }
+@media(prefers-reduced-motion:reduce) { .milo-s1-container .milo-cta-button { transition: none; } }
