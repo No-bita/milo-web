@@ -4,6 +4,7 @@
 // standalone mobile viewport, and domain store subscriptions.
 // ==========================================================
 
+import { openPlanningSheet } from './components/planning-sheet.js';
 import { renderPlanningPath, attachPlanningPathListeners } from './screens/planning-path.js';
 import { loadPersonalSynthesis, mountSynthesisLoader } from './components/synthesis-loader.js';
 import { store } from './domain/store.js';
@@ -62,7 +63,6 @@ function renderSessionContent(sessionId) {
   switch (screen) {
     case 's0':
       return renderScreen00(sessionId);
-    case 'planning_path':
     case 'planning_path_review':
       return renderPlanningPath(sessionId);
     case 'threshold':
@@ -109,7 +109,6 @@ function attachSessionListeners(container, sessionId) {
     case 's0':
       attachScreen00Listeners(container, sessionId);
       break;
-    case 'planning_path':
     case 'planning_path_review':
       attachPlanningPathListeners(container, sessionId);
       break;
@@ -292,6 +291,10 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
     store.setSessionScreen('aarav', 'home');
   }
 
+  // Old fork links and saved sessions reopen the choices over Home instead.
+  const legacyPlanningPath = store.getState()[asParam === 'sneha' ? 'sessionB' : 'sessionA'].screen === 'planning_path';
+  if (legacyPlanningPath) store.setSessionScreen(asParam === 'sneha' ? 'sneha' : 'aarav', 'home');
+
   let mountedKey = null;
   let synthesisKey = null;
   let disposeSynthesis = null;
@@ -327,6 +330,7 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
       return;
     }
 
+    viewport?.planningSheetCleanup?.();
     viewport?.deckCleanup?.();
     viewport?.thresholdCleanup?.();
     const isNavigation = mountedKey !== null && mountedKey !== key;
@@ -375,6 +379,7 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
 
   // Initial render
   render();
+  if (legacyPlanningPath) openPlanningSheet(container.querySelector(`#viewport-${activeSessionId}`), activeSessionId);
 
   // Re-render on store updates
   const stopRender = store.subscribe(() => {
@@ -383,6 +388,6 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   return () => {
     stopRender(); detachHistory(); disposeSynthesis?.();
     const viewport = container.querySelector(`#viewport-${activeSessionId}`);
-    viewport?.deckCleanup?.(); viewport?.inviteCleanup?.(); viewport?.thresholdCleanup?.();
+    viewport?.planningSheetCleanup?.(); viewport?.deckCleanup?.(); viewport?.inviteCleanup?.(); viewport?.thresholdCleanup?.();
   };
 }
