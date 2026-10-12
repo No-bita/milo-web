@@ -42,8 +42,7 @@ export function renderHome(sessionId = 'aarav') {
     : `${planCard(summary, state)}
        <div class="milo-home-row"><span class="milo-home-avatar" aria-hidden="true">${escape(summary.partner.charAt(0).toUpperCase())}</span><div><b>${partner}</b><span>${escape(summary.partnerStatus)}</span></div></div>`;
   return `<div class="milo-home milo-tabscreen" data-session-id="${sessionId}">
-    <header class="milo-header"><span class="milo-wordmark">milo.</span></header>
-    <div class="milo-home-top">
+    <header class="milo-header milo-home-header">
       <div class="milo-home-place">
         <button class="milo-home-place-btn" type="button" id="miloHomePlace" aria-label="Change place: Home">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
@@ -52,7 +51,8 @@ export function renderHome(sessionId = 'aarav') {
         </button>
         <p class="milo-home-address">HSR Layout, Bengaluru</p>
       </div>
-    </div>
+      <span class="milo-wordmark">milo.</span>
+    </header>
     <div class="milo-home-body">
       <p class="milo-home-greet">${greeting()}</p>
       <h1 class="milo-headline milo-home-headline">${headline}</h1>
