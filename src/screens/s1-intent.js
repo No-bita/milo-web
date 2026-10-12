@@ -4,28 +4,9 @@
 // Pure component with attached interactive listeners.
 // ==========================================================
 
+import { hasThreeMoods } from '../logic/mood-selection.js';
 import { INTENTS } from '../data/mockData.js';
 import { store } from '../domain/store.js';
-
-function counterText(count) {
-  return count > 0 ? `${count} of 3` : 'Pick up to three.';
-}
-
-// Fade the old counter text out while the new text fades in.
-function crossFadeText(wrapper, textEl, next) {
-  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduceMotion) {
-    const ghost = textEl.cloneNode(true);
-    ghost.classList.add('milo-subline-ghost');
-    ghost.setAttribute('aria-hidden', 'true');
-    ghost.addEventListener('animationend', () => ghost.remove());
-    wrapper.appendChild(ghost);
-    textEl.classList.remove('milo-subline-in');
-    void textEl.offsetWidth;
-    textEl.classList.add('milo-subline-in');
-  }
-  textEl.textContent = next;
-}
 
 export function renderScreen01(sessionId = 'aarav') {
   const state = store.getState();
@@ -34,7 +15,7 @@ export function renderScreen01(sessionId = 'aarav') {
   const selectedIntents = sessionData.intents || [];
   const partnerName = sessionData.partnerName;
 
-  const isCtaDisabled = selectedIntents.length === 0;
+  const isCtaDisabled = !hasThreeMoods(selectedIntents);
 
   const contextLineHtml = sessionId === 'sneha' 
     ? `
@@ -46,55 +27,25 @@ export function renderScreen01(sessionId = 'aarav') {
   const tilesHtml = INTENTS.map((intent, index) => {
     const isSelected = selectedIntents.includes(intent.id);
     const safeFallback = intent.fallback || intent.image;
-    return `
-      <div 
-        class="milo-tile milo-tile--enter ${isSelected ? 'selected' : ''}" 
-        style="--tile-i:${index}"
-        data-intent-id="${intent.id}"
-        role="button"
-        tabindex="0"
-        aria-pressed="${isSelected}"
-        aria-label="${intent.label}"
-      >
-        <img 
-          src="${intent.image}" 
-          alt="${intent.alt}" 
-          class="milo-tile-img" 
-          loading="eager"
-          onerror="if(this.src!=='${safeFallback}'){this.src='${safeFallback}'}"
-        />
-        <div class="milo-tile-scrim"></div>
-        <div class="milo-tile-check">
-          <svg viewBox="0 0 24 24">
-            <polyline points="20 6 9 17 4 12" pathLength="24"></polyline>
-          </svg>
-        </div>
-        <span class="milo-tile-label">${intent.label}</span>
-      </div>
-    `;
+    return `<button type="button" class="milo-tile milo-tile--enter ${isSelected ? 'selected' : ''}" style="--tile-i:${index}" data-intent-id="${intent.id}" aria-pressed="${isSelected}" aria-label="${intent.label}">
+      <span class="milo-mood-photo"><img src="${intent.image}" alt="" class="milo-tile-img" loading="eager" onerror="if(this.src!=='${safeFallback}'){this.src='${safeFallback}'}" />
+        <span class="milo-tile-check" aria-hidden="true"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" pathLength="24"></polyline></svg></span>
+      </span><span class="milo-tile-label">${intent.label}</span></button>`;
   }).join('');
-
-  const backButtonHtml = sessionId === 'sneha' ? `
-    <button class="milo-header-back" id="miloS1Back-${sessionId}" aria-label="Back to invitation">
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
-        <line x1="19" y1="12" x2="5" y2="12"></line>
-        <polyline points="12 19 5 12 12 5"></polyline>
-      </svg>
-    </button>
-  ` : '<div class="milo-header-space"></div>';
-
+  const backButtonHtml = `<button type="button" class="milo-header-back" id="miloS1Back-${sessionId}" aria-label="${sessionId === 'sneha' ? 'Back to invitation' : 'Back to Home'}"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none" aria-hidden="true"><path d="m14 5-7 7 7 7"/></svg></button>`;
+  const progressHtml = `<div class="milo-mood-progress" id="miloSubline-${sessionId}" role="status" aria-live="polite" aria-label="${selectedIntents.length} of 3 moods selected"><span class="milo-mood-dots" aria-hidden="true">${[1,2,3].map(n=>`<i class="${selectedIntents.length >= n ? 'is-filled' : ''}"></i>`).join('')}</span><span class="milo-subline-text">${selectedIntents.length}/3</span></div>`;
   return `
     <div class="milo-s1-container" data-session-id="${sessionId}">
       <header class="milo-header">
         ${backButtonHtml}
         <span class="milo-wordmark">milo.</span>
-        <div class="milo-header-space"></div>
+        
       </header>
 
       <div class="milo-s1-intro">
         ${contextLineHtml}
-        <h1 class="milo-headline">How do you want tonight to feel?</h1>
-        <p class="milo-subline" id="miloSubline-${sessionId}"><span class="milo-subline-text">${counterText(selectedIntents.length)}</span></p>
+        <div class="milo-mood-heading"><h1 class="milo-headline">Your kind of date.</h1>${progressHtml}</div>
+        <p class="milo-subline">Pick three moods. We'll bring them together.</p>
       </div>
 
       <div class="milo-tiles-grid" id="miloTilesGrid-${sessionId}">
@@ -120,7 +71,7 @@ export function attachScreen01Listeners(container, sessionId = 'aarav') {
 
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      store.setSessionScreen(sessionId, 's0');
+      store.setSessionScreen(sessionId, sessionId === 'sneha' ? 's0' : 'home');
     });
   }
 
@@ -157,12 +108,7 @@ export function attachScreen01Listeners(container, sessionId = 'aarav') {
           }
         }
       });
-      tile.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          tile.click();
-        }
-      });
+
     });
   }
 
@@ -170,7 +116,7 @@ export function attachScreen01Listeners(container, sessionId = 'aarav') {
     cta.addEventListener('click', () => {
       const state = store.getState();
       const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
-      if (state[sessionKey].intents && state[sessionKey].intents.length > 0) {
+      if (hasThreeMoods(state[sessionKey].intents)) {
         store.advanceFromS1(sessionId);
       }
     });
@@ -193,11 +139,12 @@ export function patchScreen01(container, sessionId = 'aarav') {
 
   const subline = container.querySelector(`#miloSubline-${sessionId}`);
   const textEl = subline && subline.querySelector('.milo-subline-text');
-  const next = counterText(selected.length);
-  if (textEl && textEl.textContent !== next) {
-    crossFadeText(subline, textEl, next);
+  if (textEl) textEl.textContent = `${selected.length}/3`;
+  if (subline) {
+    subline.setAttribute('aria-label', `${selected.length} of 3 moods selected`);
+    subline.querySelectorAll('.milo-mood-dots i').forEach((dot, index) => dot.classList.toggle('is-filled', index < selected.length));
   }
 
   const cta = container.querySelector(`#miloCta-${sessionId}`);
-  if (cta) cta.disabled = selected.length === 0;
+  if (cta) cta.disabled = !hasThreeMoods(selected);
 }

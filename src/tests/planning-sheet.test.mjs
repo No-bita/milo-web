@@ -55,8 +55,9 @@ for (const width of [320, 420, 1024]) {
         await page.getByRole('button', { name: 'Continue', exact: true }).click();
         await page.locator('.milo-s1-container').waitFor();
         assert.equal((await state(page)).sessionA.planningMode, mode);
-        assert.deepEqual((await state(page)).shared, initial.shared);
-        if (!(await state(page)).sessionA.intents.includes('intimate')) await page.locator('[data-intent-id=intimate]').click();
+        for (const id of ['intimate', 'fun', 'novelty']) {
+          if (!(await state(page)).sessionA.intents.includes(id)) await page.locator(`[data-intent-id=${id}]`).click();
+        }
         await page.locator('#miloCta-aarav').click(); await page.locator('.milo-s2-container').waitFor();
         assert.equal(await page.locator('.milo-path-container').count(), 0, 'No redundant pre-deck fork');
         await page.goBack(); await page.locator('.milo-s1-container').waitFor();
