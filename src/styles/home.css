@@ -15,7 +15,9 @@
 .milo-home-row span:not(.milo-home-avatar) { font-size: 13px; line-height: 19px; color: var(--color-ink-muted); }
 .milo-home-avatar { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--color-oxblood); color: #fff; font-size: 12px; display: grid; place-items: center; }
 .milo-home-avatar-plus { background: var(--color-taupe); color: var(--color-ink); }
-.milo-home-top { flex: none; padding-top: 6px; }
+.milo-viewport .milo-header.milo-home-header { grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; height: auto; min-height: 48px; margin: 0; }
+.milo-viewport .milo-home-header > .milo-wordmark { grid-column: 2; justify-self: end; }
+.milo-home-place { grid-column: 1; min-width: 0; }
 .milo-home-place-btn { display: flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; font: 400 22px var(--font-serif); color: var(--color-ink); cursor: pointer; }
 .milo-home-place-btn svg:first-child { color: var(--color-oxblood); flex: none; }
-.milo-home-address { margin: 3px 0 0 24px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--color-ink-muted); }
+.milo-home-address { margin: 3px 0 0 24px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--color-ink-muted); }
