@@ -1,3 +1,4 @@
+import { openPlanningSheet } from './planning-sheet.js';
 import { store } from '../domain/store.js';
 
 const TABS = [
@@ -18,13 +19,14 @@ export function renderTabBar(active, { group = false } = {}) {
   return `<nav class="milo-tabbar${group ? ' has-group' : ''}" aria-label="Main">${items}${tile}</nav>`;
 }
 
-// Plan starts a new night (the moods screen). The other tabs are the home-family screens.
+// Plan asks whose inputs before starting the moods journey.
 export function attachTabBar(container, sessionId = 'aarav') {
   container.querySelectorAll('.milo-tab, .milo-group-tile').forEach((button) => {
     button.addEventListener('click', () => {
       const tab = button.dataset.tab;
       if (button.classList.contains('is-active')) return;
-      store.setSessionScreen(sessionId, tab === 'plan' ? 's1' : tab);
+      if (tab === 'plan') openPlanningSheet(container, sessionId, button);
+      else store.setSessionScreen(sessionId, tab);
     });
   });
 }

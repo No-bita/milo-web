@@ -105,7 +105,7 @@ class DomainStore {
       ...this.state,
       [sessionKey]: {
         ...this.state[sessionKey],
-        screen: sessionId === 'sneha' ? 'threshold' : 'planning_path'
+        screen: 'threshold'
       }
     };
     this._emit();
