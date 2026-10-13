@@ -89,6 +89,18 @@ body.lp { margin: 0; background: var(--ivory); color: var(--ink); font-family: v
 .lp-footer .lp-brand { display: block; margin-bottom: 6px; }
 .lp-fine { margin-top: 4px; font-size: 13px; }
 
+.lp-chat { text-align: center; }
+.lp-chat .lp-sub { margin-left: auto; margin-right: auto; }
+.lp-phone { width: 100%; max-width: 340px; margin: 28px auto 0; border-radius: 26px; overflow: hidden; background: #ECE5DD; border: 8px solid var(--obsidian); text-align: left; }
+.lp-phone-bar { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #1F3B36; color: #fff; font-weight: 600; font-size: 15px; }
+.lp-phone-avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--oxblood); font-size: 14px; }
+.lp-phone-body { display: flex; flex-direction: column; gap: 8px; padding: 16px 12px 22px; }
+.lp-bubble { position: relative; max-width: 82%; padding: 8px 12px 18px; border-radius: 12px; font-size: 15px; line-height: 1.4; color: #111; box-shadow: 0 1px 1px rgba(0,0,0,.12); }
+.lp-bubble-out { align-self: flex-end; background: #DCF8C6; border-top-right-radius: 3px; }
+.lp-bubble-in { align-self: flex-start; background: #fff; border-top-left-radius: 3px; }
+.lp-time { position: absolute; right: 10px; bottom: 3px; font-size: 11px; color: #6b6b6b; }
+.lp-chat-note { margin-top: 16px; }
+
 @media (min-width: 760px) {
   .lp-nav { padding: 14px 40px; }
   .lp-hero { padding-top: 72px; display: grid; grid-template-columns: 1.3fr 1fr; column-gap: 48px; align-items: center; }
