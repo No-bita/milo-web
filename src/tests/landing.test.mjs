@@ -28,6 +28,8 @@ for(const width of [320,420,1280]){
       assert.ok(order.indexOf('Meet milo.')>0,'problem sections come before Meet milo.');
       assert.equal(await p.locator('.lp-scenes li').count(),6);
       assert.equal(await p.locator('.lp-steps > li').count(),4);
+      assert.equal(await p.locator('.lp-phone .lp-bubble').count(),4);
+      const firstChat=await p.locator('.lp-phone').boundingBox();assert.ok(firstChat.width<=width,'chat mockup fits the viewport');
       const over=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       assert.ok(over<=0,'no horizontal overflow, got '+over);
       if(process.env.MILO_EVIDENCE_DIR)await p.screenshot({path:`${process.env.MILO_EVIDENCE_DIR}/landing-${width}.png`,fullPage:true});
