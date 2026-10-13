@@ -1,0 +1,23 @@
+{
+  "name": "Milo",
+  "url": "https://www.aaryanshah.co.in/",
+  "prototypeUrl": "https://www.aaryanshah.co.in/app/",
+  "tagline": "You picked the person. Milo handles the plan.",
+  "description": "Milo plans a night out. Tell Milo the mood, and Milo shapes the plan.",
+  "status": [
+    "Milo is an early prototype and Bengaluru-first.",
+    "Today you can try the prototype in your browser: pick moods, swipe ideas, build a night, seal it with a time, add it to your calendar and share it on WhatsApp.",
+    "Booking and reminders are coming soon.",
+    "Milo does not take payments.",
+    "The waitlist opens soon. It is not collecting emails yet."
+  ],
+  "faq": [
+    { "q": "What is Milo?", "a": "Milo plans a night out. Tell it your mood, and it shapes a dinner, a walk and a dessert you can send on WhatsApp." },
+    { "q": "Is it a dating app?", "a": "No. You already found your person. Milo is just for the plan." },
+    { "q": "Where does it work?", "a": "Milo is Bengaluru-first, and early. You can try the prototype in your browser today." },
+    { "q": "What can I do today?", "a": "Pick moods, swipe ideas, build a night, seal it with a time, add it to your calendar and share it on WhatsApp." },
+    { "q": "Can Milo book or pay for me?", "a": "Not yet. Milo makes the plan and you book it. Booking is coming soon. Milo doesn't take payments." },
+    { "q": "What happens to my answers?", "a": "In this prototype, they stay in your browser. Nothing is sent to a server." },
+    { "q": "How do I join the waitlist?", "a": "It opens soon. Until then, take the prototype for a spin." }
+  ]
+}
