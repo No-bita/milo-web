@@ -89,6 +89,10 @@ body.lp { margin: 0; background: var(--ivory); color: var(--ink); font-family: v
 .lp-form { display: flex; flex-direction: column; gap: 10px; max-width: 420px; margin: 24px auto 8px; }
 .lp-form input { min-height: 48px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--taupe); background: var(--sand); font: 16px var(--sans); color: var(--muted); }
 
+.lp-faq dl { margin: 24px 0 0; display: grid; gap: 4px; max-width: 640px; }
+.lp-faq dt { margin-top: 14px; font-family: var(--serif); font-size: 22px; line-height: 1.2; }
+.lp-faq dd { margin: 4px 0 0; color: var(--muted); font-size: 17px; }
+
 .lp-footer { padding: 36px 20px 48px; text-align: center; border-top: 1px solid var(--taupe); color: var(--muted); font-size: 14px; }
 .lp-footer .lp-brand { display: block; margin-bottom: 6px; }
 .lp-fine { margin-top: 4px; font-size: 13px; }
