@@ -62,7 +62,7 @@ const llmsTxt = [
   '',
   `> ${facts.description} ${facts.status[0]}`,
   '',
-  'Milo is not a dating app. Booking and reminders are coming soon. Milo does not take payments.',
+  [facts.status[1], facts.status[3], facts.status[4]].join(' '),
   '',
   '## Pages',
   '',
