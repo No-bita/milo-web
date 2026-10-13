@@ -6,6 +6,15 @@
   <title>milo. - You picked the person. Milo handles the plan.</title>
   <meta name="description" content="Milo plans the night for the moments that matter. Tell us the mood and the occasion, we'll shape the plan." />
   <meta name="theme-color" content="#FBF8F4" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="milo." />
+  <meta property="og:title" content="milo. - You picked the person. Milo handles the plan." />
+  <meta property="og:description" content="Milo plans the night for the moments that matter. Tell us the mood and the occasion, we'll shape the plan." />
+  <meta property="og:image" content="https://www.aaryanshah.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
   <!-- Old shared links (?as=, ?invite=, ?screen=, ?demo=, ?golden=, ?reset=) still open the app. -->
   <script>
     if (/[?&](as|invite|screen|demo|golden|reset)=/.test(location.search)) {
@@ -30,29 +39,26 @@
       <p class="lp-lead">First date, anniversary, a birthday, or just a Tuesday that deserves better. Tell us the mood and the occasion, and we'll shape the night.</p>
       <div class="lp-actions">
         <a class="lp-btn" href="#waitlist">Join the waitlist</a>
-        <a class="lp-link" href="#how">See how it works</a>
+        <a class="lp-link" href="./app/">Try the prototype</a>
       </div>
-      <div class="lp-hero-card" aria-hidden="true">
-        <p class="lp-card-kicker">We think this one's yours</p>
-        <p class="lp-card-title">A long walk that ends somewhere warm</p>
-        <ul class="lp-slots">
-          <li><span>Dinner</span>a quiet table, nothing loud</li>
-          <li><span>Walk</span>the pretty way round</li>
-          <li><span>Dessert</span>somewhere that closes late</li>
-        </ul>
-      </div>
+      <figure class="lp-hero-phone">
+        <div class="lp-phone lp-phone-shot">
+          <span class="lp-phone-btn lp-phone-btn-a"></span><span class="lp-phone-btn lp-phone-btn-b"></span>
+          <div class="lp-screen"><img src="./landing/peek-deck.webp" width="260" height="545" alt="The Milo prototype: a swipe card for a tiny bar where nobody knows you, with Not for tonight, Maybe and I'm into it buttons." fetchpriority="high" /><i class="lp-camera lp-camera-shot"></i></div>
+        </div>
+      </figure>
     </section>
 
     <section class="lp-section lp-problem" id="problem">
       <h2>Sound familiar?</h2>
       <p class="lp-sub">Planning a good date is weirdly hard. Not because you don't care. Because you care a lot.</p>
       <ul class="lp-scenes">
-        <li>"so, where do you want to go?" "anywhere's fine!" forty minutes later, still anywhere.</li>
-        <li>spent an hour on google maps. picked the place with 4.6 stars. it was loud. we shouted our feelings.</li>
-        <li>i wanted to ask what she'd like. didn't. what if i got it wrong by asking?</li>
-        <li>she wanted me to plan something nice. i wanted her to just say what she wanted. we ordered pizza.</li>
-        <li>booked dinner. forgot nothing about the restaurant. forgot the dessert place closes at 10.</li>
-        <li>the plan lived in four chats, two tabs and one very confident voice note.</li>
+        <li><h3>the anywhere's-fine</h3><p>"so, where do you want to go?" "anywhere's fine!" forty minutes later, still anywhere.</p></li>
+        <li><h3>the 4.6-star shout</h3><p>spent an hour on google maps. picked the place with 4.6 stars. it was loud. we shouted our feelings.</p></li>
+        <li><h3>the unasked question</h3><p>i wanted to ask what she'd like. didn't. what if i got it wrong by asking?</p></li>
+        <li><h3>the pizza standoff</h3><p>she wanted me to plan something nice. i wanted her to just say what she wanted. we ordered pizza.</p></li>
+        <li><h3>the 10 pm dessert</h3><p>booked dinner. forgot nothing about the restaurant. forgot the dessert place closes at 10.</p></li>
+        <li><h3>the four-tab plan</h3><p>the plan lived in four chats, two tabs and one very confident voice note.</p></li>
       </ul>
     </section>
 
@@ -69,38 +75,46 @@
       <p class="lp-note">Not a dating app. You already found your person. This is for the plan.</p>
     </section>
 
+    <section class="lp-section lp-moments">
+      <h2>For the nights that matter.</h2>
+      <ul class="lp-grid">
+        <li><h3>First date</h3><p>she laughed at the right moment. there will be a second.</p></li>
+        <li><h3>Anniversary</h3><p>he remembered the small thing.</p></li>
+        <li><h3>Birthday</h3><p>all she said was "wow".</p></li>
+        <li><h3>Just because</h3><p>a tuesday, but make it nice.</p></li>
+        <li><h3>Making up</h3><p>no speeches. just a good table and a long walk home.</p></li>
+        <li><h3>Big news</h3><p>the promotion deserved more than a "congrats!" text.</p></li>
+      </ul>
+      <div class="lp-ribbon" aria-label="One night, from mood to sealed">
+        <div class="lp-ribbon-step"><span class="lp-ribbon-k">Mood</span><span class="lp-chip lp-chip-on">Intimate</span><span class="lp-chip lp-chip-on">Low-key</span></div>
+        <span class="lp-ribbon-arrow" aria-hidden="true">&#8594;</span>
+        <div class="lp-ribbon-step"><span class="lp-ribbon-k">The plan</span><span class="lp-chip">Dinner</span><span class="lp-chip">Walk</span><span class="lp-chip">Dessert</span></div>
+        <span class="lp-ribbon-arrow" aria-hidden="true">&#8594;</span>
+        <div class="lp-ribbon-step"><span class="lp-ribbon-k">Sealed</span><span class="lp-chip lp-chip-on">7:30 PM, Sat</span></div>
+      </div>
+    </section>
+
     <section class="lp-section lp-how" id="how">
       <h2>How it works</h2>
+      <p class="lp-sub">Real screens from the prototype, with demo names and photos.</p>
       <ol class="lp-steps">
         <li>
-          <div class="lp-step-visual" aria-hidden="true">
-            <span class="lp-chip lp-chip-on">Intimate</span><span class="lp-chip">A little fun</span><span class="lp-chip lp-chip-on">Low-key</span><span class="lp-chip">Outdoors</span><span class="lp-chip lp-chip-on">Special</span>
-          </div>
+          <div class="lp-phone lp-phone-shot lp-phone-mini"><div class="lp-screen"><img src="./landing/peek-moods.webp" width="190" height="398" alt="The Milo mood picker with eight moods and three chosen." /><i class="lp-camera lp-camera-shot"></i></div></div>
           <h3>Pick the mood</h3>
           <p>Cosy? Lively? Something new? Choose a few moods and swipe through ideas. Tell Milo what feels like you.</p>
         </li>
         <li>
-          <div class="lp-step-visual lp-two" aria-hidden="true">
-            <span class="lp-avatar">You</span><span class="lp-and">+</span><span class="lp-avatar lp-avatar-2">Them</span>
-          </div>
+          <div class="lp-phone lp-phone-shot lp-phone-mini"><div class="lp-screen"><img src="./landing/peek-plan.webp" width="190" height="398" alt="The Milo planning sheet asking how you would like to plan: just my inputs, or both our inputs." /><i class="lp-camera lp-camera-shot"></i></div></div>
           <h3>Bring your person in, or plan solo</h3>
           <p>Each of you answers on your own, so nobody has to guess out loud.</p>
         </li>
         <li>
-          <div class="lp-step-visual" aria-hidden="true">
-            <ul class="lp-slots lp-slots-tight">
-              <li><span>Dinner</span>Customise</li>
-              <li><span>Walk</span>Customise</li>
-              <li><span>Dessert</span>Customise</li>
-            </ul>
-          </div>
+          <div class="lp-phone lp-phone-shot lp-phone-mini"><div class="lp-screen"><img src="./landing/peek-night.webp" width="190" height="398" alt="A Milo night, The Middle Ground, as photo cards for dinner, walk and dessert." /><i class="lp-camera lp-camera-shot"></i></div></div>
           <h3>See a night that fits</h3>
           <p>Dinner, walk, dessert, as photo cards. Don't love a slot? Swap it with Customise.</p>
         </li>
         <li>
-          <div class="lp-step-visual lp-sealed" aria-hidden="true">
-            <div class="lp-seal lp-seal-small">m.</div><p>Sealed.</p>
-          </div>
+          <div class="lp-phone lp-phone-shot lp-phone-mini"><div class="lp-screen"><img src="./landing/peek-sealed.webp" width="190" height="398" alt="The Milo sealed screen with the night, the time and a wax seal." /><i class="lp-camera lp-camera-shot"></i></div></div>
           <h3>Seal it</h3>
           <p>Pick a time, add it to your calendar, share it on WhatsApp. Pinky promise.</p>
         </li>
@@ -134,18 +148,6 @@
       <p class="lp-fine lp-chat-note">Illustration. Milo shares the plan, the reply is all yours to earn.</p>
     </section>
 
-    <section class="lp-section lp-moments">
-      <h2>For the nights that matter.</h2>
-      <ul class="lp-grid">
-        <li><h3>First date</h3><p>she laughed at the right moment. there will be a second.</p></li>
-        <li><h3>Anniversary</h3><p>he remembered the small thing.</p></li>
-        <li><h3>Birthday</h3><p>all she said was "wow".</p></li>
-        <li><h3>Just because</h3><p>a tuesday, but make it nice.</p></li>
-        <li><h3>Making up</h3><p>no speeches. just a good table and a long walk home.</p></li>
-        <li><h3>Big news</h3><p>the promotion deserved more than a "congrats!" text.</p></li>
-      </ul>
-    </section>
-
     <section class="lp-promise">
       <p>"A date that feels like you thought of everything."</p>
     </section>
@@ -171,6 +173,7 @@
     <p class="lp-brand">milo<span class="lp-dot">.</span></p>
     <p>Made in Bengaluru.</p>
     <p class="lp-fine">Milo helps you plan. It doesn't decide for you.</p>
+    <p class="lp-fine">Privacy: in this prototype your answers stay in your own browser. Nothing is sent to a server.</p>
   </footer>
 </body>
 </html>
