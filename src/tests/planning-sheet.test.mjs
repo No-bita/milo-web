@@ -4,12 +4,12 @@ import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
 let server, browser;
-const origin = 'http://127.0.0.1:4180';
+const site = 'http://127.0.0.1:4180'; const origin = site + '/app/';
 const key = 'milo_prototype_v1_state';
 before(async () => {
   server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', '4180', '--strictPort']);
   let ready = false;
-  for (let n = 0; n < 100; n++) { try { ready = (await fetch(origin)).ok; } catch {} if (ready) break; await new Promise(r => setTimeout(r, 100)); }
+  for (let n = 0; n < 100; n++) { try { ready = (await fetch(site)).ok; } catch {} if (ready) break; await new Promise(r => setTimeout(r, 100)); }
   assert.ok(ready);
   browser = await chromium.launch({ executablePath: process.env.CHROME_BIN, headless: true });
 });
