@@ -160,3 +160,20 @@ body.lp { margin: 0; background: var(--ivory); color: var(--ink); font-family: v
   .lp-form { flex-direction: row; }
   .lp-form input { flex: 1; }
 }
+
+/* Occasion tiles */
+.lp-occasions .lp-note { margin-top: 18px; }
+.lp-occ-grid { list-style: none; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.lp-occ { padding: 16px 14px 16px; border-radius: 22px; background: var(--wash); border: 1px solid var(--taupe); }
+.lp-occ-2, .lp-occ-5 { background: var(--sand); }
+.lp-occ-3 { background: #EEEBDD; }
+.lp-occ-4 { background: #F6EDD3; }
+.lp-occ:nth-child(odd) { transform: rotate(-.8deg); }
+.lp-occ:nth-child(even) { transform: rotate(.8deg); }
+.lp-occ-5 { grid-column: 1 / -1; transform: none !important; }
+.lp-occ-art { display: block; width: 72px; height: 58px; margin-bottom: 8px; }
+.lp-occ h3 { font-family: var(--serif); font-weight: 400; font-size: 22px; line-height: 1.15; color: var(--ink); margin: 0 0 6px; }
+.lp-occ p { margin: 0; font-size: 15px; line-height: 1.4; color: var(--muted); }
+.lp-occ .lp-occ-plan { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+.lp-occ-plan span { padding: 4px 10px; border-radius: 999px; background: var(--ivory); border: 1px dashed #C39A92; font-size: 12.5px; color: var(--oxblood); }
+@media (min-width: 760px) { .lp-occ-grid { grid-template-columns: repeat(3, 1fr); } .lp-occ-5 { grid-column: auto; transform: rotate(-.8deg) !important; } }
