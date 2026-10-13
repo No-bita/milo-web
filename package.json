@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/landing-facts.mjs --check && vite build",
     "preview": "vite preview",
     "test": "node --test src/logic/*.test.mjs src/domain/*.test.mjs src/components/*.test.mjs",
     "test:regression": "npm run build && node --test --test-concurrency=1 src/tests/*.test.mjs",
-    "test:all": "npm test && npm run test:regression"
+    "test:all": "npm test && npm run test:regression",
+    "facts": "node scripts/landing-facts.mjs"
   },
   "dependencies": {
     "vite": "^6.0.0"

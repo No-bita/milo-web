@@ -1,0 +1,11 @@
+# Milo
+
+> Milo plans a night out. Tell Milo the mood, and Milo shapes the plan. Milo is an early prototype and Bengaluru-first.
+
+Milo is not a dating app. Booking and reminders are coming soon. Milo does not take payments.
+
+## Pages
+
+- [Landing page](https://www.aaryanshah.co.in/): what Milo is, how it works, quick answers
+- [Landing page as Markdown](https://www.aaryanshah.co.in/index.md): the same facts in plain text
+- [Prototype](https://www.aaryanshah.co.in/app/): try the early prototype in your browser
