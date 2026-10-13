@@ -28,8 +28,10 @@ for(const width of [320,420,1280]){
       assert.ok(order.indexOf('Meet milo.')>0,'problem sections come before Meet milo.');
       assert.equal(await p.locator('.lp-scenes li').count(),6);
       assert.equal(await p.locator('.lp-steps > li').count(),4);
+      assert.equal(await p.locator('.lp-phone-shot img').count(),5);
+      assert.equal(await p.locator('.lp-scenes li h3').count(),6);
       assert.equal(await p.locator('.lp-phone .lp-bubble').count(),4);
-      const firstChat=await p.locator('.lp-phone').boundingBox();assert.ok(firstChat.width<=width,'chat mockup fits the viewport');
+      const firstChat=await p.locator('.lp-chat .lp-phone').boundingBox();assert.ok(firstChat.width<=width,'chat mockup fits the viewport');
       const over=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       assert.ok(over<=0,'no horizontal overflow, got '+over);
       if(process.env.MILO_EVIDENCE_DIR)await p.screenshot({path:`${process.env.MILO_EVIDENCE_DIR}/landing-${width}.png`,fullPage:true});
@@ -60,16 +62,21 @@ test('landing CTAs go to the waitlist and the prototype opens at /app/',async()=
   const p=await open(420);
   try{
     assert.equal(await p.locator('.lp-hero .lp-btn').getAttribute('href'),'#waitlist');
+    assert.equal(await p.locator('.lp-hero .lp-link').getAttribute('href'),'./app/');
     await p.locator('.lp-waitlist .lp-link').click();
     await p.waitForURL(/\/app\/$/);
     await p.locator('.milo-first-open, .milo-home').first().waitFor();
   }finally{await p.close();}
 });
 
-test('old shared links with app params still reach the app',async()=>{
-  const p=await open(420,'/?as=sneha&screen=s1');
+test('old shared links keep every param and the fragment when they redirect to the app',async()=>{
+  const p=await browser.newPage({viewport:{width:420,height:844}});
+  const hops=[];p.on('framenavigated',f=>hops.push(f.url()));
+  await p.route(/fonts\.(googleapis|gstatic)\.com/,r=>r.abort());
+  await p.goto(origin+'/?as=sneha&screen=s1#details');
   try{
-    await p.waitForURL(/\/app\/\?as=sneha/);
+    await p.waitForURL(/\/app\//);
+    assert.ok(hops.includes(origin+'/app/?as=sneha&screen=s1#details'),'redirect kept both params and the fragment: '+hops.join(' | '));
     await p.locator('.milo-viewport').waitFor();
   }finally{await p.close();}
 });
