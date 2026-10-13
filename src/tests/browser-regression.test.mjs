@@ -5,14 +5,14 @@ import {chromium} from 'playwright';
 import {spawn} from 'node:child_process';
 import {mkdir} from 'node:fs/promises';
 import {createInvite, INVITE_LIFETIME_MS} from '../domain/invite.js';
-const origin='http://127.0.0.1:4178';
+const site='http://127.0.0.1:4178';const origin=site+'/app/';
 const key='milo_prototype_v1_state';
 let server,browser;
 const errors=[];
 before(async()=>{
   server=spawn(process.execPath,['node_modules/vite/bin/vite.js','preview','--host','127.0.0.1','--port','4178','--strictPort'],{stdio:'pipe'});
   let ready=false;
-  for(let n=0;n<100;n++){try{ready=(await fetch(origin)).ok;}catch{}if(ready)break;await new Promise(r=>setTimeout(r,100));}
+  for(let n=0;n<100;n++){try{ready=(await fetch(site)).ok;}catch{}if(ready)break;await new Promise(r=>setTimeout(r,100));}
   assert.ok(ready,'Production preview must start on the dedicated port');
   browser=await chromium.launch({...(process.env.CHROME_BIN?{executablePath:process.env.CHROME_BIN}:{}),headless:true});
   if(process.env.MILO_EVIDENCE_DIR)await mkdir(process.env.MILO_EVIDENCE_DIR,{recursive:true});
@@ -94,7 +94,7 @@ for(const width of [320,420]){
  test(`real same-origin tabs: agreement, timing, reload, reset and no notification claim (${width})`,async()=>{
   const {context,page:a}=await setup(width);const b=await context.newPage();b.on('pageerror',e=>errors.push(e.message));
   try{
-   await a.evaluate(()=>history.replaceState({},'','/'));await b.goto(origin+'/?as=sneha');await b.locator('#miloSuggestNight-sneha').waitFor();
+   await a.evaluate(()=>history.replaceState({},'','/app/'));await b.goto(origin+'?as=sneha');await b.locator('#miloSuggestNight-sneha').waitFor();
    const before=await state(a);
    await a.locator('.milo-plan-tile').first().click();await a.locator('[data-pick]').click();
    await b.waitForFunction(k=>Boolean(JSON.parse(localStorage.getItem(k)).shared.itineraryOverrides),key);
@@ -113,7 +113,7 @@ for(const width of [320,420]){
    await b.locator('.milo-timing-saved:visible').waitFor();assert.equal((await state(b)).shared.timing.chosenBy,'aarav');assert.equal((await state(b)).shared.timing.time,'19:30');assert.match(await b.locator('.milo-timing-saved').textContent(),/7:30 PM/);
    await b.reload();await b.locator('.milo-closing-state').waitFor();assert.equal((await state(b)).shared.timing.time,'19:30');
    // Reset is demo-only, exercised explicitly rather than exposed in the normal UI.
-   await a.goto(origin+'/?demo=1');await a.locator('.milo-first-open').click();await a.locator('.milo-home').waitFor();await a.locator('#miloHomeOpen').click();await a.locator('#miloResetBtn-aarav').click();await a.locator('.milo-reset-no').click();assert.ok((await state(a)).shared.confirmedNightId);
+   await a.goto(origin+'?demo=1');await a.locator('.milo-first-open').click();await a.locator('.milo-home').waitFor();await a.locator('#miloHomeOpen').click();await a.locator('#miloResetBtn-aarav').click();await a.locator('.milo-reset-no').click();assert.ok((await state(a)).shared.confirmedNightId);
    await a.locator('#miloResetBtn-aarav').click();await a.locator('.milo-reset-yes').click();await screen(b,'sessionB','s1');assert.equal((await state(b)).shared.confirmedNightId,null);
   }finally{await context.close();}
  });
