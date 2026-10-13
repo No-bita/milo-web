@@ -5,6 +5,7 @@
 ## Status
 
 - Milo is an early prototype and Bengaluru-first.
+- Milo is not a dating app.
 - Today you can try the prototype in your browser: pick moods, swipe ideas, build a night, seal it with a time, add it to your calendar and share it on WhatsApp.
 - Booking and reminders are coming soon.
 - Milo does not take payments.
