@@ -63,7 +63,7 @@ test('landing CTAs go to the waitlist and the prototype opens at /app/',async()=
   try{
     assert.equal(await p.locator('.lp-hero .lp-btn').getAttribute('href'),'#waitlist');
     assert.equal(await p.locator('.lp-hero .lp-link').getAttribute('href'),'./app/');
-    await p.locator('.lp-waitlist .lp-link').click();
+    await p.locator('.lp-waitlist a[href="./app/"]').click();
     await p.waitForURL(/\/app\/$/);
     await p.locator('.milo-first-open, .milo-home').first().waitFor();
   }finally{await p.close();}
