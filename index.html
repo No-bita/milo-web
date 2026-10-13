@@ -3,16 +3,147 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>milo.</title>
-  <meta name="description" content="Decide what to do together tonight." />
-
-  <!-- Fonts: DM Serif Display & Inter only -->
+  <title>milo. - You picked the person. Milo handles the plan.</title>
+  <meta name="description" content="Milo plans the night for the moments that matter. Tell us the mood and the occasion, we'll shape the plan." />
+  <meta name="theme-color" content="#FBF8F4" />
+  <!-- Old shared links (?as=, ?invite=, ?screen=, ?demo=, ?golden=, ?reset=) still open the app. -->
+  <script>
+    if (/[?&](as|invite|screen|demo|golden|reset)=/.test(location.search)) {
+      location.replace('./app/' + location.search + location.hash);
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/landing/landing.css" />
 </head>
-<body>
-  <div id="app"></div>
-  <script type="module" src="/src/main.js"></script>
+<body class="lp">
+  <header class="lp-nav">
+    <a class="lp-brand" href="./" aria-label="milo.">milo<span class="lp-dot">.</span></a>
+    <a class="lp-btn lp-btn-small" href="#waitlist">Join the waitlist</a>
+  </header>
+
+  <main>
+    <section class="lp-hero">
+      <p class="lp-eyebrow">For moments that matter</p>
+      <h1>You picked the person. <em>Milo handles the plan.</em></h1>
+      <p class="lp-lead">First date, anniversary, a birthday, or just a Tuesday that deserves better. Tell us the mood and the occasion, and we'll shape the night.</p>
+      <div class="lp-actions">
+        <a class="lp-btn" href="#waitlist">Join the waitlist</a>
+        <a class="lp-link" href="#how">See how it works</a>
+      </div>
+      <div class="lp-hero-card" aria-hidden="true">
+        <p class="lp-card-kicker">We think this one's yours</p>
+        <p class="lp-card-title">A long walk that ends somewhere warm</p>
+        <ul class="lp-slots">
+          <li><span>Dinner</span>a quiet table, nothing loud</li>
+          <li><span>Walk</span>the pretty way round</li>
+          <li><span>Dessert</span>somewhere that closes late</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="lp-section lp-problem" id="problem">
+      <h2>Sound familiar?</h2>
+      <p class="lp-sub">Planning a good date is weirdly hard. Not because you don't care. Because you care a lot.</p>
+      <ul class="lp-scenes">
+        <li>"so, where do you want to go?" "anywhere's fine!" forty minutes later, still anywhere.</li>
+        <li>spent an hour on google maps. picked the place with 4.6 stars. it was loud. we shouted our feelings.</li>
+        <li>i wanted to ask what she'd like. didn't. what if i got it wrong by asking?</li>
+        <li>she wanted me to plan something nice. i wanted her to just say what she wanted. we ordered pizza.</li>
+        <li>booked dinner. forgot nothing about the restaurant. forgot the dessert place closes at 10.</li>
+        <li>the plan lived in four chats, two tabs and one very confident voice note.</li>
+      </ul>
+    </section>
+
+    <section class="lp-section lp-reframe">
+      <h2>You're not bad at dates. You've just been doing the planning part alone, with too many tabs.</h2>
+      <p>Asking what someone likes feels risky. Guessing feels worse. So most good intentions turn into "anywhere's fine."</p>
+      <p>There's a gentler way to find out.</p>
+    </section>
+
+    <section class="lp-section lp-meet">
+      <div class="lp-seal" aria-hidden="true">m.</div>
+      <h2>Meet milo.</h2>
+      <p>The one who does the planning, so you can do the showing up. You each tell Milo what you're in the mood for. Milo finds where your tastes meet and shapes a night around it.</p>
+      <p class="lp-note">Not a dating app. You already found your person. This is for the plan.</p>
+    </section>
+
+    <section class="lp-section lp-how" id="how">
+      <h2>How it works</h2>
+      <ol class="lp-steps">
+        <li>
+          <div class="lp-step-visual" aria-hidden="true">
+            <span class="lp-chip lp-chip-on">Intimate</span><span class="lp-chip">A little fun</span><span class="lp-chip lp-chip-on">Low-key</span><span class="lp-chip">Outdoors</span><span class="lp-chip lp-chip-on">Special</span>
+          </div>
+          <h3>Pick the mood</h3>
+          <p>Cosy? Lively? Something new? Choose a few moods and swipe through ideas. Tell Milo what feels like you.</p>
+        </li>
+        <li>
+          <div class="lp-step-visual lp-two" aria-hidden="true">
+            <span class="lp-avatar">You</span><span class="lp-and">+</span><span class="lp-avatar lp-avatar-2">Them</span>
+          </div>
+          <h3>Bring your person in, or plan solo</h3>
+          <p>Each of you answers on your own, so nobody has to guess out loud.</p>
+        </li>
+        <li>
+          <div class="lp-step-visual" aria-hidden="true">
+            <ul class="lp-slots lp-slots-tight">
+              <li><span>Dinner</span>Customise</li>
+              <li><span>Walk</span>Customise</li>
+              <li><span>Dessert</span>Customise</li>
+            </ul>
+          </div>
+          <h3>See a night that fits</h3>
+          <p>Dinner, walk, dessert, as photo cards. Don't love a slot? Swap it with Customise.</p>
+        </li>
+        <li>
+          <div class="lp-step-visual lp-sealed" aria-hidden="true">
+            <div class="lp-seal lp-seal-small">m.</div><p>Sealed.</p>
+          </div>
+          <h3>Seal it</h3>
+          <p>Pick a time, add it to your calendar, share it on WhatsApp. Pinky promise.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="lp-section lp-moments">
+      <h2>For the nights that matter.</h2>
+      <ul class="lp-grid">
+        <li><h3>First date</h3><p>she laughed at the right moment. there will be a second.</p></li>
+        <li><h3>Anniversary</h3><p>he remembered the small thing.</p></li>
+        <li><h3>Birthday</h3><p>all she said was "wow".</p></li>
+        <li><h3>Just because</h3><p>a tuesday, but make it nice.</p></li>
+        <li><h3>Making up</h3><p>no speeches. just a good table and a long walk home.</p></li>
+        <li><h3>Big news</h3><p>the promotion deserved more than a "congrats!" text.</p></li>
+      </ul>
+    </section>
+
+    <section class="lp-promise">
+      <p>"A date that feels like you thought of everything."</p>
+    </section>
+
+    <section class="lp-section lp-status">
+      <h2>Early, and proud of it.</h2>
+      <p>Milo is brand new and Bengaluru-first. Right now you can plan a night from mood to sealed plan. Booking and reminders are coming soon, and they're what we're building next. We'd rather tell you than pretend.</p>
+    </section>
+
+    <section class="lp-section lp-waitlist" id="waitlist">
+      <h2>Ready to stop saying "anywhere's fine"?</h2>
+      <p>The waitlist opens soon. We're not collecting emails on this page yet, so there's nothing to type here. Check back, or take the early prototype for a spin.</p>
+      <form class="lp-form" onsubmit="return false">
+        <label class="lp-sr" for="lp-email">Email</label>
+        <input id="lp-email" type="email" placeholder="your email" disabled />
+        <button class="lp-btn" type="button" disabled>Waitlist opens soon</button>
+      </form>
+      <a class="lp-link" href="./app/">Try the prototype</a>
+    </section>
+  </main>
+
+  <footer class="lp-footer">
+    <p class="lp-brand">milo<span class="lp-dot">.</span></p>
+    <p>Made in Bengaluru.</p>
+    <p class="lp-fine">Milo helps you plan. It doesn't decide for you.</p>
+  </footer>
 </body>
 </html>
