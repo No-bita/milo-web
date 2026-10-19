@@ -20,6 +20,7 @@ import { renderScreen04, attachScreen04Listeners, patchScreen04 } from './screen
 import { renderScreen05, attachScreen05Listeners, confirmReturnToMoods } from './screens/s5-shared.js';
 import { renderScreen06, attachScreen06Listeners } from './screens/s6-nights.js';
 import { renderScreen07, attachScreen07Listeners } from './screens/s7-your-night.js';
+import { renderPlan, attachPlanListeners } from './screens/plan.js';
 import { renderHome, attachHomeListeners } from './screens/home.js';
 import { renderNights, attachNightsListeners } from './screens/nights-tab.js';
 import { renderYou, attachYouListeners } from './screens/you-tab.js';
@@ -79,6 +80,8 @@ function renderSessionContent(sessionId) {
       return renderScreen05(sessionId);
     case 's6':
       return renderScreen06(sessionId);
+    case 'plan':
+      return renderPlan(sessionId);
     case 'home':
       return renderHome(sessionId);
     case 'nights':
@@ -134,6 +137,9 @@ function attachSessionListeners(container, sessionId) {
       break;
     case 's6':
       attachScreen06Listeners(container, sessionId);
+      break;
+    case 'plan':
+      attachPlanListeners(container, sessionId);
       break;
     case 'home':
       attachHomeListeners(container, sessionId);

@@ -1,6 +1,6 @@
 // Browser history records navigation only. Preferences, drafts and consent stay live.
 const SESSION_KEYS = { aarav: 'sessionA', sneha: 'sessionB' };
-const SCREENS = new Set(['home', 'nights', 'you', 'group', 'requests', 'booked', 's0', 's1', 'planning_path', 'planning_path_review', 's2', 's3', 's4_invite', 's4_waiting', 's5', 's6', 's7']);
+const SCREENS = new Set(['home', 'plan', 'nights', 'you', 'group', 'requests', 'booked', 's0', 's1', 'planning_path', 'planning_path_review', 's2', 's3', 's4_invite', 's4_waiting', 's5', 's6', 's7']);
 
 export function journeyRoute(state, sessionId) {
   const session = state[SESSION_KEYS[sessionId]];
