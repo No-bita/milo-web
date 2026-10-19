@@ -17,7 +17,7 @@ export function renderScreen01(sessionId = 'aarav') {
 
   const isCtaDisabled = !hasThreeMoods(selectedIntents);
 
-  const contextLineHtml = sessionId === 'sneha' 
+  const contextLineHtml = sessionId === 'sneha'
     ? `
       <div class="milo-context-line milo-context-line--lead">${partnerName}'s done. Your turn.</div>
       <p class="milo-partner-context">${partnerName || 'Your partner'} invited you to plan tonight. Your picks stay private. About a minute.</p>
@@ -27,11 +27,32 @@ export function renderScreen01(sessionId = 'aarav') {
   const tilesHtml = INTENTS.map((intent, index) => {
     const isSelected = selectedIntents.includes(intent.id);
     const safeFallback = intent.fallback || intent.image;
-    return `<button type="button" class="milo-tile milo-tile--enter ${isSelected ? 'selected' : ''}" style="--tile-i:${index}" data-intent-id="${intent.id}" aria-pressed="${isSelected}" aria-label="${intent.label}">
-      <span class="milo-mood-photo"><img src="${intent.image}" alt="" class="milo-tile-img" loading="eager" onerror="if(this.src!=='${safeFallback}'){this.src='${safeFallback}'}" />
-        <span class="milo-tile-check" aria-hidden="true"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" pathLength="24"></polyline></svg></span>
-      </span><span class="milo-tile-label">${intent.label}</span></button>`;
+    return `
+      <button type="button"
+        class="milo-tile milo-tile--enter ${isSelected ? 'selected' : ''}"
+        style="--tile-i:${index}"
+        data-intent-id="${intent.id}"
+        aria-pressed="${isSelected}"
+        aria-label="${intent.label}"
+      >
+        <img
+          src="${intent.image}"
+          alt="${intent.alt}"
+          class="milo-tile-img"
+          loading="eager"
+          onerror="if(this.src!=='${safeFallback}'){this.src='${safeFallback}'}"
+        />
+        <div class="milo-tile-scrim"></div>
+        <div class="milo-tile-check">
+          <svg viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12" pathLength="24"></polyline>
+          </svg>
+        </div>
+        <span class="milo-tile-label">${intent.label}</span>
+      </button>
+    `;
   }).join('');
+
   const backButtonHtml = `<button type="button" class="milo-header-back" id="miloS1Back-${sessionId}" aria-label="${sessionId === 'sneha' ? 'Back to invitation' : 'Back to Home'}"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none" aria-hidden="true"><path d="m14 5-7 7 7 7"/></svg></button>`;
   const progressHtml = `<div class="milo-mood-progress" id="miloSubline-${sessionId}" role="status" aria-live="polite" aria-label="${selectedIntents.length} of 3 moods selected"><span class="milo-mood-dots" aria-hidden="true">${[1,2,3].map(n=>`<i class="${selectedIntents.length >= n ? 'is-filled' : ''}"></i>`).join('')}</span><span class="milo-subline-text">${selectedIntents.length}/3</span></div>`;
   return `
@@ -39,12 +60,12 @@ export function renderScreen01(sessionId = 'aarav') {
       <header class="milo-header">
         ${backButtonHtml}
         <span class="milo-wordmark">milo.</span>
-        
+
       </header>
 
       <div class="milo-s1-intro">
         ${contextLineHtml}
-        <div class="milo-mood-heading"><h1 class="milo-headline">Your kind of date.</h1>${progressHtml}</div>
+        <h1 class="milo-headline">How do you want tonight to feel?</h1>${progressHtml}
         <p class="milo-subline">Pick three moods. We'll bring them together.</p>
       </div>
 
@@ -52,9 +73,9 @@ export function renderScreen01(sessionId = 'aarav') {
         ${tilesHtml}
       </div>
 
-      <button 
-        class="milo-cta-button" 
-        id="miloCta-${sessionId}" 
+      <button
+        class="milo-cta-button"
+        id="miloCta-${sessionId}"
         ${isCtaDisabled ? 'disabled' : ''}
       >
         Show me what fits →
