@@ -38,7 +38,7 @@ body.iv { margin: 0; background: var(--cream); color: var(--plum); font-family: 
 .iv-change { margin-top: 30px; padding-top: 30px; border-top: 1px solid var(--line); text-align: center; }
 .iv-change h2 { font-family: var(--serif); font-weight: 400; font-size: 26px; }
 .iv-change p { margin-top: 12px; color: var(--rose); font-size: 16px; }
-.iv-foot { margin-top: 34px; text-align: center; color: #A98A8D; font-size: 14px; line-height: 1.7; }
+.iv-foot { margin-top: 34px; text-align: center; color: #7F6366; font-size: 14px; line-height: 1.7; }
 @media (prefers-reduced-motion: no-preference) {
   .iv-hero { animation: iv-pop .6s ease-out both; }
   @keyframes iv-pop { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
