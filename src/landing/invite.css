@@ -1,0 +1,50 @@
+:root { --cream: #FFF8EE; --plum: #5E2F3A; --rose: #8A5A62; --line: #E6D3CB; --paper: #F5EBE2; --tape: #EBD6BF; --serif: 'DM Serif Display', Georgia, serif; --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+* { box-sizing: border-box; }
+body.iv { margin: 0; background: var(--cream); color: var(--plum); font-family: var(--sans); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+:where(.iv) :where(p, h1, h2, dl, dd, figure, ol) { margin: 0; padding: 0; }
+.iv-page { max-width: 460px; margin: 0 auto; padding: 28px 24px 36px; }
+.iv-top { display: flex; align-items: center; justify-content: space-between; }
+.iv-brand { font-family: var(--serif); font-style: italic; font-size: 34px; letter-spacing: -.02em; }
+.iv-dot { color: #C4737C; }
+.iv-tag { padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--rose); }
+.iv-hero { margin: 22px auto 0; width: 260px; }
+.iv-hero svg { display: block; width: 100%; height: auto; }
+.iv-title { text-align: center; margin-top: 10px; }
+.iv-kicker { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--rose); }
+.iv-title h1 { margin-top: 18px; font-family: var(--serif); font-weight: 400; font-size: 58px; line-height: 1; letter-spacing: -.03em; }
+.iv-sub { margin-top: 18px; font-size: 18px; color: var(--rose); line-height: 1.7; }
+.iv-ribbon { margin-top: 30px; padding: 22px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); text-align: center; color: var(--rose); font-size: 15px; line-height: 1.8; }
+.iv-ribbon .iv-when { color: var(--plum); font-weight: 600; font-size: 17px; margin-bottom: 4px; }
+.iv-script { margin-top: 30px; padding-left: 4px; font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--rose); transform: rotate(-2deg); transform-origin: left; }
+.iv-path { margin-top: 16px; display: grid; gap: 4px; }
+.iv-path li { position: relative; display: grid; grid-template-columns: 76px 1fr; gap: 14px; padding: 8px 0 18px; list-style: none; }
+.iv-path li:not(:last-child)::after { content: ''; position: absolute; left: 36px; top: 84px; bottom: -22px; border-left: 2.5px dotted #D3A9A0; }
+.iv-ico { width: 76px; height: 52px; margin-top: 22px; }
+.iv-step { font-size: 12.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--rose); }
+.iv-path h2 { font-family: var(--serif); font-weight: 400; font-size: 28px; line-height: 1.15; margin: 6px 0 8px; letter-spacing: -.01em; }
+.iv-path li p { color: var(--rose); font-size: 16px; }
+.iv-path li p.iv-fine, .iv-fine { font-size: 13px; margin-top: 6px; }
+.iv-card { position: relative; margin-top: 30px; padding: 30px 26px 24px; border-radius: 28px; background: var(--paper); }
+.iv-tape { position: absolute; top: -14px; left: 50%; width: 84px; height: 26px; margin-left: -30px; background: var(--tape); transform: rotate(-3deg); opacity: .9; }
+.iv-card h2, .iv-practical h2 { font-family: var(--serif); font-weight: 400; font-size: 28px; letter-spacing: -.01em; }
+.iv-card p { margin-top: 10px; color: var(--rose); font-size: 17px; }
+.iv-practical { margin-top: 34px; }
+.iv-practical dl > div { display: flex; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.iv-practical dl { margin-top: 12px; border-top: 1px solid var(--line); }
+.iv-practical dt { color: var(--rose); white-space: nowrap; }
+.iv-practical dd { text-align: right; }
+.iv-practical dd span { display: inline-block; margin-top: 2px; }
+.iv-proposed { margin-top: 18px; color: var(--rose); font-size: 16px; }
+.iv-change { margin-top: 30px; padding-top: 30px; border-top: 1px solid var(--line); text-align: center; }
+.iv-change h2 { font-family: var(--serif); font-weight: 400; font-size: 26px; }
+.iv-change p { margin-top: 12px; color: var(--rose); font-size: 16px; }
+.iv-foot { margin-top: 34px; text-align: center; color: #7F6366; font-size: 14px; line-height: 1.7; }
+@media (prefers-reduced-motion: no-preference) {
+  .iv-hero { animation: iv-pop .6s ease-out both; }
+  @keyframes iv-pop { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
+}
+.iv-note { position: relative; margin: 30px 6px 0; padding: 26px 22px 20px; background: #FFF1B8; border-radius: 4px 4px 22px 4px; box-shadow: 0 6px 14px rgba(94,47,58,.12); transform: rotate(-1.5deg); }
+.iv-pin { position: absolute; top: -9px; left: 50%; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: #C4737C; box-shadow: inset -2px -2px 0 rgba(0,0,0,.12); }
+.iv-note-label { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--rose); }
+.iv-note-body { margin-top: 10px; font-family: var(--serif); font-style: italic; font-size: 22px; line-height: 1.35; }
+.iv-note-sign { margin-top: 12px; font-size: 13px; color: var(--rose); }
