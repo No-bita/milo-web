@@ -212,3 +212,6 @@
     left: calc(50% - 86px);
   }
 }
+
+/* Keep native mood buttons visually identical to the square-photo cards. */
+.milo-s1-container button.milo-tile { border: 0; padding: 0; font: inherit; text-align: left; }
