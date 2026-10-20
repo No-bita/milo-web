@@ -109,7 +109,7 @@ export function computePersonalSynthesis(intents, reactions) {
   const sortedDims = Object.keys(leanings)
     .filter(dim => Math.abs(leanings[dim]) >= 0.25)
     .sort((a, b) => {
-      // Per Appendix A.8, Aarav's occasion (-0.68) is 4th strongest vs novelty (+0.80)
+      // Per Appendix A.8, The initiator's occasion (-0.68) is 4th strongest vs novelty (+0.80)
       let strengthA = Math.abs(leanings[a]);
       let strengthB = Math.abs(leanings[b]);
       if (a === 'occasion' && leanings.occasion < 0 && leanings.novelty > 0 && Math.abs(leanings.occasion - (-0.81)) < 0.05) {
