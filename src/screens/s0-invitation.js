@@ -5,7 +5,7 @@
 // ==========================================================
 
 import { store } from '../domain/store.js';
-import { partnerLabel, sentenceName, escapeHtml } from '../logic/partner.js';
+import { partnerLabel, monograms, sentenceName, escapeHtml } from '../logic/partner.js';
 import '../styles/partner-welcome.css';
 
 export function renderScreen00(sessionId = 'sneha') {
@@ -23,7 +23,7 @@ export function renderScreen00(sessionId = 'sneha') {
 
         <div class="milo-s0-content">
           <div class="milo-monograms-row">
-            <div class="milo-monogram mono-outline">S</div>
+            <div class="milo-monogram mono-outline">${monograms(state, sessionId)[1]}</div>
           </div>
 
           <div class="milo-s0-intro">
