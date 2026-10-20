@@ -1,6 +1,7 @@
 // Native share and clipboard outcomes, with a manual-copy escape hatch.
 import { store } from '../domain/store.js';
 import { createInvite, validateInvite } from '../domain/invite.js';
+import { track } from '../analytics/analytics.js';
 
 export function inviteUrl() {
   let token = store.getState().shared.inviteToken;
@@ -61,6 +62,7 @@ export async function copyInvite({ sharingUnavailable = false, prepare = false, 
   try {
     if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
     await navigator.clipboard.writeText(url);
+    track('invite_sent', { method: 'copy' });
     if (onPrepared) { onPrepared(); return true; }
     if (prepare) readyToSend();
     feedback(sharingUnavailable ? 'Sharing is taking the night off.' : 'Link copied.',
@@ -80,6 +82,7 @@ export async function shareInvite() {
   }
   try {
     await navigator.share({ title: 'Plan a night with Milo', text: 'Planning tonight with Milo. Add your picks, it takes about a minute.', url: inviteUrl() });
+    track('invite_sent', { method: 'share' });
     readyToSend();
   } catch (error) {
     // Dismissing the share sheet is a choice, not a failure or a sent invite.

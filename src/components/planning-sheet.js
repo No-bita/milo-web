@@ -49,7 +49,7 @@ export function attachPlanningSheetListeners(dialog, { container, sessionId, tri
   dialog.querySelector('.milo-planning-continue').addEventListener('click', () => {
     // Only Continue commits the choice. Nothing is shared or invited here.
     dismiss();
-    store.updateSession(sessionId, { planningMode: getSelected(), intents: [], screen: 's1' });
+    store.updateSession(sessionId, { planningMode: getSelected(), intents: [], feedbackAnswer: null, screen: 's1' });
   });
   const cleanup = () => {
     window.removeEventListener('resize', position);
