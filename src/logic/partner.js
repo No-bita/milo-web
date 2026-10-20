@@ -19,3 +19,15 @@ export const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (c) => ({
 
 // Safe for HTML, capitalised when the name opens a sentence ("Your person").
 export const sentenceName = (label) => escapeHtml(label.charAt(0).toUpperCase() + label.slice(1));
+
+// First letter of a typed name for the monogram circles; a neutral dot until a name exists.
+export const initialOf = (name) => {
+  const first = String(name || '').trim().charAt(0);
+  return first ? escapeHtml(first.toUpperCase()) : '\u00b7';
+};
+
+// [initiator, partner] monograms as the given seat sees them.
+export function monograms(state, sessionId = 'aarav') {
+  if (sessionId === 'sneha') return [initialOf(state.sessionB?.partnerName), initialOf(state.sessionB?.name)];
+  return [initialOf(state.sessionA?.name), initialOf(isInvited(state) ? state.sessionA?.partnerName : '')];
+}
