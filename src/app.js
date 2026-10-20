@@ -31,6 +31,7 @@ import { renderRequests, attachRequestsListeners } from './screens/requests.js';
 import { renderBooked, attachBookedListeners } from './screens/booked.js';
 import { renderGroupSoon, attachGroupSoonListeners } from './screens/group-soon.js';
 import { renderSealedWaiting, attachSealedWaitingListeners } from './screens/sealed-waiting.js';
+import { isTogetherInitiator, renderTogetherWaiting, attachTogetherWaitingListeners } from './screens/together-waiting.js';
 
 // Partner A waits on the sealed screen until the partner's half lands.
 function showSealedWaiting() {
@@ -77,6 +78,7 @@ function renderSessionContent(sessionId) {
     case 's4_invite':
       return renderScreen04(sessionId);
     case 's4_waiting':
+      if (showSealedWaiting() && isTogetherInitiator()) return renderTogetherWaiting(sessionId);
       return showSealedWaiting() ? renderSealedWaiting(sessionId) : renderScreen04(sessionId);
     case 's5':
       return renderScreen05(sessionId);
@@ -131,7 +133,8 @@ function attachSessionListeners(container, sessionId) {
       attachScreen04Listeners(container, sessionId);
       break;
     case 's4_waiting':
-      if (showSealedWaiting()) attachSealedWaitingListeners(container, sessionId);
+      if (showSealedWaiting() && isTogetherInitiator()) attachTogetherWaitingListeners(container);
+      else if (showSealedWaiting()) attachSealedWaitingListeners(container, sessionId);
       else attachScreen04Listeners(container, sessionId);
       break;
     case 's5':
