@@ -5,11 +5,14 @@ import { POSTHOG_KEY, POSTHOG_HOST } from './config.js';
 
 const num = (v) => (Number.isFinite(v) ? Math.max(0, Math.min(Math.round(v), 100000)) : undefined);
 const oneOf = (...values) => (v) => (values.includes(v) ? v : undefined);
-const token = (v) => (typeof v === 'string' && /^[a-z0-9_-]{1,40}$/i.test(v) && !/^[A-Za-z0-9_-]{30,}$/.test(v) ? v.toLowerCase() : undefined);
+const SOURCES = ['instagram', 'whatsapp', 'reddit', 'google', 'facebook', 'twitter', 'x', 'linkedin', 'youtube', 'email', 'newsletter', 'direct'];
+const token = (v) => (typeof v === 'string' && SOURCES.includes(v.trim().toLowerCase()) ? v.trim().toLowerCase() : undefined);
+const OCCASIONS = ['date-night', 'anniversary', 'proposal', 'birthday', 'quality-time', 'just-because'];
+const occasion = (v) => (OCCASIONS.includes(v) ? v : undefined);
 
 export const EVENTS = {
   landing_viewed: { source: token },
-  prototype_started: { occasion: token },
+  prototype_started: { occasion },
   moods_done: { count: num },
   deck_done: { into_it: num, maybe: num, not_tonight: num },
   path_chosen: { mode: oneOf('solo', 'together') },
@@ -31,12 +34,13 @@ function enabled() {
   return !['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
 }
 
+let memoryId;
 function anonId() {
   try {
     let id = localStorage.getItem(ID_KEY);
     if (!id) { id = crypto.randomUUID(); localStorage.setItem(ID_KEY, id); }
     return id;
-  } catch { return 'anonymous'; }
+  } catch { memoryId ||= crypto.randomUUID(); return memoryId; }
 }
 
 export function sanitize(event, props = {}) {
