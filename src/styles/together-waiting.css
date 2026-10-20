@@ -1,0 +1,11 @@
+.milo-together-wait .milo-together-body { padding-top: 56px; }
+.milo-together-seal { width: 84px; height: 84px; margin: 0 auto 22px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #9a3a42 0, #6E2228 55%, #4e1519 100%); box-shadow: 0 8px 18px rgba(78, 21, 25, .35), inset 0 -4px 8px rgba(0, 0, 0, .25); }
+.milo-together-seal span { width: 66px; height: 66px; border-radius: 50%; border: 2px solid rgba(251, 248, 244, .35); display: grid; place-items: center; font-family: var(--font-serif); font-style: italic; font-size: 40px; line-height: 1; color: rgba(251, 248, 244, .92); }
+.milo-together-wait .milo-booked-title { font-size: 34px; }
+.milo-together-wait .milo-booked-sub { margin: 14px auto 0; max-width: 320px; font-size: 16px; line-height: 24px; }
+.milo-together-status { margin-top: 18px; min-height: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; color: var(--color-ink-muted); }
+.milo-together-status i { width: 10px; height: 10px; border-radius: 50%; background: #c9657a; }
+.milo-together-wait.is-paused .milo-together-status i { display: none; }
+.milo-together-note { margin-top: 12px; font-size: 13px; color: var(--color-ink-muted); text-align: center; }
+.milo-together-wait .milo-booked-cta button { width: 100%; }
+.milo-together-wait .milo-pill-btn-secondary { background: transparent; border: 1px solid var(--color-oxblood); color: var(--color-oxblood); }
