@@ -29,6 +29,10 @@ CREATE TABLE participants (
   UNIQUE(plan_id, role)
 );
 -- Only HMAC(IP) is persisted, never a raw IP. Server-only RATE_LIMIT_SECRET.
+-- Normalize before HMAC: IPv4-mapped IPv6 -> IPv4; native IPv6 -> /64.
+-- Resolve IP only through the host's trusted-proxy configuration, never an
+-- untrusted X-Forwarded-For value. Reject missing/malformed ingress addresses.
+-- Canonicalize equivalent spellings consistently before computing ip_hash.
 -- Fixed one-minute bucket: create 20, preview 60, join 20 per IP/minute.
 -- An atomic upsert gates each public request BEFORE looking up a token.
 CREATE TABLE rate_limits (
