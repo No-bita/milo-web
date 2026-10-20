@@ -9,8 +9,7 @@
     "Milo is not a dating app.",
     "Today you can try the prototype in your browser: pick moods, swipe ideas, build a night, seal it with a time, add it to your calendar and share it on WhatsApp.",
     "Booking and reminders are coming soon.",
-    "Milo does not take payments.",
-    "The waitlist opens soon. It is not collecting emails yet."
+    "Milo does not take payments."
   ],
   "faq": [
     {
@@ -36,10 +35,6 @@
     {
       "q": "What happens to my answers?",
       "a": "In this prototype, they stay in your browser. Nothing is sent to a server."
-    },
-    {
-      "q": "How do I join the waitlist?",
-      "a": "It opens soon. Until then, take the prototype for a spin."
     }
   ]
 }
