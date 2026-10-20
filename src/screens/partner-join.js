@@ -4,26 +4,47 @@ import { store } from '../domain/store.js';
 import { escapeHtml } from '../logic/partner.js';
 import { previewInvite, joinInvite, cleanName } from '../domain/network-adapter.js';
 import { renderInviteError } from '../domain/invite.js';
+import '../styles/invite-errors.css';
 
 const OCCASIONS = { date_night: 'Date night', anniversary: 'Anniversary', proposal: 'Proposal', birthday: 'Birthday', quality_time: 'Quality Time', just_because: 'Just because' };
 const dayLabel = (iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
 const shell = (html) => `<div class="milo-stage"><div class="milo-viewport">${html}</div></div>`;
 
+const ENVELOPE = `<svg class="milo-invite-problem-art" viewBox="0 0 144 100" aria-hidden="true" fill="none" stroke="#C9A898" stroke-width="2.5" stroke-linejoin="round">
+  <path d="M4 34 72 4l68 30v62H4z" fill="#F3DFC8"/><rect x="32" y="12" width="80" height="54" rx="7" fill="#FFFDF9"/>
+  <path d="M72 52c-9-6-13-10-13-15a7 7 0 0 1 13-3 7 7 0 0 1 13 3c0 5-4 9-13 15z" fill="#C9657A" stroke="none"/>
+  <path d="M4 34l68 40 68-40" /></svg>`;
+
+// Mockups 10, 11 and 12. Expired and taken offer a way out; an unreachable server offers a retry.
+const PROBLEMS = {
+  expired: { eyebrow: 'Link expired', title: 'This invite has gone cold', body: 'Invites last about a month and this one has run out. Ask for a fresh link.', cta: 'Plan my own night' },
+  taken: { eyebrow: 'Seat taken', title: "This invite's already been used", body: "Someone has taken this seat. If you're the one who sent it, share a new link from your plan.", cta: 'Plan my own night' },
+  unreachable: { eyebrow: 'Connection', title: 'Milo lost the signal', body: "Couldn't reach Milo. Your picks are saved on this phone. Try again.", cta: 'Try again' }
+};
+
 function problem(reason) {
-  if (reason === 'expired' || reason === 'invalid') return renderInviteError(reason);
-  const title = reason === 'taken' ? 'This invite has already been used.' : "Couldn't reach Milo.";
-  const body = reason === 'taken' ? 'Ask your date to send a fresh invite link.' : 'Try again in a moment.';
-  return `<section class="milo-invite-error"><header class="milo-header"><span class="milo-wordmark">milo.</span></header>
-    <div class="milo-invite-error-content"><div class="milo-invite-seal" aria-hidden="true">m.</div>
-    <h1 class="milo-headline">${title}</h1><p class="milo-body-text">${body}</p></div></section>`;
+  if (reason === 'invalid') return renderInviteError(reason);
+  const copy = PROBLEMS[reason] || PROBLEMS.unreachable;
+  return `<section class="milo-invite-problem"><header class="milo-header"><span class="milo-wordmark">milo.</span></header>
+    <div class="milo-invite-problem-body">${ENVELOPE}
+    <p class="milo-invite-problem-eyebrow">${copy.eyebrow}</p>
+    <h1 class="milo-headline">${copy.title}</h1><p class="milo-body-text">${copy.body}</p></div>
+    <button class="milo-cta-button milo-invite-problem-cta" id="miloProblemCta" type="button" data-reason="${PROBLEMS[reason] ? reason : 'unreachable'}">${copy.cta}</button></section>`;
 }
 
 export async function showPartnerJoin(container, token) {
   container.innerHTML = shell('<section class="milo-invite-error"><div class="milo-invite-error-content"><div class="milo-invite-seal" aria-hidden="true">m.</div></div></section>');
   const viewport = () => container.querySelector('.milo-viewport');
+  const showProblem = (reason) => {
+    viewport().innerHTML = problem(reason);
+    container.querySelector('#miloProblemCta')?.addEventListener('click', () => {
+      if (reason === 'expired' || reason === 'taken') window.location.assign('/app/');
+      else showPartnerJoin(container, token);
+    });
+  };
   const preview = await previewInvite(token);
-  if (!preview.ok) { viewport().innerHTML = problem(preview.reason); return; }
-  if (preview.data.status !== 'valid') { viewport().innerHTML = problem(preview.data.status); return; }
+  if (!preview.ok) { showProblem(preview.reason); return; }
+  if (preview.data.status !== 'valid') { showProblem(preview.data.status); return; }
   const { initiator_name: inviter, occasion, day } = preview.data;
   viewport().innerHTML = `<section class="milo-partner-welcome" aria-labelledby="miloJoinTitle">
     <div class="milo-partner-welcome-body">
@@ -48,7 +69,7 @@ export async function showPartnerJoin(container, token) {
       if (joined.reason === 'unreachable' || joined.reason === 'rate_limited') {
         container.querySelector('#miloJoinNote').textContent = "Couldn't reach Milo. Try again.";
         button.disabled = false;
-      } else viewport().innerHTML = problem(joined.reason);
+      } else showProblem(joined.reason);
       return;
     }
     // This phone is the partner's seat: their own name, the inviter's name, straight to moods.

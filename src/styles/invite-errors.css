@@ -1,0 +1,10 @@
+.milo-invite-problem { height: 100%; display: flex; flex-direction: column; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)); }
+.milo-invite-problem .milo-header { justify-content: flex-end; }
+.milo-invite-problem-body { flex: 1 1 auto; padding-top: 64px; text-align: center; }
+.milo-invite-problem-art { width: 144px; height: auto; display: block; margin: 0 auto 14px; }
+.milo-invite-problem-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--color-ink-muted); }
+.milo-invite-problem .milo-headline { margin-top: 12px; font-size: 38px; line-height: 1.12; }
+.milo-invite-problem .milo-body-text { margin: 14px auto 0; max-width: 340px; }
+.milo-invite-problem-cta { flex: none; width: 100%; }
+.milo-invite-problem .milo-headline { color: var(--color-oxblood); }
+.milo-invite-problem .milo-body-text { color: var(--color-ink-muted); }
