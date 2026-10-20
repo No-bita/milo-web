@@ -62,23 +62,40 @@ export async function joinInvite(token, name) {
   return result;
 }
 
-// Sends only my own half (my seat's row), about one second after it changes. Reads come in later PRs.
+// Sends only my own half (my seat's row), about one second after it changes. Reads the seat on every
+// send, so an initiator who creates the plan after startup, or a partner who just joined, syncs without
+// a reload. Before the first send for a seat it loads the server copy, so an empty local half never
+// overwrites picks already saved. Sends run one at a time and always send the newest local state.
 export function attachNetworkSync(store) {
-  const seat = readSeat();
-  if (!seat) return () => {};
-  const key = seat.role === 'partner' ? 'sessionB' : 'sessionA';
-  let lastSent = null;
   let timer = null;
-  const send = async () => {
-    const half = store.getState()[key];
+  let chain = Promise.resolve();
+  let hydratedFor = null;
+  let lastSent = null;
+  const payloadFor = (half) => {
     const reactions = (half.reactions || []).map(({ cardId, reaction }) => ({ cardId, reaction }));
     const finished = reactions.length === 8 && !['s1', 'threshold', 's2'].includes(half.screen);
-    const payload = { intents: half.intents || [], reactions, finished };
+    return { intents: half.intents || [], reactions, finished };
+  };
+  const send = async () => {
+    const seat = readSeat();
+    if (!seat) return;
+    const payload = payloadFor(store.getState()[seat.role === 'partner' ? 'sessionB' : 'sessionA']);
+    if (hydratedFor !== seat.seatKey) {
+      const current = await api('GET', `/api/plans/${seat.planId}`, { seatKey: seat.seatKey });
+      if (!current.ok) return;
+      const mine = current.data?.me || {};
+      const saved = { intents: mine.intents || [], reactions: (mine.reactions || []).map(({ cardId, reaction }) => ({ cardId, reaction })), finished: !!mine.finished };
+      hydratedFor = seat.seatKey;
+      lastSent = JSON.stringify(saved);
+      const localEmpty = !payload.intents.length && !payload.reactions.length;
+      if (localEmpty && (saved.intents.length || saved.reactions.length)) return;
+    }
     const serial = JSON.stringify(payload);
     if (serial === lastSent) return;
     const result = await api('PUT', `/api/plans/${seat.planId}/me`, { body: payload, seatKey: seat.seatKey });
     if (result.ok) lastSent = serial;
   };
-  const unsubscribe = store.subscribe(() => { clearTimeout(timer); timer = setTimeout(send, 1000); });
+  const schedule = () => { chain = chain.then(send).catch(() => {}); };
+  const unsubscribe = store.subscribe(() => { clearTimeout(timer); timer = setTimeout(schedule, 1000); });
   return () => { clearTimeout(timer); unsubscribe(); };
 }
