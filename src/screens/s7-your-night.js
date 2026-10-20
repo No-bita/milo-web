@@ -9,7 +9,7 @@ import { renderSoloNight, attachSoloNightListeners } from './solo-night.js';
 import { renderItinerary, attachItinerary } from '../components/itinerary.js';
 import { updateSlotAndRestore } from '../logic/slot-update.js';
 import { store } from '../domain/store.js';
-import { partnerLabel, hasPartnerName, escapeHtml, sentenceName } from '../logic/partner.js';
+import { partnerLabel, monograms, hasPartnerName, escapeHtml, sentenceName } from '../logic/partner.js';
 import { computeSharedOutput } from '../logic/shared.js';
 import { renderNightTiming, attachNightTiming, timingForNight, timingLabel } from '../components/night-timing.js';
 function resolvedNight(night, state) {
@@ -61,8 +61,8 @@ export function renderScreen07(sessionId = 'aarav') {
 
         <div class="milo-closing-content">
           <div class="milo-closing-monograms">
-            <div class="milo-mono-circle mono-left">A</div>
-            <div class="milo-mono-circle mono-right">S</div>
+            <div class="milo-mono-circle mono-left">${monograms(store.getState(), sessionId)[0]}</div>
+            <div class="milo-mono-circle mono-right">${monograms(store.getState(), sessionId)[1]}</div>
           </div>
           <h1 class="milo-headline">You're both in.</h1>
           <p class="milo-closing-sub">${night.name}.</p>
