@@ -7,6 +7,16 @@
 import { store } from '../domain/store.js';
 import { partnerLabel, hasPartnerName, sentenceName, escapeHtml } from '../logic/partner.js';
 import { copyInvite, inviteUrl, feedback } from '../components/invite-feedback.js';
+import { isPhase1Enabled, ensureServerInvite } from '../domain/network-adapter.js';
+
+// With Phase 1 on, the invite is a real server link. If we can't reach the server, say so and keep picks.
+async function serverReady() {
+  if (!isPhase1Enabled()) return true;
+  const result = await ensureServerInvite(store);
+  if (result.ok) return true;
+  feedback("Couldn't reach Milo.", 'Your picks are saved on this phone; try again.');
+  return false;
+}
 
 // Demo scaffolding (open the partner's side in a new tab) shows only with ?demo
 const isDemo = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo');
@@ -149,10 +159,11 @@ export function attachScreen04Listeners(container, sessionId = 'aarav') {
 
   const whatsappBtn = container.querySelector('#miloShareWhatsappBtn');
   if (whatsappBtn) {
-    whatsappBtn.addEventListener('click', () => {
+    whatsappBtn.addEventListener('click', async () => {
+      if (!(await serverReady())) return;
       const url = inviteUrl();
       const asking = store.getState().sessionA.name;
-      const text = `${asking ? `${asking} is planning` : 'Planning'} tonight with Milo. Add your picks, it takes about a minute. This link lasts 48 hours: ${url}`;
+      const text = `${asking ? `${asking} is planning` : 'Planning'} tonight with Milo. Add your picks, it takes about a minute. This link lasts ${isPhase1Enabled() ? 'about a month' : '48 hours'}: ${url}`;
       const popup = window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
       if (!popup) {
         feedback("WhatsApp couldn't open.", 'Copy the invite link below and send it however you like.', url, true);
@@ -178,7 +189,9 @@ export function attachScreen04Listeners(container, sessionId = 'aarav') {
 
   const copyBtn = container.querySelector('#miloCopyLinkBtn');
   if (copyBtn) {
-    copyBtn.addEventListener('click', () => copyInvite({ onPrepared: () => settleInvite('copy') }));
+    copyBtn.addEventListener('click', async () => {
+      if (await serverReady()) copyInvite({ onPrepared: () => settleInvite('copy') });
+    });
   }
 
   const seeSharedBtn = container.querySelector('#miloSeeSharedBtn');
