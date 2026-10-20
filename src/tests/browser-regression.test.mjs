@@ -57,6 +57,7 @@ for(const width of [320,420]){
  test(`invite failure UI, manual copy and recovery (${width})`,async()=>{
   const {context,page}=await setup(width,'?golden=1&screen=s4');
   try{
+   await page.locator('#miloMyName').fill('Asha');
    await page.locator('#miloShareWhatsappBtn').click();await page.locator('#miloInviteFeedback').waitFor();
    assert.match(await page.locator('#miloInviteFeedbackTitle').textContent(),/couldn't open/);
    const link=await page.locator('#miloManualInviteLink').inputValue();assert.equal(new URL(link).searchParams.get('as'),'sneha');assert.ok(new URL(link).searchParams.get('invite'));
