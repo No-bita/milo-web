@@ -61,7 +61,11 @@ stacks, SQL, credentials or pick payloads are logged or returned.
 
 Public rate limits are mandatory and fail closed if the trusted IP or secret
 is missing: per HMAC(IP) and minute, create 20, preview 60, join 20. Atomic
-Postgres upsert runs before token lookup, including invalid tokens. Raw IP
+Postgres upsert runs before token lookup, including invalid tokens. Trusted
+Vercel ingress only: missing/malformed IPs fail closed. IPv4-mapped IPv6 maps
+to canonical IPv4; native IPv6 maps to its canonical /64 network before HMAC,
+so equivalent spellings and address rotation inside that network share quota.
+Never take client identity from an untrusted X-Forwarded-For header. Raw IP
 is not stored. This is simple per-IP protection, not edge bot protection.
 
 ## Parked, intentionally unchanged
