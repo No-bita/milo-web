@@ -1,10 +1,21 @@
-// Who the user is planning with. The name only shows once there is a real invite.
+// Who the user is planning with. Names are typed by the initiator. Until then, "your person".
 export function isInvited(state) {
   const shared = state.shared || {};
   return Boolean(shared.invitePrepared || shared.inviteSent || shared.confirmedNightId);
 }
 
+export const FALLBACK_PARTNER = 'your person';
+const FALLBACK_INVITER = 'your date';
+
+// The other person's name as the given seat should see it.
 export function partnerLabel(state, sessionId = 'aarav') {
-  if (sessionId === 'sneha') return 'Aarav';
-  return isInvited(state) ? (state.sessionA.partnerName || 'your person') : 'your person';
+  if (sessionId === 'sneha') return state.sessionB?.partnerName || FALLBACK_INVITER;
+  return isInvited(state) ? (state.sessionA.partnerName || FALLBACK_PARTNER) : FALLBACK_PARTNER;
 }
+
+export const hasPartnerName = (label) => label !== FALLBACK_PARTNER && label !== FALLBACK_INVITER;
+
+export const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// Safe for HTML, capitalised when the name opens a sentence ("Your person").
+export const sentenceName = (label) => escapeHtml(label.charAt(0).toUpperCase() + label.slice(1));
