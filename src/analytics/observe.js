@@ -41,4 +41,8 @@ export function startAnalytics() {
     if (s1.confirmedNightId && s1.confirmedNightId !== s0.confirmedNightId) track('night_confirmed');
     prev = next;
   });
+
+  // Persisted state is loaded without notifying listeners; call after initApp so
+  // the first real change is compared with what was loaded, not the empty store.
+  return () => { prev = store.getState(); };
 }
