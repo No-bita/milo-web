@@ -1,3 +1,4 @@
+import { isIP } from 'node:net';
 import { randomBytes, randomUUID, createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { INTENTS, EXPERIENCE_POOL, NIGHTS_POOL } from '../src/data/mockData.js';
 import { computeSharedOutput } from '../src/logic/shared.js';
@@ -10,6 +11,29 @@ const tokenPattern = /^[A-Za-z0-9_-]{22}$/;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const secret = () => randomBytes(16).toString('base64url');
 const hash = value => createHash('sha256').update(value).digest('hex');
+// Ingress trust is enforced by clientIp() at the host adapter. This function
+// canonicalizes the trusted value, never reads arbitrary forwarded headers.
+function normalizedIp(value) {
+  if (typeof value !== 'string') return null;
+  const ip = value.trim();
+  const version = isIP(ip);
+  if (version === 4) return ip;
+  if (version !== 6 || ip.includes('%')) return null;
+  // URL's IPv6 parser canonicalizes compression and embedded IPv4 notation.
+  const canonical = new URL(`http://[${ip}]/`).hostname.slice(1, -1);
+  const halves = canonical.split('::');
+  const left = halves[0] ? halves[0].split(':') : [];
+  const right = halves[1] ? halves[1].split(':') : [];
+  const words = halves.length === 2
+    ? [...left, ...Array(8 - left.length - right.length).fill('0'), ...right]
+    : left;
+  if (words.length !== 8) return null;
+  const n = words.map(word => parseInt(word, 16));
+  if (n.slice(0,5).every(word => word === 0) && n[5] === 0xffff) {
+    return [n[6] >> 8,n[6] & 255,n[7] >> 8,n[7] & 255].join('.');
+  }
+  return `${n.slice(0,4).map(word => word.toString(16)).join(':')}::/64`;
+}
 class SafeError extends Error {
   constructor(status, code) { super(code); this.status = status; }
 }
@@ -118,7 +142,7 @@ export function createApi({ acquire, env = process.env, clientIp }) {
       if (publicScope && (!env.RATE_LIMIT_SECRET || !clientIp)) fail(503, 'unavailable');
       db = await acquire();
       if (publicScope) {
-        const ip = clientIp(request); if (!ip) fail(503, 'unavailable');
+        const ip = normalizedIp(clientIp(request)); if (!ip) fail(503, 'unavailable');
         const ipHash = createHmac('sha256', env.RATE_LIMIT_SECRET).update(ip).digest('hex');
         const count = await db.query(`INSERT INTO rate_limits(scope,ip_hash,window_start,hits)
           VALUES($1,$2,date_trunc('minute',now()),1)
@@ -216,4 +240,4 @@ export function createApi({ acquire, env = process.env, clientIp }) {
       return response(safe ? error.status : 503, { error:safe ? error.message : 'unavailable' }, error.status === 429 ? { 'Retry-After':'60' } : {});
     } finally { db?.release?.(); }
   };
-                                                         }
+}
