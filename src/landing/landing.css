@@ -81,13 +81,11 @@ body.lp { margin: 0; background: var(--ivory); color: var(--ink); font-family: v
 .lp-promise { padding: 64px 24px; text-align: center; background: var(--obsidian); }
 .lp-promise p { font-family: var(--serif); font-size: clamp(28px, 7vw, 44px); line-height: 1.2; max-width: 18em; margin: 0 auto; color: var(--on-dark); }
 
-.lp-early p, .lp-waitlist p { margin-top: 14px; font-size: 18px; color: var(--muted); max-width: 34em; }
-.lp-waitlist { text-align: center; }
-.lp-waitlist p, .lp-waitlist h2 { margin-left: auto; margin-right: auto; }
-.lp-waitlist h2 { max-width: 16em; }
+.lp-early p, .lp-closing p { margin-top: 14px; font-size: 18px; color: var(--muted); max-width: 34em; }
+.lp-closing { text-align: center; }
+.lp-closing p, .lp-closing h2 { margin-left: auto; margin-right: auto; }
+.lp-closing h2 { max-width: 16em; }
 .lp-btn-wide { width: 100%; max-width: 420px; margin-top: 22px; }
-.lp-form { display: flex; flex-direction: column; gap: 10px; max-width: 420px; margin: 24px auto 8px; }
-.lp-form input { min-height: 48px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--taupe); background: var(--sand); font: 16px var(--sans); color: var(--muted); }
 
 .lp-faq dl { margin: 24px 0 0; display: grid; gap: 4px; max-width: 640px; }
 .lp-faq dt { margin-top: 14px; font-family: var(--serif); font-size: 22px; line-height: 1.2; }
@@ -157,8 +155,6 @@ body.lp { margin: 0; background: var(--ivory); color: var(--ink); font-family: v
   .lp-scenes li { flex: none; }
   .lp-steps h3 { font-size: 21px; }
   .lp-grid { grid-template-columns: repeat(3, 1fr); }
-  .lp-form { flex-direction: row; }
-  .lp-form input { flex: 1; }
 }
 
 /* Occasion tiles */
