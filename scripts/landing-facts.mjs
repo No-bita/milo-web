@@ -34,6 +34,25 @@ const jsonLd = {
   '@graph': [
     { '@type': 'WebSite', '@id': `${facts.url}#website`, name: facts.name, url: facts.url, description: facts.description, inLanguage: 'en' },
     { '@type': 'Organization', '@id': `${facts.url}#org`, name: facts.name, url: facts.url, description: facts.description },
+    {
+      '@type': 'WebApplication',
+      '@id': `${facts.url}#prototype`,
+      name: `${facts.name} (early prototype)`,
+      url: facts.prototypeUrl,
+      description: facts.status[2],
+      applicationCategory: 'LifestyleApplication',
+      operatingSystem: 'Any (web browser)',
+      inLanguage: 'en',
+      publisher: { '@id': `${facts.url}#org` },
+      isPartOf: { '@id': `${facts.url}#website` },
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': `${facts.url}#faq`,
+      url: facts.url,
+      isPartOf: { '@id': `${facts.url}#website` },
+      mainEntity: facts.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    },
   ],
 };
 const jsonLdHtml = `  <script type="application/ld+json">\n${JSON.stringify(jsonLd, null, 2)}\n  </script>`;
