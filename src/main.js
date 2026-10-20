@@ -19,6 +19,8 @@ import './styles/tab-bar.css';
 import './styles/candle-loader.css';
 import './styles/booked.css';
 import './styles/requests.css';
+import './styles/sealed-feedback.css';
+import { startAnalytics } from './analytics/observe.js';
 import { showFirstOpen } from './components/first-open.js';
 import { initApp } from './app.js';
 import { installPremiumIcons } from './components/premium-icons.js';
@@ -26,6 +28,7 @@ import { installPremiumIcons } from './components/premium-icons.js';
 const app = document.getElementById('app');
 if (app) {
   showFirstOpen(app, () => {
+    startAnalytics(); // before initApp so its tab-sync guard runs ahead of the storage adapter
     initApp(app);
     installPremiumIcons(app);
   });
