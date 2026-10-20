@@ -6,10 +6,11 @@
 
 import { store } from '../domain/store.js';
 import { computeSharedOutput } from '../logic/shared.js';
+import { partnerLabel } from '../logic/partner.js';
 
 export function renderScreen05(sessionId = 'aarav') {
   const state = store.getState();
-  const partnerName = sessionId === 'sneha' ? 'Aarav' : 'Sneha';
+  const partnerName = partnerLabel(state, sessionId);
   const sharedData = computeSharedOutput(state.sessionA, state.sessionB);
 
   // YOU BOTH WANT rows
