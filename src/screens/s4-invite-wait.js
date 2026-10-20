@@ -8,6 +8,7 @@ import { store } from '../domain/store.js';
 import { partnerLabel, hasPartnerName, sentenceName, escapeHtml } from '../logic/partner.js';
 import { copyInvite, inviteUrl, feedback } from '../components/invite-feedback.js';
 import { isPhase1Enabled, ensureServerInvite } from '../domain/network-adapter.js';
+import { isTogetherInitiator } from './together-waiting.js';
 
 // With Phase 1 on, the invite is a real server link. If we can't reach the server, say so and keep picks.
 async function serverReady() {
@@ -112,6 +113,7 @@ export function patchScreen04(container) {
   const partnerDone = ['s5', 's6', 's7'].includes(state.sessionB?.screen);
   if (!root || partnerDone) return false;
   const waiting = state.sessionA.screen === 's4_waiting';
+  if (waiting && isTogetherInitiator()) return false; // together mode swaps to its own waiting screen
   root.classList.toggle('is-waiting', waiting);
   root.classList.toggle('waiting-state', waiting);
   root.querySelector('.invite-copy').setAttribute('aria-hidden', String(waiting));
