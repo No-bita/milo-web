@@ -9,7 +9,6 @@
 - Today you can try the prototype in your browser: pick moods, swipe ideas, build a night, seal it with a time, add it to your calendar and share it on WhatsApp.
 - Booking and reminders are coming soon.
 - Milo does not take payments.
-- The waitlist opens soon. It is not collecting emails yet.
 
 ## Quick answers
 
@@ -30,9 +29,6 @@ Not yet. Milo makes the plan and you book it. Booking is coming soon. Milo doesn
 
 **What happens to my answers?**
 In this prototype, they stay in your browser. Nothing is sent to a server.
-
-**How do I join the waitlist?**
-It opens soon. Until then, take the prototype for a spin.
 
 ## Links
 
