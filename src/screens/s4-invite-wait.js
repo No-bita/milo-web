@@ -5,6 +5,7 @@
 // ==========================================================
 
 import { store } from '../domain/store.js';
+import { partnerLabel, hasPartnerName, sentenceName, escapeHtml } from '../logic/partner.js';
 import { copyInvite, inviteUrl, feedback } from '../components/invite-feedback.js';
 
 // Demo scaffolding (open the partner's side in a new tab) shows only with ?demo
@@ -13,6 +14,7 @@ const isDemo = () => typeof window !== 'undefined' && new URLSearchParams(window
 export function renderScreen04(sessionId = 'aarav') {
   const state = store.getState();
   const sessionData = state.sessionA;
+  const partner = partnerLabel(state, sessionId);
   const isWaiting = sessionData.screen === 's4_waiting';
   const isPartnerDone = state.sessionB && (state.sessionB.screen === 's5' || state.sessionB.screen === 's6' || state.sessionB.screen === 's7');
   const backLabel = 'Back to your reflection';
@@ -36,7 +38,7 @@ export function renderScreen04(sessionId = 'aarav') {
           </div>
 
           <div class="milo-s4-intro">
-            <h1 class="milo-headline">Sneha's done.</h1>
+            <h1 class="milo-headline">${hasPartnerName(partner) ? `${sentenceName(partner)}'s done.` : 'Your person is done.'}</h1>
           </div>
         </div>
 
@@ -74,9 +76,15 @@ export function renderScreen04(sessionId = 'aarav') {
         <p class="milo-invite-status" role="status" aria-live="polite">${isWaiting ? preparedCopy(state.shared.inviteMethod) : ''}</p>
       </div>
       <div class="milo-s4-actions">
+        <div class="milo-invite-names" ${isWaiting ? 'hidden' : ''}>
+          <label class="milo-name-field"><span>Your name</span>
+            <input id="miloMyName" type="text" maxlength="40" autocomplete="given-name" value="${escapeHtml(sessionData.name || '')}" placeholder="First name"></label>
+          <label class="milo-name-field"><span>Their name <em>(optional)</em></span>
+            <input id="miloTheirName" type="text" maxlength="40" autocomplete="off" value="${escapeHtml(sessionData.partnerName || '')}" placeholder="Your person"></label>
+        </div>
         <p class="milo-s4-reassure">No live delivery or notifications yet.</p>
-        <button class="milo-pill-btn-primary" id="miloShareWhatsappBtn">Share via WhatsApp</button>
-        <button class="milo-pill-btn-secondary" id="miloCopyLinkBtn">Copy invite link</button>
+        <button class="milo-pill-btn-primary" id="miloShareWhatsappBtn" ${sessionData.name ? '' : 'disabled'}>Share via WhatsApp</button>
+        <button class="milo-pill-btn-secondary" id="miloCopyLinkBtn" ${sessionData.name ? '' : 'disabled'}>Copy invite link</button>
         ${isDemo() ? `<a href="?as=sneha" target="_blank" class="milo-pill-btn-ghost">Try your date's side ↗</a>` : ''}
       </div>
     </div>
@@ -98,6 +106,7 @@ export function patchScreen04(container) {
   root.classList.toggle('waiting-state', waiting);
   root.querySelector('.invite-copy').setAttribute('aria-hidden', String(waiting));
   root.querySelector('.wait-copy').setAttribute('aria-hidden', String(!waiting));
+  root.querySelector('.milo-invite-names')?.toggleAttribute('hidden', waiting);
   root.querySelector('.milo-invite-status').textContent = waiting ? preparedCopy(state.shared.inviteMethod) : '';
   return true;
 }
@@ -125,11 +134,25 @@ export function attachScreen04Listeners(container, sessionId = 'aarav') {
     });
   }
 
+  // Names stay in state silently while typing, so the field keeps focus. The invite always says who is asking.
+  const myName = container.querySelector('#miloMyName');
+  const theirName = container.querySelector('#miloTheirName');
+  if (myName && theirName) {
+    const shareBtns = container.querySelectorAll('#miloShareWhatsappBtn, #miloCopyLinkBtn');
+    const saveNames = () => {
+      store.setNames(myName.value, theirName.value);
+      shareBtns.forEach((btn) => { btn.disabled = !myName.value.trim(); });
+    };
+    myName.addEventListener('input', saveNames);
+    theirName.addEventListener('input', saveNames);
+  }
+
   const whatsappBtn = container.querySelector('#miloShareWhatsappBtn');
   if (whatsappBtn) {
     whatsappBtn.addEventListener('click', () => {
       const url = inviteUrl();
-      const text = `Planning tonight with Milo. Add your picks, it takes about a minute. This link lasts 48 hours: ${url}`;
+      const asking = store.getState().sessionA.name;
+      const text = `${asking ? `${asking} is planning` : 'Planning'} tonight with Milo. Add your picks, it takes about a minute. This link lasts 48 hours: ${url}`;
       const popup = window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
       if (!popup) {
         feedback("WhatsApp couldn't open.", 'Copy the invite link below and send it however you like.', url, true);
