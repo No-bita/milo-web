@@ -7,8 +7,8 @@
 export const INITIAL_STATE = {
   sessionA: {
     id: 'aarav',
-    name: 'Aarav',
-    partnerName: 'Sneha',
+    name: '', // set on the invite screen
+    partnerName: '',
     screen: 's1', // 's1' | 'threshold' | 's2' | 's3' | 's4_invite' | 's4_waiting' | 's5' | 's6' | 's7'
     planningMode: null, // 'solo' | 'together', chosen by the initiator
     savedSoloNightId: null, // local draft, not partner agreement
@@ -18,8 +18,8 @@ export const INITIAL_STATE = {
   },
   sessionB: {
     id: 'sneha',
-    name: 'Sneha',
-    partnerName: 'Aarav',
+    name: '',
+    partnerName: '',
     screen: 's1', // or 's0'
     intents: [],
     reactions: [],
@@ -57,6 +57,16 @@ class DomainStore {
         console.error('Store listener error:', err);
       }
     }
+  }
+
+  // Names come from the invite screen. Silent by default so typing keeps focus.
+  setNames(me, them, notify = false) {
+    const clean = (v) => String(v || '').trim().slice(0, 40);
+    const a = clean(me), b = clean(them);
+    this.setState({ ...this.state,
+      sessionA: { ...this.state.sessionA, name: a, partnerName: b },
+      sessionB: { ...this.state.sessionB, name: b, partnerName: a }
+    }, notify);
   }
 
   subscribe(listener) {
