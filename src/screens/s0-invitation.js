@@ -5,11 +5,13 @@
 // ==========================================================
 
 import { store } from '../domain/store.js';
+import { partnerLabel, sentenceName, escapeHtml } from '../logic/partner.js';
 import '../styles/partner-welcome.css';
 
 export function renderScreen00(sessionId = 'sneha') {
   const state = store.getState();
   const inviteSent = state.shared && state.shared.inviteSent;
+  const inviter = partnerLabel(state, sessionId);
 
   if (!inviteSent) {
     // Prototype idle screen before invite lands (§3.10)
@@ -26,7 +28,7 @@ export function renderScreen00(sessionId = 'sneha') {
 
           <div class="milo-s0-intro">
             <h1 class="milo-headline">Nothing planned yet.</h1>
-            <p class="milo-subline">When Aarav invites you, it'll show up here.</p>
+            <p class="milo-subline">When ${escapeHtml(inviter)} invites you, it'll show up here.</p>
           </div>
         </div>
 
@@ -42,9 +44,9 @@ export function renderScreen00(sessionId = 'sneha') {
         <div class="milo-partner-brand" aria-label="Milo">milo.</div>
         <p class="milo-partner-promise">Good nights for two.<br><em>Less planning for you.</em></p>
         <div class="milo-partner-invitation">
-          <h1 id="miloPartnerInviteTitle">Aarav wants to plan<br>tonight with you.</h1>
+          <h1 id="miloPartnerInviteTitle">${sentenceName(inviter)} wants to plan<br>tonight with you.</h1>
           <p class="milo-partner-task">Pick a mood. Tell us what feels like you.</p>
-          <p class="milo-partner-privacy">Your individual picks aren't shown to Aarav in the plan. Just the shared picture.</p>
+          <p class="milo-partner-privacy">Your individual picks aren't shown to ${escapeHtml(inviter)} in the plan. Just the shared picture.</p>
         </div>
       </div>
       <button class="milo-cta-button milo-partner-cta" id="miloAcceptInviteBtn" type="button">
