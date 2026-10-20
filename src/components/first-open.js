@@ -6,7 +6,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export function showFirstOpen(container, onContinue) {
   const params = new URLSearchParams(window.location.search);
   // Invitation and explicit screen links must keep their original destination.
-  if (params.get('as') === 'sneha' || params.has('screen') || params.get('golden') === '1') {
+  if (params.get('as') === 'sneha' || params.has('invite') || params.has('screen') || params.get('golden') === '1') {
     onContinue();
     return;
   }
