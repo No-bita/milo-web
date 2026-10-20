@@ -28,8 +28,9 @@ import { installPremiumIcons } from './components/premium-icons.js';
 const app = document.getElementById('app');
 if (app) {
   showFirstOpen(app, () => {
-    startAnalytics(); // before initApp so its tab-sync guard runs ahead of the storage adapter
+    const rebaseAnalytics = startAnalytics(); // before initApp so its tab-sync guard runs ahead of the storage adapter
     initApp(app);
+    rebaseAnalytics();
     installPremiumIcons(app);
   });
 }
