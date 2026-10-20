@@ -302,7 +302,7 @@ export function computeSharedOutput(sessionA, sessionB) {
     } else if (night.id === 'little-adventure') {
       return 'It puts something completely new first, then gives you space to settle in.';
     } else if (night.id === 'lively-one') {
-      return 'It brings the energy Sneha wants, with plenty of room to talk and keep it effortless.';
+      return 'It brings the energy you both want, with plenty of room to talk and keep it effortless.';
     }
     return 'A balanced evening shaped around what you both want tonight.';
   }
