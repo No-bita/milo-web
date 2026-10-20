@@ -11,6 +11,7 @@ import './styles/partner-welcome.css';
 import './styles/planning-path.css';
 import './styles/invite-feedback.css';
 import './styles/invite-settle.css';
+import './styles/names.css';
 import './styles/night-accordion.css';
 import './styles/night-timing.css';
 import './styles/timing-picker.css';
