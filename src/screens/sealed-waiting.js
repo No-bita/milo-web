@@ -3,6 +3,7 @@ import { partnerLabel } from '../logic/partner.js';
 import { NIGHTS_POOL, INTENTS } from '../data/mockData.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
 import { copyInvite } from '../components/invite-feedback.js';
+import { renderSealedFeedback, attachSealedFeedback } from '../components/sealed-feedback.js';
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -36,6 +37,7 @@ export function renderSealedWaiting(sessionId = 'aarav') {
         ${solo ? '' : `<p class="milo-booked-ref">Milo blends it with ${escape(partner)}'s picks once they're in.</p>`}
         <div class="milo-booked-seal" aria-hidden="true"><span>m.</span></div>
       </article>
+      ${renderSealedFeedback(sessionId)}
     </div>
     ${solo ? `<div class="milo-booked-cta">
       <button class="milo-cta-button" type="button" id="miloBookedBook">Book this night</button>
@@ -50,6 +52,7 @@ export function renderSealedWaiting(sessionId = 'aarav') {
 }
 
 export function attachSealedWaitingListeners(container, sessionId = 'aarav') {
+  attachSealedFeedback(container, sessionId);
   container.querySelector('#miloBookedBook')?.addEventListener('click', () => store.setSessionScreen(sessionId, 'requests'));
   container.querySelector('#miloBookedInvite')?.addEventListener('click', () => copyInvite({ onPrepared: () => {} }));
 }
