@@ -6,11 +6,12 @@
 
 import { store } from '../domain/store.js';
 import { computeSharedOutput } from '../logic/shared.js';
-import { partnerLabel } from '../logic/partner.js';
+import { partnerLabel, monograms } from '../logic/partner.js';
 
 export function renderScreen05(sessionId = 'aarav') {
   const state = store.getState();
   const partnerName = partnerLabel(state, sessionId);
+  const [monoLeft, monoRight] = monograms(state, sessionId);
   const sharedData = computeSharedOutput(state.sessionA, state.sessionB);
 
   // YOU BOTH WANT rows
@@ -46,8 +47,8 @@ export function renderScreen05(sessionId = 'aarav') {
       <div class="milo-s5-scroll-content">
         <!-- Overlapping Monograms -->
         <div class="milo-overlapping-monograms">
-          <div class="milo-mono-circle mono-left">A</div>
-          <div class="milo-mono-circle mono-right">S</div>
+          <div class="milo-mono-circle mono-left">${monoLeft}</div>
+          <div class="milo-mono-circle mono-right">${monoRight}</div>
         </div>
 
         <div class="milo-s5-intro">
