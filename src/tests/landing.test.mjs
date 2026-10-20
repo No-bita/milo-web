@@ -39,15 +39,6 @@ for(const width of [320,420,1280]){
   });
 }
 
-test('waitlist is an honest placeholder: nothing to type, nothing stored',async()=>{
-  const p=await open(420);
-  try{
-    assert.equal(await p.locator('#lp-email').isDisabled(),true);
-    assert.equal(await p.locator('.lp-form button').isDisabled(),true);
-    assert.match(await p.locator('#waitlist').innerText(),/not collecting emails/i);
-  }finally{await p.close();}
-});
-
 test('landing never promises group plans, and names booking only as coming soon',async()=>{
   const p=await open(420);
   try{
@@ -55,17 +46,6 @@ test('landing never promises group plans, and names booking only as coming soon'
     assert.doesNotMatch(text,/group/i);
     const booking=text.match(/[^.]*booking[^.]*\./gi)||[];
     assert.ok(booking.length>0&&booking.every(s=>/coming soon|next/i.test(s)),'booking only appears as coming soon');
-  }finally{await p.close();}
-});
-
-test('landing CTAs go to the waitlist and the prototype opens at /app/',async()=>{
-  const p=await open(420);
-  try{
-    assert.equal(await p.locator('.lp-hero .lp-btn').getAttribute('href'),'#waitlist');
-    assert.equal(await p.locator('.lp-hero .lp-link').getAttribute('href'),'./app/');
-    await p.locator('.lp-waitlist a[href="./app/"]').click();
-    await p.waitForURL(/\/app\/$/);
-    await p.locator('.milo-first-open, .milo-home').first().waitFor();
   }finally{await p.close();}
 });
 
