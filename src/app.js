@@ -11,6 +11,8 @@ import { store } from './domain/store.js';
 import { attachJourneyHistory } from './domain/journey-history.js';
 import { inviteFromParams, renderInviteError } from './domain/invite.js';
 import { attachStorageAdapter } from './domain/storage-adapter.js';
+import { isPhase1Enabled, attachNetworkSync } from './domain/network-adapter.js';
+import { showPartnerJoin } from './screens/partner-join.js';
 import { renderScreen00, attachScreen00Listeners } from './screens/s0-invitation.js';
 import { renderScreen01, attachScreen01Listeners, patchScreen01 } from './screens/s1-intent.js';
 import { renderThreshold, attachThresholdListeners } from './screens/threshold.js';
@@ -180,6 +182,13 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   const isGolden = urlParams.get('golden');
   const vpParam = urlParams.get('vp');
   const screenParam = urlParams.get('screen');
+
+  // Server invite (/app/?invite=<token>, no ?as): the partner joins a real plan. Only with the launch flag.
+  if (isPhase1Enabled() && urlParams.has('invite') && !urlParams.has('as')) {
+    showPartnerJoin(container, urlParams.get('invite'));
+    return;
+  }
+  if (isPhase1Enabled()) attachNetworkSync(store);
 
   const inviteStatus = inviteFromParams(urlParams);
   if (inviteStatus === 'invalid' || inviteStatus === 'expired') {
