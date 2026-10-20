@@ -1,0 +1,8 @@
+/* Names on the invite screen (two-phone Phase 1, mockup 01/02) */
+.milo-invite-names { width: 100%; display: grid; gap: 10px; text-align: left; }
+.milo-invite-names[hidden] { display: none; }
+.milo-name-field { display: grid; gap: 4px; font: 500 12px var(--font-sans); color: var(--color-ink-muted); }
+.milo-name-field em { font-style: normal; font-weight: 400; }
+.milo-name-field input { width: 100%; box-sizing: border-box; height: 46px; padding: 0 14px; border: 1px solid var(--color-taupe); border-radius: 12px; background: #fff; font: 400 16px var(--font-sans); color: var(--color-ink); }
+.milo-name-field input:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 2px; }
+.milo-viewport .milo-pill-btn-primary:disabled, .milo-viewport .milo-pill-btn-secondary:disabled { opacity: .45; cursor: default; }
