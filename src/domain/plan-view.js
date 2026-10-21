@@ -15,11 +15,19 @@ export const roleSession = (role) => (role === 'partner' ? 'sneha' : 'aarav');
 const mySession = (seat) => (seat?.role === 'partner' ? 'sneha' : 'aarav');
 
 // One read of the plan into the store. Never throws; callers poll on a timer.
+// Completed actions bump the sequence so a slow GET that started earlier cannot
+// overwrite their fresher view; a seat change mid-flight drops the response too.
+let actionSeq = 0;
+
 export async function refreshPlan() {
   const seat = readSeat();
   if (!seat) return { ok: false, reason: 'no_seat' };
+  const seqAtStart = actionSeq;
   const result = await api('GET', `/api/plans/${seat.planId}`, { seatKey: seat.seatKey, timeoutMs: 15000 });
   if (!result.ok) return result;
+  const seatNow = readSeat();
+  if (!seatNow || seatNow.planId !== seat.planId || seatNow.seatKey !== seat.seatKey) return { ok: false, reason: 'seat_changed' };
+  if (actionSeq !== seqAtStart) return { ok: false, reason: 'stale_after_action' };
   applyPlanView(result.data, seat);
   return result;
 }
@@ -29,8 +37,13 @@ export async function refreshPlan() {
 export async function postPlanAction(type, nightId) {
   const seat = readSeat();
   if (!seat) return { ok: false, reason: 'no_seat' };
-  const result = await api('POST', `/api/plans/${seat.planId}/actions`, { body: { type, night_id: nightId }, seatKey: seat.seatKey });
-  if (result.ok) applyPlanView(result.data, seat);
+  const result = await api('POST', `/api/plans/${seat.planId}/actions`, { body: { type, night_id: nightId }, seatKey: seat.seatKey, timeoutMs: 15000 });
+  if (result.ok) {
+    const seatNow = readSeat();
+    if (!seatNow || seatNow.planId !== seat.planId) return { ok: false, reason: 'seat_changed' };
+    applyPlanView(result.data, seat);
+    actionSeq += 1;
+  }
   return result;
 }
 
@@ -43,7 +56,12 @@ export function applyPlanView(view, seat = readSeat()) {
   if (status !== (current.planStatus ?? null)) patch.planStatus = status;
   // The result computes once and is never recomputed (parked in the contract),
   // so the first arrival is the only write.
-  if (view.shared_result && !current.serverResult) patch.serverResult = view.shared_result;
+  // The result belongs to its plan: a persisted or late-arriving result from
+  // an older plan must not block the current plan's own result from landing.
+  if (view.shared_result && (!current.serverResult || current.serverResultPlanId !== seat.planId)) {
+    patch.serverResult = view.shared_result;
+    patch.serverResultPlanId = seat.planId;
+  }
   const suggestion = view.suggestion
     ? { by: roleSession(view.suggestion.by), nightId: view.suggestion.night_id }
     : null;
@@ -67,8 +85,18 @@ export function applyPlanView(view, seat = readSeat()) {
 // The server's shared_result projection, shaped the way the screens already
 // expect. Night records are public static data; the static list fills anything
 // the projection leaves out, keyed by id, with the server's fields winning.
-export function togetherOutput(state) {
+// The persisted result counts only for the seat this phone currently holds;
+// anything older falls back to the local synthesis.
+export function currentPlanResult(state) {
+  const seat = readSeat();
+  if (!isPhase1Enabled() || !seat) return null;
   const result = state.shared.serverResult;
+  if (!result || state.shared.serverResultPlanId !== seat.planId) return null;
+  return result;
+}
+
+export function togetherOutput(state) {
+  const result = currentPlanResult(state);
   if (!result) return null;
   return {
     sharedRows: result.sharedRows || [],
@@ -90,7 +118,7 @@ export function togetherWaitMode(state, sessionId) {
   if (!hasServerSeat()) return null;
   const session = sessionId === 'sneha' ? state.sessionB : state.sessionA;
   if (!['s5', 's6', 's7'].includes(session?.screen)) return null;
-  if (!state.shared.serverResult) return 'sealed';
+  if (!currentPlanResult(state)) return 'sealed';
   if (session.screen === 's7' && state.shared.suggestion?.by === sessionId && !state.shared.confirmedNightId) return 'suggested';
   return null;
 }
