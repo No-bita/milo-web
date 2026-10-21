@@ -165,7 +165,7 @@ export function attachScreen04Listeners(container, sessionId = 'aarav') {
       if (!(await serverReady())) return;
       const url = inviteUrl();
       const asking = store.getState().sessionA.name;
-      const text = `${asking ? `${asking} is planning` : 'Planning'} tonight with Milo. Add your picks, it takes about a minute. This link lasts ${isPhase1Enabled() ? 'about a month' : '48 hours'}: ${url}`;
+      const text = `${asking ? `${asking} is planning` : 'Planning'} tonight with Milo. Add your picks, it takes about a minute. ${url}`;
       const popup = window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
       if (!popup) {
         feedback("WhatsApp couldn't open.", 'Copy the invite link below and send it however you like.', url, true);
