@@ -22,13 +22,15 @@ test('two isolated phones never receive the other seat picks or derived leanings
   const env = { NODE_ENV:'test', MILO_PHASE1_ENABLED:'true', MILO_PUBLIC_ORIGIN:'http://127.0.0.1', RATE_LIMIT_SECRET:'local-test-only' };
   const api = createApi({ acquire, env, clientIp:() => '127.0.0.1' });
   const server = createServer(async (req,res) => {
-    if (req.url === '/') { res.setHeader('Content-Type','text/html'); res.end('<title>Privacy test</title>'); return; }
+    if (!req.url.startsWith('/api')) { res.setHeader('Content-Type','text/html'); res.end('<title>Privacy test</title>'); return; }
     const chunks = []; for await (const chunk of req) chunks.push(chunk);
     const request = new Request(`http://127.0.0.1${req.url}`, { method:req.method, headers:req.headers, ...(chunks.length ? { body:Buffer.concat(chunks) } : {}) });
     const result = await api(request); res.writeHead(result.status, Object.fromEntries(result.headers)); res.end(Buffer.from(await result.arrayBuffer()));
   });
   await new Promise(resolve => server.listen(0,'127.0.0.1',resolve));
   const site = `http://127.0.0.1:${server.address().port}`;
+  // Invite URLs must point at THIS server so a recipient can follow them.
+  env.MILO_PUBLIC_ORIGIN = site;
   let browser;
   try {
     browser = await chromium.launch({ ...(process.env.CHROME_BIN ? { executablePath:process.env.CHROME_BIN } : {}), headless:true });
@@ -43,7 +45,16 @@ test('two isolated phones never receive the other seat picks or derived leanings
     const created = await call(pages[0],'/api/plans','POST',{ name:'PrivateAlpha',occasion:'date_night' });
     assert.equal(created.status,201); const id = created.data.plan_id;
     await pages[0].evaluate(key => localStorage.setItem('seat',key),created.data.seat_key);
-    const invite = new URL(created.data.invite_url).searchParams.get('invite');
+    // The recipient follows the generated invite URL itself: the link must
+    // resolve on the public origin and carry a usable invite token.
+    assert.ok(created.data.invite_url.startsWith(`${site}/app/?invite=`));
+    const followed = await pages[1].goto(created.data.invite_url);
+    assert.equal(followed.status(),200);
+    const invite = await pages[1].evaluate(() => new URL(window.location.href).searchParams.get('invite'));
+    assert.ok(invite && /^[A-Za-z0-9_-]+$/.test(invite));
+    const preview = await call(pages[1],`/api/invites/${invite}`);
+    assert.equal(preview.status,200);
+    assert.deepEqual(preview.data,{ status:'valid', initiator_name:'PrivateAlpha', occasion:'date_night' });
     const joined = await call(pages[1],`/api/invites/${invite}/join`,'POST',{ name:'PrivateBeta' });
     assert.equal(joined.status,201);
     await pages[1].evaluate(key => localStorage.setItem('seat',key),joined.data.seat_key);
