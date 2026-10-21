@@ -46,7 +46,7 @@ export function renderItinerary(night, original, { editable = true, lockedSlots 
   return night.beats.map((beat, i) => {
     const image = beat.image || SLOT_POOLS[slotKey(original.beats[i].name)][0].image;
     const locked = lockedSlots;
-    if (stacked) return `<button type="button" class="milo-tile milo-plan-tile" data-customise-slot="${i}" aria-label="Customise ${beat.name}" ${locked ? 'disabled title="This night has already been suggested"' : ''}>
+    if (stacked) return `<button type="button" class="milo-tile milo-plan-tile" data-customise-slot="${i}" aria-label="Customise ${beat.name}" ${locked ? 'disabled title="This night has already been suggested"' : (!editable ? 'disabled' : '')}>
       <img src="${image}" alt="" class="milo-tile-img" loading="lazy" />
       <span class="milo-tile-scrim" aria-hidden="true"></span>
       <span class="milo-plan-step" aria-hidden="true">0${i + 1}</span>
