@@ -44,7 +44,10 @@ export function renderScreen07(sessionId = 'aarav') {
   const sharedData = sharedOutput(state);
   const activeNightId = sessionData.activeNightId || (sharedData.selectedNights[0]?.night.id || 'middle-ground');
   const nightItem = sharedData.selectedNights.find(sn => sn.night.id === activeNightId) || sharedData.selectedNights[0];
-  const night = resolvedNight(nightItem.night, state);
+  // With a server seat the night is a shared projection: no stop or time edits,
+  // and this phone's saved local overrides must not leak into it either.
+  const server = hasServerSeat();
+  const night = server ? nightItem.night : resolvedNight(nightItem.night, state);
   // Keep the pitch and why it fits together as one description paragraph.
   const description = night.id === 'middle-ground'
     ? 'Quiet enough for a long conversation and interesting enough to feel like a night out, it keeps things intimate, adds something new, and never gets hectic.'
@@ -52,8 +55,6 @@ export function renderScreen07(sessionId = 'aarav') {
 
   const suggestion = state.shared.suggestion;
   const isConfirmed = state.shared.confirmedNightId === night.id;
-  // With a server seat the night is a shared projection: no stop or time edits.
-  const server = hasServerSeat();
 
   const timelineHtml = renderItinerary(night, nightItem.night, {
     stacked: !isConfirmed, editable: server ? false : !isConfirmed, lockedSlots: server ? false : Boolean(suggestion?.nightId === night.id)
@@ -195,6 +196,9 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
   const sharedData = sharedOutput(state);
   const activeNightId = sessionData.activeNightId || (sharedData.selectedNights[0]?.night.id || 'middle-ground');
   const server = hasServerSeat();
+  // Server actions must name the night this phone actually shows: when a saved
+  // id is outside the server's three, the render falls back to the first night.
+  const submitNightId = (sharedData.selectedNights.find(item => item.night.id === activeNightId) || sharedData.selectedNights[0])?.night.id || activeNightId;
 
   if (!server) attachItinerary(container, () => {
     const live = store.getState();
@@ -223,7 +227,7 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
       if (server) {
         // The server records the suggestion; this phone then waits (mockup 07).
         suggestBtn.disabled = true;
-        const result = await postPlanAction('suggest', activeNightId);
+        const result = await postPlanAction('suggest', submitNightId);
         suggestBtn.disabled = false;
         if (!result.ok) {
           feedback("That didn't go through.", 'Check your connection and try again.');
@@ -246,7 +250,7 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
       if (server) {
         // Either seat may confirm; the answer must match the current suggestion.
         confirmBtn.disabled = true;
-        const result = await postPlanAction('confirm', activeNightId);
+        const result = await postPlanAction('confirm', submitNightId);
         confirmBtn.disabled = false;
         if (!result.ok) {
           feedback("That didn't go through.", 'Check your connection and try again.');
