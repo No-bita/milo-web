@@ -24,10 +24,12 @@ export function watchWaiting({ check, onState = () => {}, now = Date.now, doc = 
   };
   const run = async () => {
     if (disposed || running) return;
-    running = true; report();
+    running = true; report(); // a new check clears any shown error
+    let error = null;
     try { await check(); }
-    catch { if (!disposed) report({ error: 'unreachable' }); }
-    finally { running = false; if (!disposed) report(); }
+    catch { error = 'unreachable'; }
+    // One final report, so a failure stays visible until the next check starts or succeeds.
+    running = false; if (!disposed) report(error ? { error } : {});
   };
   const visible = () => { if (doc.visibilityState !== 'hidden') run(); };
   doc.addEventListener('visibilitychange', visible);
