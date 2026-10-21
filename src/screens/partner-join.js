@@ -17,7 +17,7 @@ const ENVELOPE = `<svg class="milo-invite-problem-art" viewBox="0 0 144 100" ari
 
 // Mockups 10, 11 and 12. Expired and taken offer a way out; an unreachable server offers a retry.
 const PROBLEMS = {
-  expired: { eyebrow: 'Link expired', title: 'This invite has gone cold', body: 'Invites last about a month and this one has run out. Ask for a fresh link.', cta: 'Plan my own night' },
+  expired: { eyebrow: 'Link expired', title: 'This invite has gone cold', body: 'Invite links last 48 hours and this one has run out. Ask for a fresh link.', cta: 'Plan my own night' },
   taken: { eyebrow: 'Seat taken', title: "This invite's already been used", body: "Someone has taken this seat. If you're the one who sent it, share a new link from your plan.", cta: 'Plan my own night' },
   unreachable: { eyebrow: 'Connection', title: 'Milo lost the signal', body: "Couldn't reach Milo. Your picks are saved on this phone. Try again.", cta: 'Try again' }
 };
