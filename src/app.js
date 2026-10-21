@@ -32,6 +32,7 @@ import { renderBooked, attachBookedListeners } from './screens/booked.js';
 import { renderGroupSoon, attachGroupSoonListeners } from './screens/group-soon.js';
 import { renderSealedWaiting, attachSealedWaitingListeners } from './screens/sealed-waiting.js';
 import { isTogetherInitiator, renderTogetherWaiting, attachTogetherWaitingListeners } from './screens/together-waiting.js';
+import { togetherWaitMode, ensureQuietPlanWatch, stopQuietPlanWatch, refreshPlan, hasServerSeat } from './domain/plan-view.js';
 
 // Partner A waits on the sealed screen until the partner's half lands.
 function showSealedWaiting() {
@@ -60,6 +61,10 @@ function getCurrentScreen(sessionId) {
 
 function renderSessionContent(sessionId) {
   const state = store.getState();
+  // A seated phone with nothing to show yet waits here instead: no server
+  // result yet ("sealed"), or my suggestion is still unanswered ("suggested").
+  const waitMode = togetherWaitMode(state, sessionId);
+  if (waitMode) return renderTogetherWaiting(sessionId, waitMode);
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
   const sessionData = state[sessionKey] || {};
   const screen = sessionData.screen || (sessionId === 'sneha' ? (state.shared.inviteSent ? 's0' : 's0') : 's1');
@@ -108,6 +113,19 @@ function renderSessionContent(sessionId) {
 
 function attachSessionListeners(container, sessionId) {
   const state = store.getState();
+  const waitScreen = togetherWaitMode(state, sessionId);
+  if (waitScreen) {
+    stopQuietPlanWatch();
+    attachTogetherWaitingListeners(container, sessionId, waitScreen);
+    return;
+  }
+  // Content screens poll quietly so the other phone's suggestion or
+  // confirmation lands without a reload; the waiting screens poll themselves.
+  if (hasServerSeat() && ['s5', 's6', 's7'].includes(sessionId === 'sneha' ? state.sessionB?.screen : state.sessionA?.screen)) {
+    ensureQuietPlanWatch(sessionId === 'sneha' ? state.sessionB?.screen : state.sessionA?.screen);
+  } else {
+    stopQuietPlanWatch();
+  }
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
   const sessionData = state[sessionKey] || {};
   const screen = sessionData.screen || (sessionId === 'sneha' ? 's0' : 's1');
@@ -191,7 +209,7 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
     showPartnerJoin(container, urlParams.get('invite'));
     return;
   }
-  if (isPhase1Enabled()) attachNetworkSync(store);
+  if (isPhase1Enabled()) { attachNetworkSync(store); refreshPlan(); }
 
   const inviteStatus = inviteFromParams(urlParams);
   if (inviteStatus === 'invalid' || inviteStatus === 'expired') {
@@ -404,7 +422,7 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
     render();
   });
   return () => {
-    stopRender(); detachHistory(); disposeSynthesis?.();
+    stopRender(); detachHistory(); disposeSynthesis?.(); stopQuietPlanWatch();
     const viewport = container.querySelector(`#viewport-${activeSessionId}`);
     viewport?.planningSheetCleanup?.(); viewport?.deckCleanup?.(); viewport?.inviteCleanup?.(); viewport?.thresholdCleanup?.();
   };
