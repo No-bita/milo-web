@@ -5,13 +5,13 @@
 // ==========================================================
 
 import { store } from '../domain/store.js';
-import { computeSharedOutput } from '../logic/shared.js';
+import { sharedOutput } from '../logic/planning.js';
 import { partnerLabel } from '../logic/partner.js';
 
 export function renderScreen05(sessionId = 'aarav') {
   const state = store.getState();
   const partnerName = partnerLabel(state, sessionId);
-  const sharedData = computeSharedOutput(state.sessionA, state.sessionB);
+  const sharedData = sharedOutput(state);
 
   // YOU BOTH WANT rows
   const rowsHtml = sharedData.sharedRows.map(row => {
