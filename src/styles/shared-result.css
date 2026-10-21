@@ -1,0 +1,22 @@
+/* F: shared result with itinerary edits off (mockup 13). Warm note, not a warning. */
+.milo-s7-edits-paused {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--color-sand);
+  color: var(--color-ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.milo-s7-edits-footnote {
+  margin: 14px 0 0;
+  color: var(--color-ink-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.milo-closing-content .milo-s7-edits-footnote {
+  margin-top: 18px;
+}
