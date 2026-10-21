@@ -34,24 +34,24 @@ export function renderTogetherWaiting(sessionId = 'aarav') {
 }
 
 let active = null;
-let budgetStart = 0; // a re-render of the same screen keeps its ten-minute budget
-let lastAttach = 0;
+const budgets = new Map(); // plan id -> ten-minute budget start, so a remount keeps the same plan's budget
 const stop = () => { active?.dispose(); active = null; };
 
 export function attachTogetherWaitingListeners(container) {
   stop();
-  if (Date.now() - lastAttach > 60000) budgetStart = Date.now();
-  lastAttach = Date.now();
   const root = container.querySelector('.milo-together-wait');
   const seat = readSeat();
   if (!root || !seat) return;
+  if (!budgets.has(seat.planId)) budgets.set(seat.planId, Date.now());
+  const budgetStart = budgets.get(seat.planId);
   const el = (id) => root.querySelector(`#${id}`);
   const possessive = root.querySelector('[data-possessive]').dataset.possessive;
   const name = possessive.replace(/'s$/, '');
 
   // One check: read the plan. A finished partner moves this phone on to the "done" screen.
   const check = async () => {
-    const result = await api('GET', `/api/plans/${seat.planId}`, { seatKey: seat.seatKey });
+    const result = await api('GET', `/api/plans/${seat.planId}`, { seatKey: seat.seatKey, timeoutMs: 15000 });
+    if (!root.isConnected) return; // the screen was replaced while the request was in flight
     if (!result.ok) throw new Error(result.reason);
     const partner = result.data?.partner;
     if (partner?.display_name && partner.display_name !== store.getState().sessionA.partnerName) {
@@ -65,7 +65,6 @@ export function attachTogetherWaitingListeners(container) {
     startedAt: budgetStart,
     check: async () => { await check(); sawResult = true; },
     onState: ({ paused, checking, error }) => {
-      lastAttach = Date.now();
       if (!root.isConnected) { stop(); return; }
       root.classList.toggle('is-paused', paused);
       el('miloTwTitle').textContent = paused ? `Still quiet on ${possessive} side` : 'Sealed.';
