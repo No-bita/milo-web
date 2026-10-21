@@ -20,8 +20,13 @@ Use separate test/production databases. Do not use VITE_ prefixes for secrets.
 PostHog needs his project and region for the separate frontend work; the server
 has no PostHog dependency. The public analytics token also uses secure entry.
 
-The Vercel rewrite routes all /api paths to one Node fetch handler. A single
-00:00 UTC cron calls /api/cleanup daily using Vercel's CRON_SECRET bearer.
+The Vercel rewrite routes all /api paths to one Node fetch handler; the
+platform passes the original subpath as the `path` query param and the handler
+reconstructs it. A single 00:00 UTC cron calls /api/cleanup/ daily using
+Vercel's CRON_SECRET bearer: the trailing slash is required because
+trailingSlash redirects /api/cleanup and cron requests do not follow the 308.
+Cleanup stays authenticated and runs even while MILO_PHASE1_ENABLED is off, so
+stored plans are still deleted while the product API is paused.
 Do not copy it to a different host without replacing trusted IP handling and
 arranging an authenticated daily scheduler. No cross-origin CORS is enabled.
 Every response is no-store. Bodies are capped at 8 KiB. SQL is parameterized.
