@@ -93,7 +93,7 @@ export function attachNetworkSync(store) {
     if (!seat) return;
     const payload = payloadFor(store.getState()[seat.role === 'partner' ? 'sessionB' : 'sessionA']);
     if (hydratedFor !== seat.seatKey) {
-      const current = await api('GET', `/api/plans/${seat.planId}`, { seatKey: seat.seatKey });
+      const current = await api('GET', `/api/plans/${seat.planId}`, { seatKey: seat.seatKey, timeoutMs: 15000 });
       if (!current.ok) { if (current.reason === 'unreachable') retry(); return; }
       const mine = current.data?.me || {};
       const saved = { intents: mine.intents || [], reactions: (mine.reactions || []).map(({ cardId, reaction }) => ({ cardId, reaction })), finished: !!mine.finished };
@@ -104,7 +104,7 @@ export function attachNetworkSync(store) {
     }
     const serial = JSON.stringify(payload);
     if (serial === lastSent) return;
-    const result = await api('PUT', `/api/plans/${seat.planId}/me`, { body: payload, seatKey: seat.seatKey });
+    const result = await api('PUT', `/api/plans/${seat.planId}/me`, { body: payload, seatKey: seat.seatKey, timeoutMs: 15000 });
     if (result.ok) { lastSent = serial; retryDelay = 0; }
     else if (result.reason === 'unreachable') retry();
   };
