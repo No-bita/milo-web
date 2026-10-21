@@ -24,7 +24,9 @@ export async function showPartnerJoin(container, token) {
   const preview = await previewInvite(token);
   if (!preview.ok) { viewport().innerHTML = problem(preview.reason); return; }
   if (preview.data.status !== 'valid') { viewport().innerHTML = problem(preview.data.status); return; }
-  const { initiator_name: inviter, occasion, day } = preview.data;
+  const { occasion, day } = preview.data;
+  // Server data is untrusted shape-wise: a missing or blank inviter name falls back to a neutral label.
+  const inviter = String(preview.data.initiator_name || '').trim() || 'Your date';
   viewport().innerHTML = `<section class="milo-partner-welcome" aria-labelledby="miloJoinTitle">
     <div class="milo-partner-welcome-body">
       <div class="milo-partner-brand" aria-label="Milo">milo.</div>
