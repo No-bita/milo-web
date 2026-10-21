@@ -118,15 +118,25 @@ function response(status, body, extra = {}) {
 // mutation locks the plan BEFORE its seats, serializing finish/join/actions.
 export function createApi({ acquire, env = process.env, clientIp }) {
   return async request => {
-    if (env.MILO_PHASE1_ENABLED !== 'true') return response(503, { error:'unavailable' });
     let db;
     try {
-      const path = new URL(request.url).pathname.replace(/\/+$/, '');
+      const url = new URL(request.url);
+      // Vercel's `/api/:path*` -> `/api` rewrite replaces the pathname with
+      // the literal destination and merges the original subpath into the
+      // `path` query param (routing-utils; platform values override any
+      // client-supplied `path`). Reconstruct the route for dispatch. Off
+      // Vercel, pathnames arrive intact and the param is absent: no-op.
+      // The result still passes only the fixed allowlist below.
+      const rewritten = url.pathname === '/api' && url.searchParams.has('path');
+      const path = (rewritten ? `/api/${url.searchParams.get('path')}` : url.pathname).replace(/\/+$/, '');
       const method = request.method;
       const create = path === '/api/plans' && method === 'POST';
       const invite = path.match(/^\/api\/invites\/([A-Za-z0-9_-]+)(\/join)?$/);
       const planPath = path.match(/^\/api\/plans\/([^/]+)(\/(me|actions))?$/);
       const cleanup = path === '/api/cleanup' && method === 'GET';
+      // Launch gate: product routes stay off until enabled. Authenticated
+      // cleanup always runs so stored plans are still deleted while paused.
+      if (env.MILO_PHASE1_ENABLED !== 'true' && !cleanup) return response(503, { error:'unavailable' });
       const publicScope = create ? 'create' : invite && !invite[2] && method === 'GET' ? 'preview' : invite?.[2] && method === 'POST' ? 'join' : null;
       if (!publicScope && !planPath && !cleanup) return response(404, { error:'not_found' });
       // No forwarded-host construction: only owner-configured canonical origin.
