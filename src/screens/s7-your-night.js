@@ -4,13 +4,15 @@
 // suggestion and agreement state machine.
 // ==========================================================
 
-import { isSoloPlanning } from '../logic/planning.js';
+import { isSoloPlanning, sharedOutput } from '../logic/planning.js';
 import { renderSoloNight, attachSoloNightListeners } from './solo-night.js';
 import { renderItinerary, attachItinerary } from '../components/itinerary.js';
 import { updateSlotAndRestore } from '../logic/slot-update.js';
 import { store } from '../domain/store.js';
 import { partnerLabel, hasPartnerName, escapeHtml, sentenceName } from '../logic/partner.js';
-import { computeSharedOutput } from '../logic/shared.js';
+import { hasServerSeat, postPlanAction, refreshPlan } from '../domain/plan-view.js';
+import { feedback } from '../components/invite-feedback.js';
+import '../styles/shared-result.css';
 import { renderNightTiming, attachNightTiming, timingForNight, timingLabel } from '../components/night-timing.js';
 function resolvedNight(night, state) {
   const swaps = state.shared.itineraryOverrides?.[night.id] || {};
@@ -24,6 +26,10 @@ function planText(night, partnerName) {
   return `Our night${!hasPartnerName(partnerName) ? '' : ` with ${partnerName}`}: ${night.name}. ${steps}.${timing ? ` ${timingLabel(timing)}.` : ''}`;
 }
 
+// Edits-off copy (mockup 13): exact text, shared by the banner and footnote.
+const EDITS_PAUSED_BANNER = 'Edits are paused while two of you plan together, so you both always see the same night.';
+const EDITS_OFF_FOOTNOTE = 'Time and stop changes stay off in shared plans for now.';
+
 // "Start over" is demo scaffolding: only shown with ?demo
 const isDemo = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo');
 
@@ -35,7 +41,7 @@ export function renderScreen07(sessionId = 'aarav') {
   const partnerName = partnerLabel(store.getState(), sessionId);
   const partnerPickLabel = `${escapeHtml(partnerName.toUpperCase())}'S PICK`;
 
-  const sharedData = computeSharedOutput(state.sessionA, state.sessionB);
+  const sharedData = sharedOutput(state);
   const activeNightId = sessionData.activeNightId || (sharedData.selectedNights[0]?.night.id || 'middle-ground');
   const nightItem = sharedData.selectedNights.find(sn => sn.night.id === activeNightId) || sharedData.selectedNights[0];
   const night = resolvedNight(nightItem.night, state);
@@ -46,9 +52,11 @@ export function renderScreen07(sessionId = 'aarav') {
 
   const suggestion = state.shared.suggestion;
   const isConfirmed = state.shared.confirmedNightId === night.id;
+  // With a server seat the night is a shared projection: no stop or time edits.
+  const server = hasServerSeat();
 
   const timelineHtml = renderItinerary(night, nightItem.night, {
-    stacked: !isConfirmed, editable: !isConfirmed, lockedSlots: Boolean(suggestion?.nightId === night.id)
+    stacked: !isConfirmed, editable: server ? false : !isConfirmed, lockedSlots: server ? false : Boolean(suggestion?.nightId === night.id)
   });
 
   // Closing state (§2.9 & Acceptance Criteria)
@@ -67,12 +75,13 @@ export function renderScreen07(sessionId = 'aarav') {
           <h1 class="milo-headline">You're both in.</h1>
           <p class="milo-closing-sub">${night.name}.</p>
 
-          ${renderNightTiming(night.id, sessionId)}
+          ${server ? '' : renderNightTiming(night.id, sessionId)}
 
           <div class="milo-closing-plan">
             <div class="milo-section-label">YOUR PLAN</div>
             ${timelineHtml}
           </div>
+          ${server ? `<p class="milo-s7-edits-footnote">${EDITS_OFF_FOOTNOTE}</p>` : ''}
         </div>
 
         <div class="milo-closing-footer">
@@ -159,6 +168,7 @@ export function renderScreen07(sessionId = 'aarav') {
       <!-- Detail Body (on Ivory) -->
       <div class="milo-s7-body">
 
+        ${server ? `<div class="milo-s7-edits-paused" role="note">${EDITS_PAUSED_BANNER}</div>` : ''}
         <div class="milo-plan-grid">
           ${timelineHtml}
         </div>
@@ -171,6 +181,7 @@ export function renderScreen07(sessionId = 'aarav') {
           </button>
           ${ctaAreaHtml}
         </div>
+        ${server ? `<p class="milo-s7-edits-footnote">${EDITS_OFF_FOOTNOTE}</p>` : ''}
       </div>
     </div>
   `;
@@ -181,10 +192,11 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
   const state = store.getState();
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
   const sessionData = state[sessionKey] || {};
-  const sharedData = computeSharedOutput(state.sessionA, state.sessionB);
+  const sharedData = sharedOutput(state);
   const activeNightId = sessionData.activeNightId || (sharedData.selectedNights[0]?.night.id || 'middle-ground');
+  const server = hasServerSeat();
 
-  attachItinerary(container, () => {
+  if (!server) attachItinerary(container, () => {
     const live = store.getState();
     const original = sharedData.selectedNights.find(item => item.night.id === activeNightId)?.night;
     return { original, night: original && resolvedNight(original, live), locked: live.shared.suggestion?.nightId === activeNightId || live.shared.confirmedNightId === activeNightId };
@@ -207,7 +219,18 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
 
   const suggestBtn = container.querySelector(`#miloSuggestNight-${sessionId}`);
   if (suggestBtn) {
-    suggestBtn.addEventListener('click', () => {
+    suggestBtn.addEventListener('click', async () => {
+      if (server) {
+        // The server records the suggestion; this phone then waits (mockup 07).
+        suggestBtn.disabled = true;
+        const result = await postPlanAction('suggest', activeNightId);
+        suggestBtn.disabled = false;
+        if (!result.ok) {
+          feedback("That didn't go through.", 'Check your connection and try again.');
+          refreshPlan();
+        }
+        return;
+      }
       store.updateShared({
         suggestion: {
           by: sessionId,
@@ -219,7 +242,18 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
 
   const confirmBtn = container.querySelector(`#miloConfirmNight-${sessionId}`);
   if (confirmBtn) {
-    confirmBtn.addEventListener('click', () => {
+    confirmBtn.addEventListener('click', async () => {
+      if (server) {
+        // Either seat may confirm; the answer must match the current suggestion.
+        confirmBtn.disabled = true;
+        const result = await postPlanAction('confirm', activeNightId);
+        confirmBtn.disabled = false;
+        if (!result.ok) {
+          feedback("That didn't go through.", 'Check your connection and try again.');
+          refreshPlan();
+        }
+        return;
+      }
       store.updateShared({
         confirmedNightId: activeNightId
       });
@@ -246,7 +280,7 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
     const closingNight = resolvedNight(sharedData.selectedNights.find(sn => sn.night.id === state.shared.confirmedNightId)?.night
       || sharedData.selectedNights[0].night, store.getState());
     const partnerName = partnerLabel(store.getState(), sessionId);
-    attachNightTiming(container, closingNight.id, sessionId);
+    if (!hasServerSeat()) attachNightTiming(container, closingNight.id, sessionId);
     if (shareBtn) {
       shareBtn.addEventListener('click', () => {
         window.open(`https://wa.me/?text=${encodeURIComponent(planText(closingNight, partnerName))}`, '_blank', 'noopener');
