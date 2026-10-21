@@ -24,12 +24,14 @@ const saveSeat = (seat) => { try { localStorage.setItem(SEAT_KEY, JSON.stringify
 const REASONS = { 404: 'invalid', 409: 'taken', 410: 'expired', 429: 'rate_limited' };
 
 // Resolves { ok, status, data } or { ok:false, reason }. Never throws, never logs bodies.
-export async function api(method, path, { body, seatKey } = {}) {
+export async function api(method, path, { body, seatKey, timeoutMs } = {}) {
   try {
     const response = await fetch(path, {
       method,
       headers: { ...(body ? { 'content-type': 'application/json' } : {}), ...(seatKey ? { authorization: `Bearer ${seatKey}` } : {}) },
-      body: body ? JSON.stringify(body) : undefined
+      body: body ? JSON.stringify(body) : undefined,
+      // Callers that poll pass timeoutMs so one hung request can't stop their timer.
+      ...(timeoutMs ? { signal: AbortSignal.timeout(timeoutMs) } : {})
     });
     const data = await response.json().catch(() => ({}));
     if (response.ok) return { ok: true, status: response.status, data };
@@ -71,6 +73,16 @@ export function attachNetworkSync(store) {
   let chain = Promise.resolve();
   let hydratedFor = null;
   let lastSent = null;
+  let retryDelay = 0;
+  const RETRY_START = 2000;
+  const RETRY_MAX = 30000;
+  // A failed send is retried with capped backoff (2s, doubling to 30s), so picks reach the server
+  // even without another local change. Only 'unreachable' (network error or 5xx) retries.
+  const retry = () => {
+    retryDelay = Math.min(retryDelay ? retryDelay * 2 : RETRY_START, RETRY_MAX);
+    clearTimeout(timer);
+    timer = setTimeout(() => { chain = chain.then(send).catch(() => {}); }, retryDelay);
+  };
   const payloadFor = (half) => {
     const reactions = (half.reactions || []).map(({ cardId, reaction }) => ({ cardId, reaction }));
     const finished = reactions.length === 8 && !['s1', 'threshold', 's2'].includes(half.screen);
@@ -82,7 +94,7 @@ export function attachNetworkSync(store) {
     const payload = payloadFor(store.getState()[seat.role === 'partner' ? 'sessionB' : 'sessionA']);
     if (hydratedFor !== seat.seatKey) {
       const current = await api('GET', `/api/plans/${seat.planId}`, { seatKey: seat.seatKey });
-      if (!current.ok) return;
+      if (!current.ok) { if (current.reason === 'unreachable') retry(); return; }
       const mine = current.data?.me || {};
       const saved = { intents: mine.intents || [], reactions: (mine.reactions || []).map(({ cardId, reaction }) => ({ cardId, reaction })), finished: !!mine.finished };
       hydratedFor = seat.seatKey;
@@ -93,7 +105,8 @@ export function attachNetworkSync(store) {
     const serial = JSON.stringify(payload);
     if (serial === lastSent) return;
     const result = await api('PUT', `/api/plans/${seat.planId}/me`, { body: payload, seatKey: seat.seatKey });
-    if (result.ok) lastSent = serial;
+    if (result.ok) { lastSent = serial; retryDelay = 0; }
+    else if (result.reason === 'unreachable') retry();
   };
   const schedule = () => { chain = chain.then(send).catch(() => {}); };
   const unsubscribe = store.subscribe(() => { clearTimeout(timer); timer = setTimeout(schedule, 1000); });
