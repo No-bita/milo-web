@@ -13,11 +13,12 @@ const check = process.argv.includes('--check');
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const problems = [];
 
-// Honesty guards: never promise group plans; booking only ever appears as coming soon.
+// Honesty guards: never promise group plans; booking appears only as manual (real people)
+// or as not-yet-live in the app.
 const allText = [facts.tagline, facts.description, ...facts.status, ...facts.faq.flatMap((f) => [f.q, f.a])].join('\n');
 if (/group/i.test(allText)) problems.push('facts mention "group"');
-for (const s of allText.match(/[^.]*\bbooking\b[^.]*\./gi) || []) {
-  if (!/coming soon/i.test(s)) problems.push(`booking sentence without "coming soon": ${s.trim()}`);
+for (const s of allText.match(/[^.]*\bbookings?\b[^.]*\./gi) || []) {
+  if (!/coming soon|not live|real people/i.test(s)) problems.push(`booking sentence without manual/not-live context: ${s.trim()}`);
 }
 
 const faqHtml = [
