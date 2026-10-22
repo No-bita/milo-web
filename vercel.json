@@ -1,7 +1,6 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "trailingSlash": true,
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -10,7 +9,7 @@
   ],
   "crons": [
     {
-      "path": "/api/cleanup/",
+      "path": "/api/cleanup",
       "schedule": "0 0 * * *"
     }
   ]
