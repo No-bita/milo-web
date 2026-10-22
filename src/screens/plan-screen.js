@@ -14,8 +14,8 @@ import { calendarFile } from './booked.js';
 import '../styles/plan-screen.css';
 
 // Edits-off copy (mockup 13), same wording as the reviewed shared-result work.
-const EDITS_PAUSED_BANNER = 'Edits are paused while two of you plan together, so you both always see the same night.';
-const EDITS_OFF_FOOTNOTE = 'Time and stop changes stay off in shared plans for now.';
+const EDITS_PAUSED_BANNER = 'Edits paused so you both see the same night.';
+const EDITS_OFF_FOOTNOTE = 'Time and stop changes stay off for now.';
 
 // Both seats: the creator's post-share screens and the partner's post-deck
 // screens render from the server plan. Flag-off/demo flows keep the old screens.
@@ -48,7 +48,7 @@ function renderPartnerPending(state, sessionId) {
       </header>
       <div class="milo-s7-body">
         <h1 class="milo-headline">Putting your night together.</h1>
-        <p class="milo-plan-status" role="status"><i aria-hidden="true"></i><span>It appears here as soon as it's ready. Come back to this screen to check.</span></p>
+        <p class="milo-plan-status" role="status"><i aria-hidden="true"></i><span>Come back to this screen to check.</span></p>
       </div>
     </div>
   `;
@@ -58,9 +58,9 @@ function renderPartnerPending(state, sessionId) {
 
 function statusLine(state, sessionId) {
   const label = partnerLabel(state, sessionId);
-  if (state.shared.partnerFinished) return `${sentenceName(label)} finished - your night together is on its way.`;
-  if (state.shared.partnerJoined) return `${sentenceName(label)} is choosing their half - this plan refines when they finish.`;
-  return `Invite sent - waiting for ${escapeHtml(label)} to join.`;
+  if (state.shared.partnerFinished) return `${sentenceName(label)} finished - your night is on its way.`;
+  if (state.shared.partnerJoined) return `${sentenceName(label)} is choosing their half.`;
+  return `Waiting for ${escapeHtml(label)} to join.`;
 }
 
 function renderProvisional(state, sessionId) {
@@ -129,7 +129,7 @@ function renderJointNight(state, sessionId) {
 
   let ctaHtml = '';
   if (isMyPick) {
-    ctaHtml = `<div class="milo-cta-suggested-notice">Suggested. Check back here for ${escapeHtml(partnerName)}'s response. No notification will be sent.</div>`;
+    ctaHtml = `<div class="milo-cta-suggested-notice">Suggested. Check back for ${escapeHtml(partnerName)}'s response. No notification sent.</div>`;
   } else if (isPartnerPick) {
     ctaHtml = `<button class="milo-cta-button" id="miloPsConfirm-${sessionId}">This is our night</button>`;
   } else if (isPartnerOtherPick) {
