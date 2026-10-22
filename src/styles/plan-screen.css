@@ -1,0 +1,59 @@
+/* Plan screen (Phase 1 together): provisional label, partner status line, static plan tiles. */
+
+.milo-plan-eyebrow {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-bottom: 4px;
+}
+
+.milo-plan-status {
+  margin: 0 20px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-ink-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.milo-plan-status i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-oxblood);
+  flex: none;
+}
+
+/* Shared plans are not editable on this screen: tiles render fully inert. */
+.milo-plan-static .milo-plan-tile {
+  pointer-events: none;
+}
+
+.milo-plan-note {
+  margin: 12px 20px 0;
+  color: var(--color-ink-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.milo-s7-edits-paused {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--color-sand);
+  color: var(--color-ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.milo-s7-edits-footnote {
+  margin: 14px 0 0;
+  color: var(--color-ink-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
