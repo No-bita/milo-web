@@ -10,6 +10,7 @@
     try { history.replaceState(null, '', '#' + id); } catch (_) { /* sandboxed */ }
     var h = el.querySelector('h2');
     if (h) { h.classList.add('flash'); setTimeout(function () { h.classList.remove('flash'); }, 1400); }
+    el.focus({ preventScroll: true });
   }
 
   var hdr = document.querySelector('.hdr');
@@ -73,7 +74,6 @@
     if (!prZoomWrap || prZoomWrap.hidden) return;
     prZoomWrap.hidden = true;
     prArt.setAttribute('aria-pressed', 'false');
-    prArt.setAttribute('aria-label', 'Enlarge image');
   }
   if (moments) {
     var grid = moments.querySelector('.mo-grid');
@@ -94,11 +94,19 @@
     };
     lb.addEventListener('click', function () { step(-1); });
     rb.addEventListener('click', function () { step(1); });
-    var closeDetail = function () { details.forEach(function (d) { d.hidden = true; }); grid.hidden = false; };
+    var lastCard = null;
+    var closeDetail = function () {
+      details.forEach(function (d) { d.hidden = true; });
+      grid.hidden = false;
+      if (lastCard) { lastCard.focus(); lastCard = null; }
+    };
     cards.forEach(function (c) {
       c.addEventListener('click', function () {
         grid.hidden = true;
         details.forEach(function (d) { d.hidden = d.getAttribute('data-occ') !== c.getAttribute('data-occ'); });
+        lastCard = c;
+        var open = details.filter(function (d) { return !d.hidden; })[0];
+        if (open) { var dt = open.querySelector('.d-text') || open; dt.setAttribute('tabindex', '-1'); dt.focus(); }
       });
     });
     moments.querySelectorAll('.detail .back, .detail .close').forEach(function (b) { b.addEventListener('click', closeDetail); });
@@ -111,7 +119,6 @@
       var showZoom = prZoomWrap.hidden;
       prZoomWrap.hidden = !showZoom;
       prArt.setAttribute('aria-pressed', String(showZoom));
-      prArt.setAttribute('aria-label', showZoom ? 'Shrink image' : 'Enlarge image');
     });
     var prc = prZoomWrap.querySelector('.close');
     if (prc) prc.addEventListener('click', closeZoom);
