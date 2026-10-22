@@ -17,12 +17,14 @@ import '../styles/plan-screen.css';
 const EDITS_PAUSED_BANNER = 'Edits are paused while two of you plan together, so you both always see the same night.';
 const EDITS_OFF_FOOTNOTE = 'Time and stop changes stay off in shared plans for now.';
 
-// The creator's post-share screens. The partner's phone keeps its own flow for now.
+// Both seats: the creator's post-share screens and the partner's post-deck
+// screens render from the server plan. Flag-off/demo flows keep the old screens.
 export function planScreenApplies(sessionId, screen) {
-  if (sessionId !== 'aarav') return false;
   if (!hasServerSeat()) return false;
-  if (readSeat()?.role !== 'initiator') return false;
-  return ['s4_waiting', 's5', 's6', 's7'].includes(screen);
+  const role = readSeat()?.role;
+  if (role === 'initiator') return sessionId === 'aarav' && ['s4_waiting', 's5', 's6', 's7'].includes(screen);
+  if (role === 'partner') return sessionId === 'sneha' && ['s5', 's6', 's7'].includes(screen);
+  return false;
 }
 
 export function renderPlanScreen(sessionId = 'aarav') {
@@ -31,7 +33,25 @@ export function renderPlanScreen(sessionId = 'aarav') {
   const result = currentPlanResult(state);
   if (confirmedId && result) return renderAgreed(state, sessionId, confirmedId);
   if (result) return renderJointNight(state, sessionId);
+  // No server result yet: the creator sees their own provisional plan; the
+  // partner gets a neutral holding state - never a one-sided "shared" guess.
+  if (readSeat()?.role === 'partner') return renderPartnerPending(state, sessionId);
   return renderProvisional(state, sessionId);
+}
+
+function renderPartnerPending(state, sessionId) {
+  const partnerName = partnerLabel(state, sessionId);
+  return `
+    <div class="milo-s7-container milo-visual-plan" data-session-id="${sessionId}">
+      <header class="milo-header">
+        <span class="milo-wordmark">milo.</span>
+      </header>
+      <div class="milo-s7-body">
+        <h1 class="milo-headline">Putting your night together.</h1>
+        <p class="milo-plan-status" role="status"><i aria-hidden="true"></i><span>It appears here as soon as it's ready. Come back to this screen to check.</span></p>
+      </div>
+    </div>
+  `;
 }
 
 // ---------- Provisional: the creator's own plan until the partner's half lands ----------
@@ -83,7 +103,8 @@ function renderJointNight(state, sessionId) {
   const output = togetherOutput(state);
   const nights = output.selectedNights;
   const partnerName = partnerLabel(state, sessionId);
-  const item = nights.find(entry => entry.night.id === state.sessionA.activeNightId) || nights[0];
+  const myActiveId = (sessionId === 'sneha' ? state.sessionB : state.sessionA).activeNightId;
+  const item = nights.find(entry => entry.night.id === myActiveId) || nights[0];
   const night = item.night;
   const suggestion = state.shared.suggestion;
   const isPartnerPick = suggestion && suggestion.nightId === night.id && suggestion.by !== sessionId;
@@ -198,7 +219,7 @@ export function attachPlanScreenListeners(container, sessionId = 'aarav') {
       ? togetherOutput(live).selectedNights
       : computePlanningOutput({ ...live, sessionA: { ...live.sessionA, planningMode: 'solo' } }, sessionId).selectedNights;
     const ids = nights.map(entry => entry.night.id);
-    const active = live.sessionA.activeNightId;
+    const active = (sessionId === 'sneha' ? live.sessionB : live.sessionA).activeNightId;
     const next = ids[(ids.indexOf(active) + 1) % ids.length] || ids[0];
     store.updateSession(sessionId, { activeNightId: next });
   });
@@ -226,7 +247,8 @@ export function attachPlanScreenListeners(container, sessionId = 'aarav') {
   const activeNightId = () => {
     const live = store.getState();
     const nights = togetherOutput(live)?.selectedNights || [];
-    const item = nights.find(entry => entry.night.id === live.sessionA.activeNightId) || nights[0];
+    const active = (sessionId === 'sneha' ? live.sessionB : live.sessionA).activeNightId;
+    const item = nights.find(entry => entry.night.id === active) || nights[0];
     return item?.night.id;
   };
 
