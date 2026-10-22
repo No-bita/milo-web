@@ -90,7 +90,7 @@
           "name": "Can Milo book or pay for me?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Not yet. Milo makes the plan and you book it. Booking is coming soon. Milo doesn't take payments."
+            "text": "Yes for booking, no for payment: Milo makes the plan, and real people handle the bookings and on-ground support. In-app booking is not live yet, and Milo doesn't take payments."
           }
         },
         {
@@ -132,177 +132,203 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/src/landing/landing.css" />
+  <link rel="stylesheet" href="/src/landing/landing-v2.css" />
+  <script type="module" src="/src/landing/landing-v2.js"></script>
 </head>
-<body class="lp">
-  <header class="lp-nav">
-    <a class="lp-brand" href="./" aria-label="milo.">milo<span class="lp-dot">.</span></a>
-    <a class="lp-btn lp-btn-small" href="#waitlist">Join the waitlist</a>
+<body>
+  <a class="skip" href="#top" data-scroll="top">Skip to content</a>
+  <header class="hdr" id="hdr">
+    <div class="wrap hdr-in">
+      <a class="logo" href="#top" data-scroll="top" aria-label="milo, for moments that matter. Back to top"><img src="./landing/v2/art/logo.jpg" alt="milo. For moments that matter." /></a>
+      <nav class="nav" aria-label="Main">
+        <a href="#how-it-works" data-scroll="how-it-works">How it works</a>
+        <a href="#moments" data-scroll="moments">Moments</a>
+        <a href="#our-promise" data-scroll="our-promise">Our promise</a>
+      </nav>
+      <div class="hdr-right">
+        <span class="hdr-cta"><span class="cta-wrap"><a class="cta sm" href="./app/"><span>Plan a moment</span><svg class="arr" width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><path d="M1 6h15M11 1l5 5-5 5" /></svg></a></span></span>
+        <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false">
+          <svg class="ic-burger" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18" /></svg>
+          <svg class="ic-x" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" /></svg>
+        </button>
+      </div>
+    </div>
+    <div class="menu" id="menu">
+      <a href="#how-it-works" data-scroll="how-it-works">How it works</a>
+      <a href="#moments" data-scroll="moments">Moments</a>
+      <a href="#our-promise" data-scroll="our-promise">Our promise</a>
+      <span class="cta-wrap"><a class="cta" href="./app/"><span>Plan a moment</span><svg class="arr" width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><path d="M1 6h15M11 1l5 5-5 5" /></svg></a></span>
+      <img class="menu-art" src="./landing/v2/art/mmenu.jpg" alt="" />
+    </div>
   </header>
 
   <main>
-    <section class="lp-hero">
-      <p class="lp-eyebrow">For moments that matter</p>
-      <h1>You picked the person. <em>Milo handles the plan.</em></h1>
-      <p class="lp-lead">A first date, an anniversary, or a Tuesday that deserves better. Tell Milo the mood. Milo plans the night.</p>
-      <div class="lp-actions">
-        <a class="lp-btn" href="#waitlist">Join the waitlist</a>
-        <a class="lp-link" href="./app/">Try the prototype</a>
+    <section class="hero wrap" id="top">
+      <div class="hero-text">
+        <p class="label">FOR MOMENTS THAT MATTER.</p>
+        <h1>You make<br />the memories.<br />We make<br />them happen.</h1>
+        <p class="promise">We plan it. We book it. We make it happen.</p>
+        <span class="cta-wrap"><a class="cta lg" href="./app/"><span>Plan a moment</span><svg class="arr" width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><path d="M1 6h15M11 1l5 5-5 5" /></svg></a></span>
+        <a class="seehow" href="#how-it-works" data-scroll="how-it-works"><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="15.5" fill="none" stroke-width="1.4" /><path d="M14 11.5l9 5.5-9 5.5z" /></svg><span>See how it works</span></a>
       </div>
-      <figure class="lp-hero-phone">
-        <div class="lp-phone lp-phone-shot">
-          <span class="lp-phone-btn lp-phone-btn-a"></span><span class="lp-phone-btn lp-phone-btn-b"></span>
-          <div class="lp-screen"><img src="./landing/peek-deck.webp" width="260" height="545" alt="The Milo prototype: a swipe card for a tiny bar where nobody knows you, with Not for tonight, Maybe and I'm into it buttons." fetchpriority="high" /></div>
-        </div>
-      </figure>
-    </section>
-
-    <section class="lp-section lp-problem" id="problem">
-      <h2>Sound familiar?</h2>
-      <p class="lp-sub">Planning a good date is weirdly hard. Not because you don't care. Because you care a lot.</p>
-      <ul class="lp-scenes">
-        <li><h3>the anywhere's-fine</h3><p>"so, where do you want to go?" "anywhere's fine!" forty minutes later, still anywhere.</p></li>
-        <li><h3>the 4.6-star shout</h3><p>spent an hour on google maps. picked the place with 4.6 stars. it was loud. we shouted our feelings.</p></li>
-        <li><h3>the unasked question</h3><p>i wanted to ask what she'd like. didn't. what if i got it wrong by asking?</p></li>
-        <li><h3>the pizza standoff</h3><p>she wanted me to plan something nice. i wanted her to just say what she wanted. we ordered pizza.</p></li>
-        <li><h3>the 10 pm dessert</h3><p>booked dinner. forgot nothing about the restaurant. forgot the dessert place closes at 10.</p></li>
-        <li><h3>the four-tab plan</h3><p>the plan lived in four chats, two tabs and one very confident voice note.</p></li>
+      <div class="hero-art"><img src="./landing/v2/art/hero.jpg" alt="A couple at a candlelit rooftop dinner at sunset, with a handwritten note and a snapshot" fetchpriority="high" /></div>
+      <div class="hero-mart"><img src="./landing/v2/art/mhero.jpg" alt="A couple at a candlelit dinner. Thoughtful details. Beautiful moments." /></div>
+      <ul class="signals">
+        <li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27S4 20 4 11.5A6.2 6.2 0 0 1 16 9a6.2 6.2 0 0 1 12 2.5C28 20 16 27 16 27z" /></svg><span>Personalised<br />for you</span></li>
+        <li><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="6" width="24" height="22" rx="3" /><path d="M4 13h24M11 3v6M21 3v6" /></svg><span>End-to-end<br />planning &amp; booking</span></li>
+        <li><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="12" cy="11" r="4.5" /><circle cx="23" cy="13" r="3.4" /><path d="M3 27c0-5 4-8 9-8s9 3 9 8M20 20c4 0 8 2 8 6" /></svg><span>Real people<br />on-ground support</span></li>
+        <li><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="4.5" /><path d="M16 3v5M16 24v5M3 16h5M24 16h5M6.8 6.8l3.5 3.5M21.7 21.7l3.5 3.5M25.2 6.8l-3.5 3.5M10.3 21.7l-3.5 3.5" /></svg><span>Thoughtful<br />details</span></li>
       </ul>
     </section>
-
-    <section class="lp-section lp-reframe">
-      <h2>You're not bad at dates. You've just been planning alone, with too many tabs.</h2>
-      <p>Asking feels risky. Guessing feels worse. So it's "anywhere's fine" again.</p>
-      <p>There's a gentler way.</p>
-    </section>
-
-    <section class="lp-section lp-meet">
-      <div class="lp-seal" aria-hidden="true">m.</div>
-      <h2>Meet milo.</h2>
-      <p>Milo does the planning. You do the showing up. You each tell Milo your mood, and Milo finds the night where you meet.</p>
-      <p class="lp-note">Not a dating app. You already found your person.</p>
-    </section>
-
-    <section class="lp-section lp-moments">
-      <h2>For the nights that matter.</h2>
-      <ul class="lp-grid">
-        <li><h3>First date</h3><p>she laughed at the right moment. there will be a second.</p></li>
-        <li><h3>Anniversary</h3><p>he remembered the small thing.</p></li>
-        <li><h3>Birthday</h3><p>all she said was "wow".</p></li>
-        <li><h3>Just because</h3><p>a tuesday, but make it nice.</p></li>
-        <li><h3>Making up</h3><p>no speeches. just a good table and a long walk home.</p></li>
-        <li><h3>Big news</h3><p>the promotion deserved more than a "congrats!" text.</p></li>
-      </ul>
-      <div class="lp-ribbon" aria-label="One night, from mood to sealed">
-        <div class="lp-ribbon-step"><span class="lp-ribbon-k">Mood</span><span class="lp-chip lp-chip-on">Intimate</span><span class="lp-chip lp-chip-on">Low-key</span></div>
-        <span class="lp-ribbon-arrow" aria-hidden="true">&#8594;</span>
-        <div class="lp-ribbon-step"><span class="lp-ribbon-k">The plan</span><span class="lp-chip">Dinner</span><span class="lp-chip">Walk</span><span class="lp-chip">Dessert</span></div>
-        <span class="lp-ribbon-arrow" aria-hidden="true">&#8594;</span>
-        <div class="lp-ribbon-step"><span class="lp-ribbon-k">Sealed</span><span class="lp-chip lp-chip-on">7:30 PM, Sat</span></div>
-      </div>
-    </section>
-
-    <section class="lp-section lp-occasions" id="occasions">
-      <h2>Every occasion gets its own plan.</h2>
-      <p class="lp-sub">Same two people, a different night. Milo changes the pace, the place and the budget to fit.</p>
-      <ul class="lp-occ-grid">
-        <li class="lp-occ lp-occ-1">
-          <svg class="lp-occ-art" viewBox="0 0 80 64" aria-hidden="true"><path d="M14 24h26v18a10 10 0 0 1-10 10h-6a10 10 0 0 1-10-10z" fill="#F2CBC3" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 29h5a6 6 0 0 1 0 12h-5" fill="none" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 36q2 2 4 0M30 36q2 2 4 0" fill="none" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 18q-3-5 0-9M31 18q-3-5 0-9" fill="none" stroke="#C39A92" stroke-width="2" stroke-linecap="round"/><path d="M60 12l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#E2BE8E"/></svg>
-          <h3>First date</h3>
-          <p>tiny stakes, easy exit, still lovely.</p>
-          <p class="lp-occ-plan"><span>Short and easy</span><span>Coffee, then a wander</span></p>
-        </li>
-        <li class="lp-occ lp-occ-2">
-          <svg class="lp-occ-art" viewBox="0 0 80 64" aria-hidden="true"><path d="M40 54C16 40 14 22 26 18c6-2 11 2 14 7 3-5 8-9 14-7 12 4 10 22-14 36z" fill="#E7A9A9" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 28q-4 2-4 7" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><path d="M64 10l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#E2BE8E"/></svg>
-          <h3>Anniversary</h3>
-          <p>the small thing, remembered.</p>
-          <p class="lp-occ-plan"><span>Slow and special</span><span>A proper table, no rush</span></p>
-        </li>
-        <li class="lp-occ lp-occ-3">
-          <svg class="lp-occ-art" viewBox="0 0 80 64" aria-hidden="true"><path d="M14 40q0-20 26-20t26 20z" fill="#DCE0C8" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 20v-6" fill="none" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="40" cy="12" r="3" fill="#F2CBC3" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 48h56" fill="none" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 33q2 2 4 0M44 33q2 2 4 0" fill="none" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <h3>Apology date</h3>
-          <p>no speeches. a good table, a long walk home.</p>
-          <p class="lp-occ-plan"><span>Quiet and kind</span><span>Somewhere you can talk</span></p>
-        </li>
-        <li class="lp-occ lp-occ-4">
-          <svg class="lp-occ-art" viewBox="0 0 80 64" aria-hidden="true"><path d="M26 8h28l-3 22a11 11 0 0 1-22 0z" fill="#F7E3A8" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 41v14M30 56h20" fill="none" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M33 16h14" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><path d="M62 14l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#E2BE8E"/></svg>
-          <h3>Payday splurge</h3>
-          <p>you earned the nice one.</p>
-          <p class="lp-occ-plan"><span>A little extra</span><span>The place you bookmarked</span></p>
-        </li>
-        <li class="lp-occ lp-occ-5">
-          <svg class="lp-occ-art" viewBox="0 0 80 64" aria-hidden="true"><rect x="14" y="14" width="52" height="40" rx="6" fill="#F3E8E5" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 26h52" fill="none" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 10v8M54 10v8" fill="none" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="40" cy="40" r="7" fill="#F2CBC3" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 40q3 3 6 0" fill="none" stroke="#6E2228" stroke-width="2" stroke-linecap="round"/></svg>
-          <h3>Random Tuesday</h3>
-          <p>a tuesday, but make it nice.</p>
-          <p class="lp-occ-plan"><span>Light and local</span><span>Close to home, home by ten</span></p>
-        </li>
-      </ul>
-      <p class="lp-note">Sample plans, shown for illustration. Nothing here is booked.</p>
-    </section>
-
-    <section class="lp-section lp-how" id="how">
-      <h2>How it works</h2>
-      <p class="lp-sub">Real screens, with demo names and photos.</p>
-      <ol class="lp-steps">
-        <li>
-          <div class="lp-phone lp-phone-shot lp-phone-mini"><div class="lp-screen"><img src="./landing/peek-moods.webp" width="190" height="398" alt="The Milo mood picker with eight moods and three chosen." /></div></div>
-          <h3>Pick the mood</h3>
-          <p>Cosy? Lively? Something new? Pick a few moods and swipe through ideas.</p>
-        </li>
-        <li>
-          <div class="lp-phone lp-phone-shot lp-phone-mini"><div class="lp-screen"><img src="./landing/peek-plan.webp" width="190" height="398" alt="The Milo planning sheet asking how you would like to plan: just my inputs, or both our inputs." /></div></div>
-          <h3>Bring your person, or go solo</h3>
-          <p>Each of you answers on your own. No guessing out loud.</p>
-        </li>
-        <li>
-          <div class="lp-phone lp-phone-shot lp-phone-mini"><div class="lp-screen"><img src="./landing/peek-night.webp" width="190" height="398" alt="A Milo night, The Middle Ground, as photo cards for dinner, walk and dessert." /></div></div>
-          <h3>See a night that fits</h3>
-          <p>Dinner, a walk, dessert, as photo cards. Not feeling one? Swap it with Customise.</p>
-        </li>
-        <li>
-          <div class="lp-phone lp-phone-shot lp-phone-mini"><div class="lp-screen"><img src="./landing/peek-sealed.webp" width="190" height="398" alt="The Milo sealed screen with the night, the time and a wax seal." /></div></div>
-          <h3>Seal it</h3>
-          <p>Pick a time, add it to your calendar, share on WhatsApp. Pinky promise.</p>
-        </li>
-      </ol>
-    </section>
-
-    <section class="lp-section lp-chat" id="share">
-      <div class="lp-chat-copy">
-        <h2>Then just send it.</h2>
-        <p class="lp-sub">Milo opens WhatsApp with the plan already written. You just hit send.</p>
-      </div>
-      <div class="lp-phone" role="img" aria-label="An illustration of a phone showing a WhatsApp chat: one person shares a sealed plan for Saturday and the other replies with delight.">
-        <span class="lp-phone-btn lp-phone-btn-a"></span><span class="lp-phone-btn lp-phone-btn-b"></span>
-        <div class="lp-screen" aria-hidden="true">
-          <div class="lp-status"><span>6:44</span><span class="lp-status-icons"><b class="lp-signal"></b><b class="lp-wifi"></b><b class="lp-battery"></b></span></div>
-          <div class="lp-phone-bar">
-            <span class="lp-back">&#8249;</span><span class="lp-phone-avatar">S</span>
-            <span class="lp-who"><span class="lp-name">Sneha</span><span class="lp-presence">online</span></span>
+    <section class="story" id="how-it-works" tabindex="-1">
+      <div class="wrap">
+        <p class="label gray">HOW IT WORKS</p>
+        <h2>From an idea to a moment you'll remember.</h2>
+        <p class="sub">You tell us what matters. We take care of the rest.</p>
+        <ol class="stages" aria-label="Stages">
+          <li><button class="on" aria-current="step"><span class="dot">1</span><span class="st">Tell us<br />what matters</span></button></li>
+          <li><button><span class="dot">2</span><span class="st">We plan<br />your experience</span></button></li>
+          <li><button><span class="dot">3</span><span class="st">We make<br />the bookings</span></button></li>
+          <li><button><span class="dot">4</span><span class="st">We prepare<br />everything</span></button></li>
+          <li><button><span class="dot">5</span><span class="st">You enjoy<br />the moment</span></button></li>
+        </ol>
+        <div class="stage-body">
+          <div class="stage-art" data-s="0"><img class="note-art" src="./landing/v2/art/note.jpg" alt="A pinned note reading: Make our anniversary special." /></div>
+          <div class="stage-art" data-s="1" hidden>
+            <div class="s1"><div class="mini">Make our anniversary special.</div>
+              <div class="ph"><img src="./landing/v2/photos/dates.jpg" alt="" style="animation-delay:0ms" /><img src="./landing/v2/photos/prep1.jpg" alt="" style="animation-delay:90ms" /><img src="./landing/v2/photos/proposals.jpg" alt="" style="animation-delay:180ms" /></div>
+              <p class="tag">Sample itinerary · illustrative only</p>
+            </div>
           </div>
-          <div class="lp-phone-body">
-            <p class="lp-day">TODAY</p>
-            <p class="lp-bubble lp-bubble-out">Saturday, 7:30 PM. Dinner, then a walk, then dessert. Planned by milo. Sealed.<span class="lp-time">6:42 PM</span></p>
-            <p class="lp-bubble lp-bubble-in">wait. you planned this??<span class="lp-time">6:43 PM</span></p>
-            <p class="lp-bubble lp-bubble-in">ok i'm in. i'm so in.<span class="lp-time">6:43 PM</span></p>
-            <p class="lp-bubble lp-bubble-out">pinky promise.<span class="lp-time">6:44 PM</span></p>
+          <div class="stage-art" data-s="2" hidden>
+            <div class="ticket"><p class="tiny">ILLUSTRATIVE SAMPLE · NOT A REAL BOOKING</p>
+              <p class="row" style="animation-delay:0ms"><span class="ck">✓</span><span>Venue</span><b>Sample venue</b></p>
+              <p class="row" style="animation-delay:120ms"><span class="ck">✓</span><span>Time</span><b>7:30 pm</b></p>
+              <p class="row" style="animation-delay:240ms"><span class="ck">✓</span><span>Status</span><b>Confirmed (sample)</b></p>
+              <p class="row" style="animation-delay:360ms"><span class="ck">✓</span><span>Schedule</span><b>Dinner, then a short walk</b></p>
+              <div class="progress"><i></i></div>
+            </div>
           </div>
-          <div class="lp-input"><span class="lp-field">Message</span><span class="lp-mic"></span></div>
-          <i class="lp-home-bar"></i>
+          <div class="stage-art" data-s="3" hidden>
+            <div class="trio">
+              <figure style="animation-delay:0ms"><img src="./landing/v2/photos/prep1.jpg" alt="Arranging" /><figcaption>Arranging</figcaption></figure>
+              <figure style="animation-delay:140ms"><img src="./landing/v2/photos/prep3.jpg" alt="Coordinating" /><figcaption>Coordinating</figcaption></figure>
+              <figure style="animation-delay:280ms"><img src="./landing/v2/photos/prep2.jpg" alt="Ready" /><figcaption>Ready</figcaption></figure>
+            </div>
+          </div>
+          <div class="stage-art" data-s="4" hidden>
+            <div class="enjoy"><img src="./landing/v2/photos/final.jpg" alt="A couple enjoying an evening on a rooftop" /><span>You enjoy the moment.</span></div>
+          </div>
+          <div class="stage-text">
+            <div class="st-copy" data-s="0"><h3>It starts with<br />what matters to you.</h3><p>You share the occasion, your preferences and a few details. We take it from there.</p></div>
+            <div class="st-copy" data-s="1" hidden><h3>We shape it<br />into a plan.</h3><p>A dinner, something creative, a personal touch. Pulled together into one simple sequence.</p></div>
+            <div class="st-copy" data-s="2" hidden><h3>We make<br />the bookings.</h3><p>Venues, timings and details are arranged and kept in step, so you do not have to chase anything.</p></div>
+            <div class="st-copy" data-s="3" hidden><h3>We prepare it<br />on the ground.</h3><p>People arrange, coordinate and run a final check, so everything is ready before you arrive.</p></div>
+            <div class="st-copy" data-s="4" hidden><h3>You enjoy<br />the moment.</h3><p>You show up. The rest is already in place.</p></div>
+            <div class="arrows">
+              <button class="prev" aria-label="Previous stage" disabled>←</button>
+              <span class="n">1 / 5</span>
+              <button class="next" aria-label="Next stage">→</button>
+            </div>
+          </div>
         </div>
       </div>
-      <p class="lp-fine lp-chat-note">Just an illustration. The reply is yours to earn.</p>
     </section>
-
-    <section class="lp-promise">
-      <p>"A date that feels like you thought of everything."</p>
+    <section class="moments" id="moments" tabindex="-1">
+      <div class="wrap">
+        <div class="mo-grid">
+          <div class="mo-left">
+            <p class="label gray">MOMENTS</p>
+            <h2>Every moment<br />has a story.</h2>
+            <p class="sub">Big celebrations. Little surprises. Everything in between.</p>
+            <img class="diff" src="./landing/v2/art/diff.jpg" alt="Different moments. Same thoughtfulness." />
+          </div>
+          <div class="mo-right">
+            <button class="rail-btn l" aria-label="Previous moment" disabled>‹</button>
+            <div class="rail">
+              <button class="occ on" data-occ="dates" style="--r:-1.2deg" aria-label="Open Dates &amp; Anniversaries">
+                <img src="./landing/v2/art/c_dates.jpg" alt="" /><b>Dates &amp; Anniversaries</b><em>Make time together feel special.</em><span class="pill live"><i></i>Bengaluru-first</span>
+              </button>
+              <button class="occ" data-occ="birthdays" style="--r:0.8deg" aria-label="Open Birthdays">
+                <img src="./landing/v2/art/c_bday.jpg" alt="" /><b>Birthdays</b><em>Make their day feel like theirs.</em><span class="pill soon">Coming soon</span>
+              </button>
+              <button class="occ" data-occ="proposals" style="--r:-0.6deg" aria-label="Open Proposals">
+                <img src="./landing/v2/art/c_prop.jpg" alt="" /><b>Proposals</b><em>For the question they'll always remember.</em><span class="pill soon">Coming soon</span>
+              </button>
+              <button class="occ" data-occ="celebrations" style="--r:1deg" aria-label="Open Celebrations">
+                <img src="./landing/v2/art/c_cel.jpg" alt="" /><b>Celebrations</b><em>Good times deserve great memories.</em><span class="pill soon">Coming soon</span>
+              </button>
+              <button class="occ" data-occ="groups" style="--r:-0.8deg" disabled aria-label="Group experiences, coming soon">
+                <img src="./landing/v2/art/c_grp.jpg" alt="" /><b>Group experiences</b><em>More people. More stories.</em><span class="pill soon">Coming soon</span>
+              </button>
+            </div>
+            <button class="rail-btn r" aria-label="Next moment">›</button>
+            <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+        <div class="detail" data-occ="dates" hidden>
+          <div class="d-text">
+            <p class="label coral">DATES &amp; ANNIVERSARIES</p>
+            <h2>Make time together feel special.</h2>
+            <p class="d-p">Thoughtful experiences, from cozy evenings to once-in-a-kind adventures.</p>
+            <span class="pill live"><i></i>Bengaluru-first</span>
+            <div class="d-actions">
+              <span class="cta-wrap"><a class="cta" href="./app/"><span>Plan a moment</span><svg class="arr" width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><path d="M1 6h15M11 1l5 5-5 5" /></svg></a></span>
+              <button class="back">← Back to moments</button>
+            </div>
+          </div>
+          <div class="d-art"><img src="./landing/v2/art/o_dates.jpg" alt="Dates and anniversaries" /></div>
+          <button class="close" aria-label="Close">✕</button>
+        </div>
+        <div class="detail flip" data-occ="birthdays" hidden>
+          <div class="d-text">
+            <p class="label coral">BIRTHDAYS</p>
+            <h2>Make their day feel like theirs.</h2>
+            <p class="d-p">Thoughtful experiences designed around what they love.</p>
+            <span class="pill soon">Coming soon</span>
+            <div class="d-actions"><button class="back outline">← Back to moments</button></div>
+          </div>
+          <div class="d-art"><img src="./landing/v2/art/o_bday.jpg" alt="Birthdays" /></div>
+          <button class="close" aria-label="Close">✕</button>
+        </div>
+        <div class="detail" data-occ="proposals" hidden>
+          <div class="d-text">
+            <p class="label coral">PROPOSALS</p>
+            <h2>For the question they'll always remember.</h2>
+            <p class="d-p">A quiet, private setting made for one important question.</p>
+            <span class="pill soon">Coming soon</span>
+            <div class="d-actions"><button class="back outline">← Back to moments</button></div>
+          </div>
+          <div class="d-art"><div class="polaroid"><img src="./landing/v2/art/c_prop.jpg" alt="Proposals" /></div></div>
+          <button class="close" aria-label="Close">✕</button>
+        </div>
+        <div class="detail" data-occ="celebrations" hidden>
+          <div class="d-text">
+            <p class="label coral">CELEBRATIONS</p>
+            <h2>Good times deserve great memories.</h2>
+            <p class="d-p">Small gatherings and big wins, taken care of.</p>
+            <span class="pill soon">Coming soon</span>
+            <div class="d-actions"><button class="back outline">← Back to moments</button></div>
+          </div>
+          <div class="d-art"><div class="polaroid"><img src="./landing/v2/art/c_cel.jpg" alt="Celebrations" /></div></div>
+          <button class="close" aria-label="Close">✕</button>
+        </div>
+      </div>
     </section>
-
-    <section class="lp-section lp-early">
-      <h2>Early, and proud of it.</h2>
-      <p>Milo is new and Bengaluru-first. Today you can plan a night from mood to sealed. Booking and reminders are coming soon. We'd rather tell you than pretend.</p>
+    <section class="promise-sec" id="our-promise" tabindex="-1">
+      <div class="wrap pr-grid">
+        <div class="pr-text">
+          <p class="label gray">OUR PROMISE</p>
+          <h2>More than<br />just bookings.</h2>
+          <p class="pr-p"><b>Real people help</b> make your special moments happen. We coordinate every detail and provide on-ground support to make sure it all comes together beautifully.</p>
+          <a class="cta outline" href="#how-it-works" data-scroll="how-it-works"><span>See how it works</span><svg class="arr" width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><path d="M1 6h15M11 1l5 5-5 5" /></svg></a>
+        </div>
+        <button class="pr-art" aria-label="Enlarge image" aria-pressed="false">
+          <img src="./landing/v2/art/promise.jpg" alt="Thoughtful preparation, careful coordination, beautiful settings" />
+        </button>
+      </div>
+      <div class="wrap pr-zoom-wrap" hidden><div class="pr-zoom"><img src="./landing/v2/art/promise.jpg" alt="" /><button class="close" aria-label="Close">✕</button></div></div>
     </section>
-
     <!-- facts:faq:start -->
     <section class="lp-section lp-faq" id="faq">
       <h2>Quick answers.</h2>
@@ -316,7 +342,7 @@
         <dt>What can I do today?</dt>
         <dd>Pick moods, swipe ideas, build a night, seal it with a time, add it to your calendar and share it on WhatsApp.</dd>
         <dt>Can Milo book or pay for me?</dt>
-        <dd>Not yet. Milo makes the plan and you book it. Booking is coming soon. Milo doesn't take payments.</dd>
+        <dd>Yes for booking, no for payment: Milo makes the plan, and real people handle the bookings and on-ground support. In-app booking is not live yet, and Milo doesn't take payments.</dd>
         <dt>What happens to my answers?</dt>
         <dd>In this prototype, they stay in your browser. Nothing is sent to a server.</dd>
         <dt>How do I join the waitlist?</dt>
@@ -324,24 +350,45 @@
       </dl>
     </section>
     <!-- facts:faq:end -->
-
-    <section class="lp-section lp-waitlist" id="waitlist">
-      <h2>Ready to stop saying "anywhere's fine"?</h2>
-      <p>The waitlist opens soon. We're not collecting emails yet, so there's nothing to type. Take the prototype for a spin?</p>
-      <a class="lp-btn lp-btn-wide" href="./app/">Try the prototype</a>
-      <form class="lp-form" onsubmit="return false">
-        <label class="lp-sr" for="lp-email">Email</label>
-        <input id="lp-email" type="email" placeholder="your email" disabled />
-        <button class="lp-btn" type="button" disabled>Waitlist opens soon</button>
-      </form>
+    <section class="final-sec">
+      <div class="wrap">
+        <div class="final">
+          <img src="./landing/v2/art/final.jpg" alt="A couple watching the city lights come on from a rooftop" loading="lazy" />
+          <div class="final-in">
+            <h2>Your next special<br />moment starts here.</h2>
+            <p>You bring the reason.<br />We'll help make it memorable.</p>
+            <span class="cta-wrap"><a class="cta lg" href="./app/"><span>Plan a moment</span><svg class="arr" width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><path d="M1 6h15M11 1l5 5-5 5" /></svg></a></span>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
-
-  <footer class="lp-footer">
-    <p class="lp-brand">milo<span class="lp-dot">.</span></p>
-    <p>Made in Bengaluru.</p>
-    <p class="lp-fine">Milo helps you plan. It doesn't decide for you.</p>
-    <p class="lp-fine">Privacy: your answers stay in your browser. Nothing is sent to a server.</p>
+  <footer class="foot-sec">
+    <div class="wrap">
+      <div class="foot">
+        <div class="foot-top">
+          <a class="logo light" href="#top" data-scroll="top" aria-label="milo, for moments that matter. Back to top"><img src="./landing/v2/art/logo.jpg" alt="milo. For moments that matter." /></a>
+          <nav class="fnav" aria-label="Footer">
+            <a href="#how-it-works" data-scroll="how-it-works">How it works</a>
+            <a href="#moments" data-scroll="moments">Moments</a>
+            <a href="#our-promise" data-scroll="our-promise">Our promise</a>
+            <span class="soc">
+              <span class="off" aria-hidden="true" title="Link not configured"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="1" /></svg></span>
+              <span class="off" aria-hidden="true" title="Link not configured"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16M20 4L4 20" /></svg></span>
+              <span class="off" aria-hidden="true" title="Link not configured"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="3.5" /><path d="M10 9.5v5l4.5-2.5z" /></svg></span>
+            </span>
+          </nav>
+        </div>
+        <div class="foot-bot">
+          <span>© 2026 <b>Milo</b>. All rights reserved.</span>
+          <span class="legal">
+            <span class="off" title="Policy page not configured yet">Privacy</span>
+            <span class="off" title="Policy page not configured yet">Terms</span>
+            <span class="off" title="Policy page not configured yet">Cookies</span>
+          </span>
+        </div>
+      </div>
+    </div>
   </footer>
 </body>
 </html>
