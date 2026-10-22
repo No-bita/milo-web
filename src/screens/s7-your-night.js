@@ -9,6 +9,7 @@ import { renderSoloNight, attachSoloNightListeners } from './solo-night.js';
 import { renderItinerary, attachItinerary } from '../components/itinerary.js';
 import { updateSlotAndRestore } from '../logic/slot-update.js';
 import { store } from '../domain/store.js';
+import { partnerLabel, monograms, hasPartnerName, escapeHtml, sentenceName } from '../logic/partner.js';
 import { computeSharedOutput } from '../logic/shared.js';
 import { renderNightTiming, attachNightTiming, timingForNight, timingLabel } from '../components/night-timing.js';
 function resolvedNight(night, state) {
@@ -20,7 +21,7 @@ function resolvedNight(night, state) {
 function planText(night, partnerName) {
   const steps = night.beats.map(b => b.name).join(' \u2192 ');
   const timing = timingForNight(night.id);
-  return `Our night with ${partnerName}: ${night.name}. ${steps}.${timing ? ` ${timingLabel(timing)}.` : ''}`;
+  return `Our night${!hasPartnerName(partnerName) ? '' : ` with ${partnerName}`}: ${night.name}. ${steps}.${timing ? ` ${timingLabel(timing)}.` : ''}`;
 }
 
 // "Start over" is demo scaffolding: only shown with ?demo
@@ -31,8 +32,8 @@ export function renderScreen07(sessionId = 'aarav') {
   const state = store.getState();
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
   const sessionData = state[sessionKey] || {};
-  const partnerName = sessionId === 'sneha' ? 'Aarav' : 'Sneha';
-  const partnerPickLabel = `${partnerName.toUpperCase()}'S PICK`;
+  const partnerName = partnerLabel(store.getState(), sessionId);
+  const partnerPickLabel = `${escapeHtml(partnerName.toUpperCase())}'S PICK`;
 
   const sharedData = computeSharedOutput(state.sessionA, state.sessionB);
   const activeNightId = sessionData.activeNightId || (sharedData.selectedNights[0]?.night.id || 'middle-ground');
@@ -60,8 +61,8 @@ export function renderScreen07(sessionId = 'aarav') {
 
         <div class="milo-closing-content">
           <div class="milo-closing-monograms">
-            <div class="milo-mono-circle mono-left">A</div>
-            <div class="milo-mono-circle mono-right">S</div>
+            <div class="milo-mono-circle mono-left">${monograms(store.getState(), sessionId)[0]}</div>
+            <div class="milo-mono-circle mono-right">${monograms(store.getState(), sessionId)[1]}</div>
           </div>
           <h1 class="milo-headline">You're both in.</h1>
           <p class="milo-closing-sub">${night.name}.</p>
@@ -97,7 +98,7 @@ export function renderScreen07(sessionId = 'aarav') {
     const nameStr = suggestedNight ? suggestedNight.name : 'a night';
     partnerBannerHtml = `
       <button type="button" class="milo-partner-banner" id="miloBannerOtherNight-${sessionId}">
-        <span>${partnerName} suggested ${nameStr}. Take a look.</span>
+        <span>${sentenceName(partnerName)} suggested ${nameStr}. Take a look.</span>
         <span class="milo-banner-arrow" aria-hidden="true">→</span>
       </button>
     `;
@@ -108,7 +109,7 @@ export function renderScreen07(sessionId = 'aarav') {
   if (isMyPick) {
     ctaAreaHtml = `
       <div class="milo-cta-suggested-notice">
-        Suggested. Check back here for ${partnerName}'s response. No notification will be sent.
+        Suggested. Check back here for ${escapeHtml(partnerName)}'s response. No notification will be sent.
       </div>
     `;
   } else if (isPartnerPick) {
@@ -126,7 +127,7 @@ export function renderScreen07(sessionId = 'aarav') {
   } else {
     ctaAreaHtml = `
       <button class="milo-cta-button" id="miloSuggestNight-${sessionId}">
-        Suggest this to ${partnerName}
+        Suggest this to ${escapeHtml(partnerName)}
       </button>
     `;
   }
@@ -244,7 +245,7 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
   if (shareBtn) {
     const closingNight = resolvedNight(sharedData.selectedNights.find(sn => sn.night.id === state.shared.confirmedNightId)?.night
       || sharedData.selectedNights[0].night, store.getState());
-    const partnerName = sessionId === 'sneha' ? 'Aarav' : 'Sneha';
+    const partnerName = partnerLabel(store.getState(), sessionId);
     attachNightTiming(container, closingNight.id, sessionId);
     if (shareBtn) {
       shareBtn.addEventListener('click', () => {

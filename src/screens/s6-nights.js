@@ -5,14 +5,14 @@
 // ==========================================================
 
 import { store } from '../domain/store.js';
-import { partnerLabel } from '../logic/partner.js';
+import { partnerLabel, escapeHtml } from '../logic/partner.js';
 import { computePlanningOutput, isSoloPlanning } from '../logic/planning.js';
 import { renderNightAccordion, attachNightAccordion } from '../components/night-accordion.js';
 
 export function renderScreen06(sessionId = 'aarav') {
   const state = store.getState();
-  const partnerName = sessionId === 'sneha' ? 'Aarav' : 'Sneha';
-  const partnerPickLabel = `${partnerName.toUpperCase()}'S PICK`;
+  const partnerName = partnerLabel(state, sessionId);
+  const partnerPickLabel = `${escapeHtml(partnerName.toUpperCase())}'S PICK`;
   const solo = isSoloPlanning(state, sessionId);
   const sharedData = computePlanningOutput(state, sessionId);
   const suggestion = solo ? null : state.shared.suggestion;
@@ -36,7 +36,7 @@ export function renderScreen06(sessionId = 'aarav') {
 
       <div class="milo-s6-intro">
         <h1 class="milo-headline">${solo ? 'Three nights, shaped by you' : 'Three nights for the two of you'}</h1>
-        ${solo ? `<p class="milo-subline">Your picks are the starting point. No partner input yet.</p><button type="button" class="milo-text-button milo-bring-in" id="miloBringIn-${sessionId}">Bring ${solo ? partnerLabel(state) : partnerName} in</button>` : ''}
+        ${solo ? `<p class="milo-subline">Your picks are the starting point. No partner input yet.</p><button type="button" class="milo-text-button milo-bring-in" id="miloBringIn-${sessionId}">Bring ${escapeHtml(solo ? partnerLabel(state) : partnerName)} in</button>` : ''}
       </div>
 
       <div class="milo-nights-list">

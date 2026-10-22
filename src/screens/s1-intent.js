@@ -7,20 +7,21 @@
 import { hasThreeMoods } from '../logic/mood-selection.js';
 import { INTENTS } from '../data/mockData.js';
 import { store } from '../domain/store.js';
+import { partnerLabel, hasPartnerName, sentenceName } from '../logic/partner.js';
 
 export function renderScreen01(sessionId = 'aarav') {
   const state = store.getState();
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
   const sessionData = state[sessionKey];
   const selectedIntents = sessionData.intents || [];
-  const partnerName = sessionData.partnerName;
+  const partnerName = partnerLabel(state, sessionId);
 
   const isCtaDisabled = !hasThreeMoods(selectedIntents);
 
   const contextLineHtml = sessionId === 'sneha'
     ? `
-      <div class="milo-context-line milo-context-line--lead">${partnerName}'s done. Your turn.</div>
-      <p class="milo-partner-context">${partnerName || 'Your partner'} invited you to plan tonight. Your picks stay private. About a minute.</p>
+      <div class="milo-context-line milo-context-line--lead">${hasPartnerName(partnerName) ? `${sentenceName(partnerName)}'s done.` : 'Your date is done.'} Your turn.</div>
+      <p class="milo-partner-context">${sentenceName(partnerName)} invited you to plan tonight. Your picks stay private. About a minute.</p>
     `
     : '';
 
