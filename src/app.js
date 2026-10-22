@@ -198,10 +198,12 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   if (isPhase1Enabled()) attachNetworkSync(store);
   // Plan state refreshes on app open and on return to the tab only - no timers,
   // no repeated checks while the screen stays open.
+  const onVisibilityRefresh = () => { if (document.visibilityState === 'visible') refreshPlan(); };
+  const onFocusRefresh = () => refreshPlan();
   if (isPhase1Enabled()) {
     refreshPlan();
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshPlan(); });
-    window.addEventListener('focus', () => refreshPlan());
+    document.addEventListener('visibilitychange', onVisibilityRefresh);
+    window.addEventListener('focus', onFocusRefresh);
   }
   // After sharing, the creator stays on their plan screen instead of the waiting screen.
   store.subscribe(() => {
@@ -422,6 +424,8 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   });
   return () => {
     stopRender(); detachHistory(); disposeSynthesis?.();
+    document.removeEventListener('visibilitychange', onVisibilityRefresh);
+    window.removeEventListener('focus', onFocusRefresh);
     const viewport = container.querySelector(`#viewport-${activeSessionId}`);
     viewport?.planningSheetCleanup?.(); viewport?.deckCleanup?.(); viewport?.inviteCleanup?.(); viewport?.thresholdCleanup?.();
   };
