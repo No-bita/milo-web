@@ -18,20 +18,21 @@ after(async()=>{await browser?.close();server?.kill();});
 async function open(width,path='/'){const page=await browser.newPage({viewport:{width,height:844}});page.setDefaultTimeout(6000);await page.route(/fonts\.(googleapis|gstatic)\.com/,r=>r.abort());await page.goto(origin+path);return page;}
 
 for(const width of [320,420,1280]){
-  test(`landing renders problem first, then solution, without sideways scroll (${width})`,async()=>{
+  test(`landing renders its sections in order, without sideways scroll (${width})`,async()=>{
     const p=await open(width);
     try{
-      await p.locator('.lp-hero h1').waitFor();
-      assert.match(await p.locator('.lp-hero h1').innerText(),/You picked the person\. Milo handles the plan\./);
-      const order=await p.locator('main > section h2').allInnerTexts();
-      assert.equal(order[0],'Sound familiar?');
-      assert.ok(order.indexOf('Meet milo.')>0,'problem sections come before Meet milo.');
-      assert.equal(await p.locator('.lp-scenes li').count(),6);
-      assert.equal(await p.locator('.lp-steps > li').count(),4);
-      assert.equal(await p.locator('.lp-phone-shot img').count(),5);
-      assert.equal(await p.locator('.lp-scenes li h3').count(),6);
-      assert.equal(await p.locator('.lp-phone .lp-bubble').count(),4);
-      const firstChat=await p.locator('.lp-chat .lp-phone').boundingBox();assert.ok(firstChat.width<=width,'chat mockup fits the viewport');
+      await p.locator('.hero h1').waitFor();
+      assert.match(await p.locator('.hero h1').innerText(),/You make/);
+      assert.match(await p.locator('.hero h1').innerText(),/them happen\./);
+      const ids=await p.locator('main > section').evaluateAll(els=>els.map(e=>e.id||e.className));
+      const at=(name)=>ids.findIndex(x=>x.includes(name));
+      assert.ok(at('top')===0,'hero comes first');
+      assert.ok(at('how-it-works')>at('top'),'how-it-works after hero');
+      assert.ok(at('moments')>at('how-it-works'),'moments after how-it-works');
+      assert.ok(at('our-promise')>at('moments'),'our-promise after moments');
+      assert.ok(at('faq')>at('our-promise'),'faq after our-promise');
+      assert.equal(await p.locator('.stages > li').count(),5);
+      assert.equal(await p.locator('.rail .occ').count(),5);
       const over=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       assert.ok(over<=0,'no horizontal overflow, got '+over);
       if(process.env.MILO_EVIDENCE_DIR)await p.screenshot({path:`${process.env.MILO_EVIDENCE_DIR}/landing-${width}.png`,fullPage:true});
@@ -39,31 +40,34 @@ for(const width of [320,420,1280]){
   });
 }
 
-test('waitlist is an honest placeholder: nothing to type, nothing stored',async()=>{
+test('landing collects no emails: no input and no form anywhere',async()=>{
   const p=await open(420);
   try{
-    assert.equal(await p.locator('#lp-email').isDisabled(),true);
-    assert.equal(await p.locator('.lp-form button').isDisabled(),true);
-    assert.match(await p.locator('#waitlist').innerText(),/not collecting emails/i);
+    assert.equal(await p.locator('input').count(),0);
+    assert.equal(await p.locator('form').count(),0);
   }finally{await p.close();}
 });
 
-test('landing never promises group plans, and names booking only as coming soon',async()=>{
+test('booking copy keeps the manual-vs-in-app distinction',async()=>{
   const p=await open(420);
   try{
-    const text=await p.locator('body').innerText();
-    assert.doesNotMatch(text,/group/i);
-    const booking=text.match(/[^.]*booking[^.]*\./gi)||[];
-    assert.ok(booking.length>0&&booking.every(s=>/coming soon|next/i.test(s)),'booking only appears as coming soon');
+    const faq=await p.locator('#faq').innerText();
+    assert.match(faq,/real people handle the bookings/i);
+    assert.match(faq,/In-app booking is not live yet/i);
+    assert.ok(!/you book it/i.test(faq),'retired self-booking claim is gone');
+    const body=await p.locator('body').innerText();
+    assert.ok(!/book(ing)? (is )?(now )?(live|available) in the app/i.test(body),'no in-app-booking-live claim');
   }finally{await p.close();}
 });
 
-test('landing CTAs go to the waitlist and the prototype opens at /app/',async()=>{
+
+test('every landing CTA opens the planner at /app/',async()=>{
   const p=await open(420);
   try{
-    assert.equal(await p.locator('.lp-hero .lp-btn').getAttribute('href'),'#waitlist');
-    assert.equal(await p.locator('.lp-hero .lp-link').getAttribute('href'),'./app/');
-    await p.locator('.lp-waitlist a[href="./app/"]').click();
+    const hrefs=await p.locator('a.cta:not(.outline)').evaluateAll(els=>els.map(e=>e.getAttribute('href')));
+    assert.ok(hrefs.length>=4,'expected at least 4 CTAs, got '+hrefs.length);
+    assert.ok(hrefs.every(h=>h==='./app/'),'every CTA goes to ./app/, got '+hrefs.join(' | '));
+    await p.locator('.hero a.cta').first().click();
     await p.waitForURL(/\/app\/$/);
     await p.locator('.milo-first-open, .milo-home').first().waitFor();
   }finally{await p.close();}

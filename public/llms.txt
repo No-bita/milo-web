@@ -2,7 +2,7 @@
 
 > Milo plans a night out. Tell Milo the mood, and Milo shapes the plan. Milo is an early prototype and Bengaluru-first.
 
-Milo is not a dating app. Booking and reminders are coming soon. Milo does not take payments.
+Milo is not a dating app. Bookings and on-ground support are handled by real people. In-app booking and reminders are not live yet. Milo does not take payments.
 
 ## Pages
 
