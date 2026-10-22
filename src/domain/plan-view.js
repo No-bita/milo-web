@@ -25,16 +25,22 @@ const withTimeout = (promise) => Promise.race([
 // Completed actions bump the sequence so a slow GET that started earlier cannot
 // overwrite their fresher view; a seat change mid-flight drops the response too.
 let actionSeq = 0;
+// Overlapping reads (visibilitychange and focus can fire together) resolve out
+// of order: apply only the newest GET's response so an older snapshot cannot
+// overwrite a newer one.
+let getSeq = 0;
 
 export async function refreshPlan() {
   const seat = readSeat();
   if (!seat) return { ok: false, reason: 'no_seat' };
   const seqAtStart = actionSeq;
+  const getAtStart = ++getSeq;
   const result = await withTimeout(api('GET', `/api/plans/${seat.planId}`, { seatKey: seat.seatKey }));
   if (!result.ok) return result;
   const seatNow = readSeat();
   if (!seatNow || seatNow.planId !== seat.planId || seatNow.seatKey !== seat.seatKey) return { ok: false, reason: 'seat_changed' };
   if (actionSeq !== seqAtStart) return { ok: false, reason: 'stale_after_action' };
+  if (getSeq !== getAtStart) return { ok: false, reason: 'superseded_get' };
   applyPlanView(result.data, seat);
   return result;
 }
