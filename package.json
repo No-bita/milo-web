@@ -13,9 +13,11 @@
     "facts": "node scripts/landing-facts.mjs"
   },
   "dependencies": {
+    "pg": "^8.23.1",
     "vite": "^6.0.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
     "playwright": "1.64.0"
   }
 }
