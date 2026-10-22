@@ -3,6 +3,8 @@ import { store } from '../domain/store.js';
 import { createInvite, validateInvite } from '../domain/invite.js';
 
 export function inviteUrl() {
+  const server = store.getState().shared.serverInviteUrl; // set by the network adapter when Phase 1 is on
+  if (server) return server;
   let token = store.getState().shared.inviteToken;
   if (validateInvite(token) !== 'valid') {
     token = createInvite();
