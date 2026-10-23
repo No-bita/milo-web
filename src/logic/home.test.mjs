@@ -34,8 +34,14 @@ test('confirmed night wins over a draft', () => {
   assert.equal(homeSummary(s).kind, 'confirmed');
 });
 
-test('a user mid-journey with no plan resumes where they were', () => {
+test('a user mid-journey still opens Home, with a resume card for the saved step', () => {
   const s = fresh();
   s.sessionA.screen = 's3';
-  assert.equal(shouldShowHome(s), false);
+  s.sessionA.reactions = [{ cardId: 'tiny-bar', reaction: 'into_it' }];
+  s.sessionA.pausedScreen = 's3';
+  assert.equal(shouldShowHome(s), true);
+  const h = homeSummary(s);
+  assert.equal(h.kind, 'in-progress');
+  assert.equal(h.ratedCount, 1);
+  assert.equal(h.resumeStep, 's3');
 });
