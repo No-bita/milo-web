@@ -40,7 +40,7 @@ export async function api(method, path, { body, seatKey } = {}) {
 // Initiator: create the plan once and keep the server's invite link.
 export async function ensureServerInvite(store) {
   const shared = store.getState().shared;
-  if (shared.serverInviteUrl && readSeat()) return { ok: true };
+  if (!store.getState().sessionA.localOnlyPlan && shared.serverInviteUrl && readSeat()) return { ok: true };
   const { name, partnerName } = store.getState().sessionA;
   const me = cleanName(name);
   if (!me) return { ok: false, reason: 'invalid' };
@@ -50,7 +50,8 @@ export async function ensureServerInvite(store) {
   } });
   if (!result.ok) return result;
   saveSeat({ planId: result.data.plan_id, seatKey: result.data.seat_key, role: 'initiator' });
-  store.updateShared({ serverInviteUrl: result.data.invite_url });
+  store.updateShared({ serverInviteUrl: result.data.invite_url, serverResult: null, serverResultPlanId: null, suggestion: null, confirmedNightId: null, partnerJoined: false, partnerFinished: false, planStatus: null });
+  store.updateSession('aarav', { localOnlyPlan: false });
   return { ok: true };
 }
 
@@ -89,7 +90,9 @@ export function attachNetworkSync(store) {
   const send = async () => {
     const seat = readSeat();
     if (!seat) return;
-    const payload = payloadFor(store.getState()[seat.role === 'partner' ? 'sessionB' : 'sessionA']);
+    const half = store.getState()[seat.role === 'partner' ? 'sessionB' : 'sessionA'];
+    if (store.getState().sessionA.localOnlyPlan || half.localOnlyPlan) return;
+    const payload = payloadFor(half);
     if (hydratedFor !== seat.seatKey) {
       const current = await api('GET', `/api/plans/${seat.planId}`, { seatKey: seat.seatKey });
       if (!current.ok) { if (current.reason === 'unreachable') retry(); return; }
@@ -100,6 +103,8 @@ export function attachNetworkSync(store) {
       const localEmpty = !payload.intents.length && !payload.reactions.length;
       if (localEmpty && (saved.intents.length || saved.reactions.length)) return;
     }
+    // Hydration may finish after a new local journey has started.
+    if (store.getState().sessionA.localOnlyPlan || store.getState()[seat.role === 'partner' ? 'sessionB' : 'sessionA'] !== half) return;
     const serial = JSON.stringify(payload);
     if (serial === lastSent) return;
     const result = await api('PUT', `/api/plans/${seat.planId}/me`, { body: payload, seatKey: seat.seatKey });

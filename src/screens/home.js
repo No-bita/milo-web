@@ -92,7 +92,7 @@ export function attachHomeListeners(container, sessionId = 'aarav') {
   attachTabBar(container, sessionId);
   const summary = homeSummary(store.getState());
   container.querySelectorAll('.milo-home-occ').forEach((tile) => {
-    tile.addEventListener('click', () => store.setSessionScreen(sessionId, 's1'));
+    tile.addEventListener('click', () => store.startFreshPlan(sessionId));
   });
   container.querySelector('#miloHomeResume')?.addEventListener('click', () => {
     store.setSessionScreen(sessionId, summary.resumeStep || 's2');

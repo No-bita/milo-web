@@ -16,7 +16,7 @@ ${renderTabBar('plan')}
 export function attachPlanListeners(container, sessionId = 'aarav') {
   attachTabBar(container, sessionId);
   container.querySelectorAll('.milo-plan-card').forEach(card => {
-    card.addEventListener('click', () => store.setSessionScreen(sessionId, 's1'));
+    card.addEventListener('click', () => store.startFreshPlan(sessionId));
   });
   const trigger = container.querySelector('#miloPlanCity');
   const dropdown = container.querySelector('#miloPlanCities');

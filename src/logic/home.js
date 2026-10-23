@@ -6,9 +6,9 @@ const nightName = (id) => NIGHTS_POOL.find((night) => night.id === id)?.name || 
 // What the homepage should show for the owner (aarav). Pure: takes the store state.
 export function homeSummary(state) {
   const a = state.sessionA;
-  const invited = isInvited(state);
+  const invited = !a.localOnlyPlan && isInvited(state);
   const partner = partnerLabel(state);
-  const shared = state.shared || {};
+  const shared = a.localOnlyPlan ? {} : state.shared || {};
   if (shared.confirmedNightId) {
     return { kind: 'confirmed', nightId: shared.confirmedNightId, planName: nightName(shared.confirmedNightId), partner, planStatus: 'Both of you are in', partnerStatus: `${partner} is in`, action: 'open-plan' };
   }

@@ -7,7 +7,7 @@ import { store } from './store.js';
 import { api, readSeat, isPhase1Enabled } from './network-adapter.js';
 import { NIGHTS_POOL } from '../data/mockData.js';
 
-export const hasServerSeat = () => isPhase1Enabled() && Boolean(readSeat());
+export const hasServerSeat = () => isPhase1Enabled() && !store.getState().sessionA.localOnlyPlan && Boolean(readSeat());
 
 // Server roles map to the local session ids: the initiator's phone is session A,
 // the invited partner's phone is session B.
@@ -31,6 +31,7 @@ let actionSeq = 0;
 let getSeq = 0;
 
 export async function refreshPlan() {
+  if (store.getState().sessionA.localOnlyPlan) return { ok: false, reason: 'local_plan' };
   const seat = readSeat();
   if (!seat) return { ok: false, reason: 'no_seat' };
   const seqAtStart = actionSeq;
@@ -38,6 +39,7 @@ export async function refreshPlan() {
   const result = await withTimeout(api('GET', `/api/plans/${seat.planId}`, { seatKey: seat.seatKey }));
   if (!result.ok) return result;
   const seatNow = readSeat();
+  if (store.getState().sessionA.localOnlyPlan) return { ok: false, reason: 'local_plan' };
   if (!seatNow || seatNow.planId !== seat.planId || seatNow.seatKey !== seat.seatKey) return { ok: false, reason: 'seat_changed' };
   if (actionSeq !== seqAtStart) return { ok: false, reason: 'stale_after_action' };
   if (getSeq !== getAtStart) return { ok: false, reason: 'superseded_get' };
@@ -106,7 +108,7 @@ export function applyPlanView(view, seat = readSeat()) {
 // anything older falls back to the local synthesis.
 export function currentPlanResult(state) {
   const seat = readSeat();
-  if (!isPhase1Enabled() || !seat) return null;
+  if (!hasServerSeat() || !seat) return null;
   const result = state.shared.serverResult;
   if (!result || state.shared.serverResultPlanId !== seat.planId) return null;
   return result;
