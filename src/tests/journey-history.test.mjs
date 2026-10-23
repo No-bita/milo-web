@@ -24,16 +24,21 @@ for (const width of [320,420]) for (const actor of ['aarav','sneha']) {
 test('deck Back cancels pending reaction before undoing last saved vote',async()=>{const{page:p,context}=await setup(420,'?screen=s2');try{await p.locator('#btnMaybe-aarav').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('milo_prototype_v1_state')).sessionA.currentCardIndex===1);await p.locator('#btnIntoIt-aarav').click();await p.goBack();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('milo_prototype_v1_state')).sessionA.currentCardIndex===0);await p.waitForTimeout(400);const s=await state(p);assert.equal(s.sessionA.screen,'s2');assert.deepEqual(s.sessionA.reactions,[]);}finally{await context.close();}});
 test('no uncaught errors across history flows',()=>assert.deepEqual(errors,[]));
 
-test('mid-deck reload retains inputs, reactions and first-card Back route',async()=>{
+test('mid-deck reload opens Home; Resume returns to the saved deck step',async()=>{
  const{page:p,context}=await setup(420,'?screen=s2');
  try{
   await p.locator('#btnMaybe-aarav').click();
   await p.waitForFunction(()=>JSON.parse(localStorage.getItem('milo_prototype_v1_state')).sessionA.currentCardIndex===1);
   const saved=await state(p);
-  await p.reload();await p.locator('#btnMaybe-aarav').waitFor();await screen(p,'s2');
+  await p.reload();await p.locator('#miloHomeResume').waitFor();
   const restored=await state(p);
-  assert.deepEqual(restored.sessionA,saved.sessionA);assert.deepEqual(restored.shared,saved.shared);
+  assert.equal(restored.sessionA.screen,'home');
+  assert.equal(restored.sessionA.pausedScreen,'s2');
+  assert.deepEqual(restored.sessionA.reactions,saved.sessionA.reactions);assert.deepEqual(restored.shared,saved.shared);
+  await p.locator('#miloHomeResume').click();await screen(p,'s2');await p.locator('#btnMaybe-aarav').waitFor();
+  const resumed=await state(p);
+  assert.equal(resumed.sessionA.currentCardIndex,1);assert.deepEqual(resumed.sessionA.reactions,saved.sessionA.reactions);
   await p.goBack();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('milo_prototype_v1_state')).sessionA.currentCardIndex===0);
-  await p.goBack();await screen(p,'s1');
+  await p.goBack();await screen(p,'home');
  }finally{await context.close();}
 });

@@ -18,11 +18,15 @@ export function homeSummary(state) {
   if (shared.inviteSent) {
     return { kind: 'waiting', nightId: null, planName: 'Your night with ' + partner, partner, planStatus: `Waiting for ${partner}`, partnerStatus: `Invite sent. Waiting for ${partner}`, action: 'open-waiting' };
   }
+  const ratedCount = (a.reactions || []).length;
+  const started = ratedCount > 0 || (a.intents || []).length > 0 || !!a.planningMode;
+  if (started) {
+    return { kind: 'in-progress', invited, nightId: null, planName: 'Your night', partner, planStatus: 'Picks saved on this phone', partnerStatus: null, ratedCount, resumeStep: a.pausedScreen || (ratedCount > 0 ? 's2' : 's1'), action: 'resume' };
+  }
   return { kind: 'fresh', invited, nightId: null, planName: null, partner, planStatus: null, partnerStatus: null, action: null };
 }
 
-// Show the homepage when the user has a plan, or has not started a night yet.
-export function shouldShowHome(state) {
-  const summary = homeSummary(state);
-  return summary.kind !== 'fresh' || state.sessionA.screen === 's1';
+// Home opens on every ordinary open; a mid-journey plan resumes from its card.
+export function shouldShowHome() {
+  return true;
 }

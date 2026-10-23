@@ -10,6 +10,18 @@ function greeting(date = new Date()) {
   return hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 }
 
+function resumeCard(summary) {
+  return `<section class="milo-home-card" aria-label="Your plan in progress">
+    <p class="milo-home-label">IN PROGRESS</p>
+    <h2 class="milo-home-plan">Your night</h2>
+    ${summary.ratedCount > 0 ? `<p class="milo-home-when">${summary.ratedCount} of 8 ideas rated</p>` : ''}
+    <div class="milo-home-card-foot">
+      <span>Picks saved on this phone</span>
+      <button class="milo-home-link" type="button" id="miloHomeResume">Resume <span aria-hidden="true">&#8250;</span></button>
+    </div>
+  </section>`;
+}
+
 function planCard(summary, state) {
   const timing = summary.nightId ? timingForNight(summary.nightId, { solo: summary.kind === 'draft' }) : null;
   const when = timing ? timingLabel(timing) : 'Time not set yet';
@@ -29,11 +41,15 @@ export function renderHome(sessionId = 'aarav') {
   const state = store.getState();
   const summary = homeSummary(state);
   const fresh = summary.kind === 'fresh';
+  const resuming = summary.kind === 'in-progress';
   const partner = escape(summary.partner);
-  const alone = !fresh && summary.invited === false;
-  const headline = fresh ? 'A quiet week' : alone ? 'Your night' : `Your night with ${partner}`;
-  const lead = fresh ? '<p class="milo-home-lead">Pick a mood and Milo does the rest.</p>' : '';
-  const body = fresh
+  const alone = !fresh && !resuming && summary.invited === false;
+  const headline = fresh || resuming ? 'A quiet week' : alone ? 'Your night' : `Your night with ${partner}`;
+  const lead = fresh || resuming ? '<p class="milo-home-lead">Pick a mood and Milo does the rest.</p>' : '';
+  const body = resuming
+    ? `${resumeCard(summary)}
+       <div class="milo-home-row"><span class="milo-home-avatar milo-home-avatar-plus" aria-hidden="true">+</span><div><b>Invite your person</b><span>Plan together. Both of you say yes.</span></div></div>`
+    : fresh
     ? `<section class="milo-home-card milo-home-card-empty" aria-label="Your plan"><p>Nothing on yet. Want to plan something?</p></section>
        <div class="milo-home-row"><span class="milo-home-avatar milo-home-avatar-plus" aria-hidden="true">+</span><div><b>Invite your person</b><span>Plan together. Both of you say yes.</span></div></div>`
     : alone
@@ -66,6 +82,9 @@ export function renderHome(sessionId = 'aarav') {
 export function attachHomeListeners(container, sessionId = 'aarav') {
   attachTabBar(container, sessionId);
   const summary = homeSummary(store.getState());
+  container.querySelector('#miloHomeResume')?.addEventListener('click', () => {
+    store.setSessionScreen(sessionId, summary.resumeStep || 's2');
+  });
   container.querySelector('#miloHomeOpen')?.addEventListener('click', () => {
     if (summary.action === 'open-waiting') store.setSessionScreen(sessionId, 's4_waiting');
     else store.updateSession(sessionId, { screen: 's7', activeNightId: summary.nightId });
