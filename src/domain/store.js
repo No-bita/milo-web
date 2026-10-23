@@ -185,6 +185,15 @@ class DomainStore {
     this._emit();
   }
 
+  // Explicit new-plan entry resets this journey only; Resume never calls this.
+  startFreshPlan(sessionId) {
+    this.updateSession(sessionId, {
+      intents: [], reactions: [], currentCardIndex: 0,
+      pausedScreen: null, activeNightId: null, savedSoloNightId: null,
+      soloTimingStep: null, planningMode: 'solo', localOnlyPlan: true, screen: 's1'
+    });
+  }
+
   setSessionScreen(sessionId, screen) {
     const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
     this.state = {
