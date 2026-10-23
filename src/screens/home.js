@@ -87,6 +87,7 @@ export function attachHomeListeners(container, sessionId = 'aarav') {
   });
   container.querySelector('#miloHomeOpen')?.addEventListener('click', () => {
     if (summary.action === 'open-waiting') store.setSessionScreen(sessionId, 's4_waiting');
+    else if (summary.action === 'open-together') store.setSessionScreen(sessionId, 's5');
     else store.updateSession(sessionId, { screen: 's7', activeNightId: summary.nightId });
   });
 }
