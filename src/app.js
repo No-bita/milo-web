@@ -327,8 +327,13 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   const legacyPlanningPath = store.getState()[asParam === 'sneha' ? 'sessionB' : 'sessionA'].screen === 'planning_path';
   if (legacyPlanningPath) store.setSessionScreen(asParam === 'sneha' ? 'sneha' : 'aarav', 'home');
 
-  // Open on the homepage unless a link or invite points somewhere specific.
+  // Open on the homepage on every ordinary open; a mid-journey plan keeps its
+  // step in pausedScreen so Home's Resume card returns to the exact saved step.
   if (!screenParam && isGolden !== '1' && asParam !== 'sneha' && inviteStatus !== 'valid' && shouldShowHome(store.getState())) {
+    const sessA = store.getState().sessionA;
+    if (['s1', 'threshold', 's2', 's3', 's4_invite'].includes(sessA.screen) && ((sessA.intents || []).length > 0 || (sessA.reactions || []).length > 0 || sessA.planningMode)) {
+      store.updateSession('aarav', { pausedScreen: sessA.screen });
+    }
     store.setSessionScreen('aarav', 'home');
   }
 
