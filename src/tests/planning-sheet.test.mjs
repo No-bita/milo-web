@@ -15,20 +15,23 @@ before(async () => {
 });
 after(async () => { await browser?.close(); server?.kill(); });
 const state = p => p.evaluate(k => JSON.parse(localStorage.getItem(k)), key);
+// Occasions now start on Home and the Plan tab is gone; the planning-choices
+// sheet keeps its legacy entry route (?screen=planning_path) over Home.
+// Dismissal no longer returns focus to a tab (legacy opener has no trigger
+// element), so focus falls back to the document body.
 for (const width of [320, 420, 1024]) {
-  test(`Plan choices overlay, dismissal and both continuations (${width})`, async () => {
-    const context = await browser.newContext({ viewport: { width, height: 844 }, reducedMotion: 'reduce' });
-    await context.addInitScript(() => { localStorage.setItem('milo_intro_seen_v1', '1'); window.open = () => { throw Error('No external invite expected'); }; });
-    const page = await context.newPage(); page.setDefaultTimeout(6000);
-    const errors = []; page.on('pageerror', e => errors.push(e.message));
-    try {
-      await page.goto(origin); await page.locator('.milo-home').waitFor();
-      const initial = await state(page);
-      const plan = page.locator('[data-tab=plan]');
-      for (const dismiss of ['close', 'escape', 'backdrop', 'back']) {
-        await plan.click();
+  for (const dismiss of ['close', 'escape', 'backdrop', 'back']) {
+    test(`Planning choices overlay via legacy route, ${dismiss} dismissal (${width})`, async () => {
+      const context = await browser.newContext({ viewport: { width, height: 844 }, reducedMotion: 'reduce' });
+      await context.addInitScript(() => { localStorage.setItem('milo_intro_seen_v1', '1'); window.open = () => { throw Error('No external invite expected'); }; });
+      const page = await context.newPage(); page.setDefaultTimeout(6000);
+      const errors = []; page.on('pageerror', e => errors.push(e.message));
+      try {
+        await page.goto(origin + '?screen=planning_path');
         const dialog = page.locator('.milo-planning-sheet'); await dialog.waitFor();
-        assert.equal((await state(page)).sessionA.screen, 'home');
+        await page.locator('.milo-home').waitFor();
+        const initial = await state(page);
+        assert.equal(initial.sessionA.screen, 'home');
         assert.equal(await page.locator('[data-planning-mode=solo]').getAttribute('aria-pressed'), 'true');
         await page.locator('[data-planning-mode=together]').click();
         assert.deepEqual(await state(page), initial, 'Selecting without Continue must not mutate state');
@@ -44,10 +47,21 @@ for (const width of [320, 420, 1024]) {
         await dialog.waitFor({ state: 'detached' });
         await page.waitForFunction(() => history.state.miloJourney.kind === 'route');
         assert.deepEqual(await state(page), initial);
-        assert.equal(await plan.evaluate(el => el === document.activeElement), true);
-      }
-      for (const mode of ['solo', 'together']) {
-        await plan.click(); await page.locator(`[data-planning-mode=${mode}]`).click();
+        assert.equal(await page.evaluate(() => document.activeElement === document.body), true, 'Focus falls back to body (no opener tab)');
+        assert.equal(errors.length, 0);
+      } finally { await context.close(); }
+    });
+  }
+  for (const mode of ['solo', 'together']) {
+    test(`Planning choices continuation ${mode} via legacy route (${width})`, async () => {
+      const context = await browser.newContext({ viewport: { width, height: 844 }, reducedMotion: 'reduce' });
+      await context.addInitScript(() => { localStorage.setItem('milo_intro_seen_v1', '1'); window.open = () => { throw Error('No external invite expected'); }; });
+      const page = await context.newPage(); page.setDefaultTimeout(6000);
+      const errors = []; page.on('pageerror', e => errors.push(e.message));
+      try {
+        await page.goto(origin + '?screen=planning_path');
+        await page.locator('.milo-planning-sheet').waitFor();
+        await page.locator(`[data-planning-mode=${mode}]`).click();
         if (process.env.MILO_EVIDENCE_DIR) {
           await mkdir(process.env.MILO_EVIDENCE_DIR, { recursive: true });
           await page.screenshot({ path: `${process.env.MILO_EVIDENCE_DIR}/planning-${mode}-${width}.png` });
@@ -63,10 +77,10 @@ for (const width of [320, 420, 1024]) {
         await page.goBack(); await page.locator('.milo-s1-container').waitFor();
         await page.goBack(); await page.locator('.milo-home').waitFor();
         assert.equal(await page.locator('dialog').count(), 0);
-      }
-      assert.deepEqual(errors, []);
-    } finally { await context.close(); }
-  });
+        assert.equal(errors.length, 0);
+      } finally { await context.close(); }
+    });
+  }
 }
 test('legacy planning fork link opens choices over Home', async () => {
   const page = await browser.newPage();
