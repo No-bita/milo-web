@@ -31,6 +31,8 @@ import { renderRequests, attachRequestsListeners } from './screens/requests.js';
 import { renderBooked, attachBookedListeners } from './screens/booked.js';
 import { renderGroupSoon, attachGroupSoonListeners } from './screens/group-soon.js';
 import { renderSealedWaiting, attachSealedWaitingListeners } from './screens/sealed-waiting.js';
+import { planScreenApplies, renderPlanScreen, attachPlanScreenListeners } from './screens/plan-screen.js';
+import { refreshPlan } from './domain/plan-view.js';
 
 // Partner A waits on the sealed screen until the partner's half lands.
 function showSealedWaiting() {
@@ -62,6 +64,9 @@ function renderSessionContent(sessionId) {
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
   const sessionData = state[sessionKey] || {};
   const screen = sessionData.screen || (sessionId === 'sneha' ? (state.shared.inviteSent ? 's0' : 's0') : 's1');
+
+  // Phase 1 together: the creator's post-share screens render as the plan screen.
+  if (planScreenApplies(sessionId, screen)) return renderPlanScreen(sessionId);
 
   switch (screen) {
     case 's0':
@@ -109,6 +114,8 @@ function attachSessionListeners(container, sessionId) {
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
   const sessionData = state[sessionKey] || {};
   const screen = sessionData.screen || (sessionId === 'sneha' ? 's0' : 's1');
+
+  if (planScreenApplies(sessionId, screen)) { attachPlanScreenListeners(container, sessionId); return; }
 
   switch (screen) {
     case 's0':
@@ -189,6 +196,21 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
     return;
   }
   if (isPhase1Enabled()) attachNetworkSync(store);
+  // Plan state refreshes on app open and on return to the tab only - no timers,
+  // no repeated checks while the screen stays open.
+  const onVisibilityRefresh = () => { if (document.visibilityState === 'visible') refreshPlan(); };
+  const onFocusRefresh = () => refreshPlan();
+  if (isPhase1Enabled()) {
+    refreshPlan();
+    document.addEventListener('visibilitychange', onVisibilityRefresh);
+    window.addEventListener('focus', onFocusRefresh);
+  }
+  // After sharing, the creator stays on their plan screen instead of the waiting screen.
+  store.subscribe(() => {
+    if (store.getState().sessionA.screen === 's4_waiting' && planScreenApplies('aarav', 's4_waiting')) {
+      store.setSessionScreen('aarav', 's7');
+    }
+  });
 
   const inviteStatus = inviteFromParams(urlParams);
   if (inviteStatus === 'invalid' || inviteStatus === 'expired') {
@@ -402,6 +424,8 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   });
   return () => {
     stopRender(); detachHistory(); disposeSynthesis?.();
+    document.removeEventListener('visibilitychange', onVisibilityRefresh);
+    window.removeEventListener('focus', onFocusRefresh);
     const viewport = container.querySelector(`#viewport-${activeSessionId}`);
     viewport?.planningSheetCleanup?.(); viewport?.deckCleanup?.(); viewport?.inviteCleanup?.(); viewport?.thresholdCleanup?.();
   };
