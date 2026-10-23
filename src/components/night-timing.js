@@ -1,5 +1,7 @@
-// Frontend timing contract. Replace the shared.timing write with server coordination later.
+// Frontend timing contract. The shared write also reaches the server so both
+// phones see the agreed time; solo timings stay local to this device.
 import { store } from '../domain/store.js';
+import { postPlanTiming } from '../domain/plan-view.js';
 import { defaultStart, buildDateStrip, isPastStart, to24h, from24h, disabledTimes, toDateKey } from '../logic/timing-picker.js';
 
 const STRIP_DAYS = 14;
@@ -89,7 +91,11 @@ export function attachNightTiming(container, nightId, sessionId, { solo = false 
     const scroll = container.querySelector('.milo-s7-container')?.scrollTop || 0;
     const timing = { version: 1, nightId, date: date.value, time: time.value, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Device local time', startAt: start.toISOString(), chosenBy: sessionId };
     if (solo) store.updateSession(sessionId, { soloTimings: { ...store.getState().sessionA.soloTimings, [nightId]: timing } });
-    else store.updateShared({ timing });
+    else {
+      store.updateShared({ timing });
+      // Best effort: the local save stands even if the server write fails.
+      postPlanTiming(timing).catch(() => {});
+    }
     // The store renders synchronously. Restore position and focus in the replacement view.
     const replacement = document.querySelector(`#viewport-${sessionId}`);
     replacement?.querySelector('.milo-s7-container')?.scrollTo(0, scroll);
