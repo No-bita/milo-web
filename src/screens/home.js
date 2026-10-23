@@ -2,6 +2,7 @@ import { store } from '../domain/store.js';
 import { homeSummary } from '../logic/home.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
 import { renderTabBar, attachTabBar } from '../components/tab-bar.js';
+import { OCCASIONS } from '../data/occasions.js';
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -37,6 +38,11 @@ function planCard(summary, state) {
   </section>`;
 }
 
+// Compact occasion grid: the six occasions start directly on Home.
+function occasionGrid() {
+  return `<ul class="milo-home-occ-grid" aria-label="Occasions">${OCCASIONS.map((occasion, index) => `<li><button type="button" class="milo-home-occ milo-home-occ-${index + 1}"><svg class="milo-home-occ-art" viewBox="0 0 80 64" aria-hidden="true">${occasion.art}</svg><span class="milo-home-occ-name">${occasion.name}</span><span class="milo-home-occ-sub">${occasion.compactSub}</span></button></li>`).join('')}</ul>`;
+}
+
 export function renderHome(sessionId = 'aarav') {
   const state = store.getState();
   const summary = homeSummary(state);
@@ -44,18 +50,21 @@ export function renderHome(sessionId = 'aarav') {
   const resuming = summary.kind === 'in-progress';
   const partner = escape(summary.partner);
   const alone = !fresh && !resuming && summary.invited === false;
-  const headline = fresh || resuming ? 'A quiet week' : alone ? 'Your night' : `Your night with ${partner}`;
-  const lead = fresh || resuming ? '<p class="milo-home-lead">Pick a mood and Milo does the rest.</p>' : '';
+  const headline = fresh ? 'What are you planning?' : resuming ? 'A quiet week' : alone ? 'Your night' : `Your night with ${partner}`;
+  const lead = resuming ? '<p class="milo-home-lead">Pick a mood and Milo does the rest.</p>' : '';
   const body = resuming
     ? `${resumeCard(summary)}
+       ${occasionGrid()}
        <div class="milo-home-row"><span class="milo-home-avatar milo-home-avatar-plus" aria-hidden="true">+</span><div><b>Invite your person</b><span>Plan together. Both of you say yes.</span></div></div>`
     : fresh
-    ? `<section class="milo-home-card milo-home-card-empty" aria-label="Your plan"><p>Nothing on yet. Want to plan something?</p></section>
+    ? `${occasionGrid()}
        <div class="milo-home-row"><span class="milo-home-avatar milo-home-avatar-plus" aria-hidden="true">+</span><div><b>Invite your person</b><span>Plan together. Both of you say yes.</span></div></div>`
     : alone
     ? `${planCard(summary, state)}
+       ${occasionGrid()}
        <div class="milo-home-row"><span class="milo-home-avatar milo-home-avatar-plus" aria-hidden="true">+</span><div><b>Bring your person in</b><span>Whenever you're ready.</span></div></div>`
     : `${planCard(summary, state)}
+       ${occasionGrid()}
        <div class="milo-home-row"><span class="milo-home-avatar" aria-hidden="true">${escape(summary.partner.charAt(0).toUpperCase())}</span><div><b>${partner}</b><span>${escape(summary.partnerStatus)}</span></div></div>`;
   return `<div class="milo-home milo-tabscreen" data-session-id="${sessionId}">
     <header class="milo-header milo-home-header">
@@ -63,7 +72,7 @@ export function renderHome(sessionId = 'aarav') {
         <button class="milo-home-place-btn" type="button" id="miloHomePlace" aria-label="Change place: Home">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
           <span>Home</span>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
         </button>
         <p class="milo-home-address">HSR Layout, Bengaluru</p>
       </div>
@@ -82,11 +91,15 @@ export function renderHome(sessionId = 'aarav') {
 export function attachHomeListeners(container, sessionId = 'aarav') {
   attachTabBar(container, sessionId);
   const summary = homeSummary(store.getState());
+  container.querySelectorAll('.milo-home-occ').forEach((tile) => {
+    tile.addEventListener('click', () => store.setSessionScreen(sessionId, 's1'));
+  });
   container.querySelector('#miloHomeResume')?.addEventListener('click', () => {
     store.setSessionScreen(sessionId, summary.resumeStep || 's2');
   });
   container.querySelector('#miloHomeOpen')?.addEventListener('click', () => {
     if (summary.action === 'open-waiting') store.setSessionScreen(sessionId, 's4_waiting');
+    else if (summary.action === 'open-together') store.setSessionScreen(sessionId, 's5');
     else store.updateSession(sessionId, { screen: 's7', activeNightId: summary.nightId });
   });
 }
