@@ -1,8 +1,8 @@
 import { store } from '../domain/store.js';
 
+// Occasions start on Home, so there is no Plan tab. The Plan screen itself stays.
 const TABS = [
   { id: 'home', label: 'Home', icon: 'M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z' },
-  { id: 'plan', label: 'Plan', icon: 'M12 5v14M5 12h14' },
   { id: 'nights', label: 'Nights', icon: 'M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z' },
   { id: 'you', label: 'You', icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 20a8 8 0 0 1 16 0' }
 ];
