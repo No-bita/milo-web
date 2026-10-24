@@ -26,6 +26,7 @@ import { renderPlan, attachPlanListeners } from './screens/plan.js';
 import { renderHome, attachHomeListeners } from './screens/home.js';
 import { renderNights, attachNightsListeners } from './screens/nights-tab.js';
 import { renderYou, attachYouListeners } from './screens/you-tab.js';
+import { renderLogin, attachLoginListeners } from './screens/login.js';
 import { shouldShowHome } from './logic/home.js';
 import { renderRequests, attachRequestsListeners } from './screens/requests.js';
 import { renderBooked, attachBookedListeners } from './screens/booked.js';
@@ -95,6 +96,8 @@ function renderSessionContent(sessionId) {
       return renderNights(sessionId);
     case 'you':
       return renderYou(sessionId);
+    case 'login':
+      return renderLogin(sessionId);
     case 'group':
       return renderGroupSoon(sessionId);
     case 'requests':
@@ -158,6 +161,9 @@ function attachSessionListeners(container, sessionId) {
       break;
     case 'you':
       attachYouListeners(container, sessionId);
+      break;
+    case 'login':
+      attachLoginListeners(container, sessionId);
       break;
     case 'group':
       attachGroupSoonListeners(container, sessionId);
@@ -320,6 +326,8 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
       });
       store.updateSession('aarav', { screen: 's7' });
       store.updateSession('sneha', { screen: 's7' });
+    } else if (['login', 'you', 'home', 'nights', 'plan', 'requests', 'group'].includes(screenParam)) {
+      store.setSessionScreen(asParam === 'sneha' ? 'sneha' : 'aarav', screenParam);
     }
   }
 

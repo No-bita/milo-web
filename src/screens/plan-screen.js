@@ -192,7 +192,9 @@ function renderAgreed(state, sessionId, confirmedId) {
       </div>
       <div class="milo-closing-footer">
         <button class="milo-pill-btn-secondary" id="miloPsShare-${sessionId}">Share plan on WhatsApp</button>
+        <!-- Calendar sync commented out for now:
         <button class="milo-pill-btn-secondary" id="miloPsCalendar-${sessionId}">Add to calendar</button>
+        -->
         <p class="milo-plan-note" id="miloPsNote-${sessionId}" role="alert" hidden></p>
       </div>
     </div>
@@ -268,6 +270,7 @@ export function attachPlanScreenListeners(container, sessionId = 'aarav') {
       const text = `Our night${hasPartnerName(partnerName) ? ` with ${partnerName}` : ''}: ${night.name}. ${steps}.${timing ? ` ${timingLabel(timing)}.` : ''}`;
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     });
+    /* Calendar sync commented out for now:
     container.querySelector(`#miloPsCalendar-${sessionId}`)?.addEventListener('click', () => {
       const timing = timingForNight(night.id);
       const ics = timing ? calendarFile(night, timing) : null;
@@ -282,5 +285,6 @@ export function attachPlanScreenListeners(container, sessionId = 'aarav') {
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
+    */
   }
 }

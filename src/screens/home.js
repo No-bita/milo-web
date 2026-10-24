@@ -2,14 +2,9 @@ import { store } from '../domain/store.js';
 import { homeSummary } from '../logic/home.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
 import { renderTabBar, attachTabBar } from '../components/tab-bar.js';
-import { OCCASIONS } from '../data/occasions.js';
+import { renderOccasionGrid, attachOccasionGrid } from '../components/occasion-grid.js';
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-function greeting(date = new Date()) {
-  const hour = date.getHours();
-  return hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-}
 
 function resumeCard(summary) {
   return `<section class="milo-home-card" aria-label="Your plan in progress">
@@ -38,34 +33,18 @@ function planCard(summary, state) {
   </section>`;
 }
 
-// Compact occasion grid: the six occasions start directly on Home.
-function occasionGrid() {
-  return `<ul class="milo-home-occ-grid" aria-label="Occasions">${OCCASIONS.map((occasion, index) => `<li><button type="button" class="milo-home-occ milo-home-occ-${index + 1}"><svg class="milo-home-occ-art" viewBox="0 0 80 64" aria-hidden="true">${occasion.art}</svg><span class="milo-home-occ-name">${occasion.name}</span><span class="milo-home-occ-sub">${occasion.compactSub}</span></button></li>`).join('')}</ul>`;
-}
-
 export function renderHome(sessionId = 'aarav') {
   const state = store.getState();
   const summary = homeSummary(state);
   const fresh = summary.kind === 'fresh';
   const resuming = summary.kind === 'in-progress';
-  const partner = escape(summary.partner);
-  const alone = !fresh && !resuming && summary.invited === false;
-  const headline = fresh ? 'What are you planning?' : resuming ? 'A quiet week' : alone ? 'Your night' : `Your night with ${partner}`;
-  const lead = resuming ? '<p class="milo-home-lead">Pick a mood and Milo does the rest.</p>' : '';
-  const body = resuming
-    ? `${resumeCard(summary)}
-       ${occasionGrid()}
-       <div class="milo-home-row"><span class="milo-home-avatar milo-home-avatar-plus" aria-hidden="true">+</span><div><b>Invite your person</b><span>Plan together. Both of you say yes.</span></div></div>`
+
+  const planSection = resuming
+    ? resumeCard(summary)
     : fresh
-    ? `${occasionGrid()}
-       <div class="milo-home-row"><span class="milo-home-avatar milo-home-avatar-plus" aria-hidden="true">+</span><div><b>Invite your person</b><span>Plan together. Both of you say yes.</span></div></div>`
-    : alone
-    ? `${planCard(summary, state)}
-       ${occasionGrid()}
-       <div class="milo-home-row"><span class="milo-home-avatar milo-home-avatar-plus" aria-hidden="true">+</span><div><b>Bring your person in</b><span>Whenever you're ready.</span></div></div>`
-    : `${planCard(summary, state)}
-       ${occasionGrid()}
-       <div class="milo-home-row"><span class="milo-home-avatar" aria-hidden="true">${escape(summary.partner.charAt(0).toUpperCase())}</span><div><b>${partner}</b><span>${escape(summary.partnerStatus)}</span></div></div>`;
+    ? `<section class="milo-home-card milo-home-card-empty" aria-label="Your plan"><p>Nothing on yet. Want to plan something?</p></section>`
+    : planCard(summary, state);
+
   return `<div class="milo-home milo-tabscreen" data-session-id="${sessionId}">
     <header class="milo-header milo-home-header">
       <div class="milo-home-place">
@@ -79,10 +58,8 @@ export function renderHome(sessionId = 'aarav') {
       <span class="milo-wordmark">milo.</span>
     </header>
     <div class="milo-home-body">
-      <p class="milo-home-greet">${greeting()}</p>
-      <h1 class="milo-headline milo-home-headline">${headline}</h1>
-      ${lead}
-      ${body}
+      ${planSection}
+      ${renderOccasionGrid()}
     </div>
     ${renderTabBar('home', { group: true })}
   </div>`;
@@ -90,10 +67,8 @@ export function renderHome(sessionId = 'aarav') {
 
 export function attachHomeListeners(container, sessionId = 'aarav') {
   attachTabBar(container, sessionId);
+  attachOccasionGrid(container, sessionId);
   const summary = homeSummary(store.getState());
-  container.querySelectorAll('.milo-home-occ').forEach((tile) => {
-    tile.addEventListener('click', () => store.startFreshPlan(sessionId));
-  });
   container.querySelector('#miloHomeResume')?.addEventListener('click', () => {
     store.setSessionScreen(sessionId, summary.resumeStep || 's2');
   });

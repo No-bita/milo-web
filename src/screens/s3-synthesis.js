@@ -66,9 +66,24 @@ export function attachScreen03Listeners(container, sessionId = 'aarav') {
     store.setSessionScreen(sessionId, 's1');
   });
   container.querySelector(`#miloS3Cta-${sessionId}`)?.addEventListener('click', () => {
-    if (sessionId === 'sneha') return store.setSessionScreen(sessionId, 's5');
-    // The solo or together choice is made once, at the start. Only ask here if it was never made.
-    const mode = store.getState().sessionA.planningMode;
-    store.setSessionScreen(sessionId, mode === 'solo' ? 's6' : mode === 'together' ? 's4_invite' : 'planning_path_review');
+    const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
+    const session = store.getState()[sessionKey] || {};
+    const mode = store.getState().sessionA?.planningMode;
+    const nextDestination = sessionId === 'sneha'
+      ? 's5'
+      : (mode === 'solo' ? 's6' : mode === 'together' ? 's4_invite' : 'planning_path_review');
+
+    // If user is not signed in yet, prompt them to sign up right after this screen
+    if (!session.user?.loggedIn) {
+      store.updateSession(sessionId, {
+        returnScreen: nextDestination,
+        originScreen: 's3',
+        loginReason: 'synthesis'
+      });
+      store.setSessionScreen(sessionId, 'login');
+      return;
+    }
+
+    store.setSessionScreen(sessionId, nextDestination);
   });
 }

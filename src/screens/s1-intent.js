@@ -4,7 +4,7 @@
 // Pure component with attached interactive listeners.
 // ==========================================================
 
-import { hasThreeMoods } from '../logic/mood-selection.js';
+import { hasThreeMoods, moodCtaLabel } from '../logic/mood-selection.js';
 import { INTENTS } from '../data/mockData.js';
 import { store } from '../domain/store.js';
 import { partnerLabel, hasPartnerName, sentenceName } from '../logic/partner.js';
@@ -79,7 +79,7 @@ export function renderScreen01(sessionId = 'aarav') {
         id="miloCta-${sessionId}"
         ${isCtaDisabled ? 'disabled' : ''}
       >
-        Show me what fits →
+        ${moodCtaLabel(selectedIntents.length)}
       </button>
     </div>
   `;
@@ -168,5 +168,8 @@ export function patchScreen01(container, sessionId = 'aarav') {
   }
 
   const cta = container.querySelector(`#miloCta-${sessionId}`);
-  if (cta) cta.disabled = !hasThreeMoods(selected);
+  if (cta) {
+    cta.disabled = !hasThreeMoods(selected);
+    cta.textContent = moodCtaLabel(selected.length);
+  }
 }

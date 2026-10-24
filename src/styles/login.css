@@ -1,0 +1,324 @@
+/* ==========================================================
+   MILO — EMAIL LOGIN SCREEN STYLES
+   Editorial, intimate typography and modern accessible forms.
+   ========================================================== */
+
+.milo-login-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-ivory);
+  color: var(--color-ink);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.milo-login-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+}
+
+.milo-login-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 24px 32px;
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.milo-login-intro {
+  margin-bottom: 24px;
+}
+
+.milo-login-monogram {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-oxblood-wash);
+  color: var(--color-oxblood);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  margin-bottom: 14px;
+}
+
+.milo-login-headline {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  line-height: 1.15;
+  color: var(--color-oxblood);
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.milo-login-subline {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-ink-muted);
+}
+
+.milo-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.milo-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.milo-form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-bottom: 4px;
+  letter-spacing: 0.01em;
+}
+
+.milo-form-hint {
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  margin-bottom: 6px;
+}
+
+.milo-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.milo-text-link {
+  background: none;
+  border: none;
+  color: var(--color-oxblood);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 2px 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.milo-text-link:hover {
+  color: var(--color-oxblood-press);
+}
+
+.milo-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--color-ink);
+  background-color: #fff;
+  border: 1px solid var(--color-sand);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.04);
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+  box-sizing: border-box;
+}
+
+.milo-input::placeholder {
+  color: rgba(111, 101, 94, 0.45);
+}
+
+.milo-input:focus {
+  outline: none;
+  border-color: var(--color-oxblood);
+  box-shadow: 0 0 0 3px rgba(110, 34, 40, 0.12);
+}
+
+/* Modern Web Guidance: Show validation feedback only after interaction */
+.milo-input:user-invalid {
+  border-color: #C62828;
+  background-color: #FDF4F4;
+}
+
+.milo-input:user-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.15);
+}
+
+.milo-input:user-valid {
+  border-color: #2E7D32;
+}
+
+.milo-field-error {
+  display: none;
+  font-size: 12px;
+  color: #C62828;
+  margin-top: 4px;
+  line-height: 1.3;
+}
+
+.milo-input:user-invalid + .milo-field-error,
+.milo-field-error.is-visible {
+  display: block;
+}
+
+.milo-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.milo-password-wrap .milo-input {
+  padding-right: 44px;
+}
+
+.milo-pwd-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.milo-pwd-toggle:hover {
+  color: var(--color-ink);
+  background-color: var(--color-sand);
+}
+
+.milo-pwd-toggle:focus-visible {
+  outline: 2px solid var(--color-oxblood);
+}
+
+.milo-login-cta {
+  margin-top: 6px;
+  width: 100%;
+}
+
+.milo-login-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 22px 0 16px;
+  color: var(--color-ink-muted);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.milo-login-divider::before,
+.milo-login-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--color-sand);
+}
+
+.milo-login-divider span {
+  padding: 0 10px;
+}
+
+.milo-social-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.milo-social-btn {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--color-sand);
+  background: #fff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.milo-social-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background-color: rgba(237, 230, 223, 0.4);
+}
+
+.milo-social-badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--color-sand);
+  color: var(--color-ink-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.milo-login-privacy {
+  margin-top: 22px;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--color-ink-muted);
+}
+
+.milo-closing-signin-banner {
+  background: #fff;
+  border: 1px solid var(--color-sand);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 18px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(28, 25, 23, 0.04);
+}
+
+.milo-closing-signin-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+
+.milo-closing-signin-copy strong {
+  font-size: 14px;
+  color: var(--color-oxblood);
+  font-family: var(--font-serif);
+  line-height: 1.2;
+}
+
+.milo-closing-signin-copy span {
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  line-height: 1.3;
+}
+
+.milo-closing-signin-banner .milo-pill-btn-primary {
+  flex-shrink: 0;
+  min-height: 38px;
+  padding: 0 16px;
+  font-size: 13px;
+}
+

@@ -73,6 +73,16 @@ export function renderScreen07(sessionId = 'aarav') {
             <div class="milo-section-label">YOUR PLAN</div>
             ${timelineHtml}
           </div>
+
+          ${!sessionData.user?.loggedIn ? `
+            <div class="milo-closing-signin-banner">
+              <div class="milo-closing-signin-copy">
+                <strong>Save this plan to your account</strong>
+                <span>Never lose tonight's spots or times.</span>
+              </div>
+              <button type="button" class="milo-pill-btn-primary" id="miloClosingSignIn-${sessionId}">Save plan</button>
+            </div>
+          ` : ''}
         </div>
 
         <div class="milo-closing-footer">
@@ -252,6 +262,11 @@ export function attachScreen07Listeners(container, sessionId = 'aarav') {
         window.open(`https://wa.me/?text=${encodeURIComponent(planText(closingNight, partnerName))}`, '_blank', 'noopener');
       });
     }
+
+    container.querySelector(`#miloClosingSignIn-${sessionId}`)?.addEventListener('click', () => {
+      store.updateSession(sessionId, { returnScreen: 's7', loginReason: 'save_plan' });
+      store.setSessionScreen(sessionId, 'login');
+    });
   }
 
   const resetBtn = container.querySelector(`#miloResetBtn-${sessionId}`);

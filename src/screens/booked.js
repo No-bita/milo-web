@@ -41,8 +41,10 @@ export function renderBooked(sessionId = 'aarav') {
       ${privateBox}
     </div>
     <div class="milo-booked-cta">
+      <!-- Calendar sync commented out for now:
       <button class="milo-cta-button" type="button" id="miloBookedCalendar">Add to calendar</button>
-      <button class="milo-text-button" type="button" id="miloBookedShare">${shareLabel}</button>
+      -->
+      <button class="milo-cta-button" type="button" id="miloBookedShare">${shareLabel}</button>
     </div>
   </div>`;
 }
@@ -53,18 +55,64 @@ function nightFromState(state) {
   return { night, timing: timingForNight(night.id) || timingForNight(night.id, { solo: true }) };
 }
 
-// A plain calendar file with the night and time. No venue details, nothing private.
+function escapeIcsText(str) {
+  return String(str || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r?\n/g, '\\n');
+}
+
+// .ics calendar invite containing the night title, formatted timing, and address links to Google Maps for each beat.
 export function calendarFile(night, timing) {
-  if (!timing) return null;
+  if (!timing || !night) return null;
   const stamp = (d) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}00`;
   const [h, m] = timing.time.split(':').map(Number);
   const [y, mo, d] = timing.date.split('-').map(Number);
   const start = new Date(y, mo - 1, d, h, m);
   const end = new Date(start.getTime() + 3 * 60 * 60 * 1000);
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Milo//EN', 'BEGIN:VEVENT', `UID:${night.id}-${timing.date}@milo`, `DTSTAMP:${stamp(new Date())}`, `DTSTART:${stamp(start)}`, `DTEND:${stamp(end)}`, `SUMMARY:${night.name}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const when = timingLabel(timing);
+
+  const beatLines = (night.beats || []).map((beat, i) => {
+    const query = encodeURIComponent(`${beat.name}, Bengaluru`);
+    const mapsLink = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    return `${i + 1}. ${beat.name}${beat.desc ? `: ${beat.desc}` : ''} - ${mapsLink}`;
+  });
+
+  const descriptionLines = [
+    night.name,
+    `Timing: ${when}`,
+    '',
+    'Itinerary:',
+    ...beatLines,
+    '',
+    'Planned with Milo.'
+  ];
+
+  const description = escapeIcsText(descriptionLines.join('\n'));
+
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Milo//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${night.id}-${timing.date}@milo`,
+    `DTSTAMP:${stamp(new Date())}`,
+    `DTSTART:${stamp(start)}`,
+    `DTEND:${stamp(end)}`,
+    `SUMMARY:${escapeIcsText(night.name)}`,
+    `DESCRIPTION:${description}`,
+    'LOCATION:Bengaluru\\, Karnataka\\, India',
+    'STATUS:CONFIRMED',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
 }
 
 export function attachBookedListeners(container, sessionId = 'aarav') {
+  /* Calendar sync commented out for now:
   container.querySelector('#miloBookedCalendar')?.addEventListener('click', () => {
     const { night, timing } = nightFromState(store.getState());
     const ics = calendarFile(night, timing);
@@ -78,6 +126,7 @@ export function attachBookedListeners(container, sessionId = 'aarav') {
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
+  */
   container.querySelector('#miloBookedShare')?.addEventListener('click', () => {
     const { night, timing } = nightFromState(store.getState());
     const text = `${night.name}${timing ? `, ${timingLabel(timing)}` : ''}. Sealed with Milo.`;

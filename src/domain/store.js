@@ -218,6 +218,18 @@ class DomainStore {
     this._emit();
   }
 
+  setSessionUser(sessionId, user) {
+    const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
+    this.state = {
+      ...this.state,
+      [sessionKey]: {
+        ...this.state[sessionKey],
+        user: user ? { ...user } : null
+      }
+    };
+    this._emit();
+  }
+
   updateShared(patch) {
     this.state = {
       ...this.state,

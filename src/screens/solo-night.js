@@ -41,7 +41,15 @@ export function attachSoloNightListeners(container, sessionId = 'aarav') {
   const item = nights.find(item => item.night.id === state.sessionA.activeNightId) || nights[0];
   if (state.sessionA.soloTimingStep === item.night.id) {
     attachNightTiming(container, item.night.id, sessionId, { solo: true });
-    container.querySelector('#miloSoloContinue')?.addEventListener('click', () => store.setSessionScreen(sessionId, 's4_waiting'));
+    container.querySelector('#miloSoloContinue')?.addEventListener('click', () => {
+      const user = store.getState()[sessionId === 'sneha' ? 'sessionB' : 'sessionA']?.user;
+      if (!user?.loggedIn) {
+        store.updateSession(sessionId, { returnScreen: 's4_waiting', loginReason: 'save_plan' });
+        store.setSessionScreen(sessionId, 'login');
+      } else {
+        store.setSessionScreen(sessionId, 's4_waiting');
+      }
+    });
     container.querySelector('#miloSoloTimingBack')?.addEventListener('click', () => store.updateSession(sessionId, { soloTimingStep: null }));
     return;
   }
