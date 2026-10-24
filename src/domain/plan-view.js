@@ -62,6 +62,22 @@ export async function postPlanAction(type, nightId) {
   return result;
 }
 
+// Setting the agreed time goes through the same actions route so the partner's
+// phone picks it up on its next refresh. The server accepts date/time/time_zone
+// only; the response is the same plan view as a GET.
+export async function postPlanTiming(timing) {
+  const seat = readSeat();
+  if (!seat) return { ok: false, reason: 'no_seat' };
+  const result = await withTimeout(api('POST', `/api/plans/${seat.planId}/actions`, { body: { type: 'set_time', timing: { date: timing.date, time: timing.time, time_zone: timing.timeZone } }, seatKey: seat.seatKey }));
+  if (result.ok) {
+    const seatNow = readSeat();
+    if (!seatNow || seatNow.planId !== seat.planId) return { ok: false, reason: 'seat_changed' };
+    applyPlanView(result.data, seat);
+    actionSeq += 1;
+  }
+  return result;
+}
+
 export function applyPlanView(view, seat = readSeat()) {
   // Write only real changes: every emit re-renders, so an unconditional write
   // would loop render -> check -> render.
@@ -82,6 +98,14 @@ export function applyPlanView(view, seat = readSeat()) {
   if (JSON.stringify(suggestion) !== JSON.stringify(current.suggestion ?? null)) patch.suggestion = suggestion;
   const confirmed = view.confirmed_night_id || null;
   if (confirmed !== (current.confirmedNightId ?? null)) patch.confirmedNightId = confirmed;
+  // The agreed time rides the same view so both phones display, share and attach
+  // the same plan time. The server stores date/time/time_zone only; the night id
+  // comes from the confirmation and startAt is recomputed on this device.
+  const timing = view.timing && view.confirmed_night_id
+    ? { version: 1, nightId: view.confirmed_night_id, date: view.timing.date, time: view.timing.time,
+        timeZone: view.timing.time_zone, startAt: new Date(`${view.timing.date}T${view.timing.time}:00`).toISOString() }
+    : null;
+  if (JSON.stringify(timing) !== JSON.stringify(current.timing ?? null)) patch.timing = timing;
   // Partner progress powers the small status line on the creator's plan screen.
   const partnerJoined = Boolean(view.partner?.display_name);
   if (partnerJoined !== Boolean(current.partnerJoined)) patch.partnerJoined = partnerJoined;
