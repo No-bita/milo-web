@@ -2,6 +2,7 @@ import { store } from '../domain/store.js';
 import { partnerLabel } from '../logic/partner.js';
 import { NIGHTS_POOL, INTENTS } from '../data/mockData.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
+import { withSoloChoices } from '../logic/planning.js';
 import { copyInvite } from '../components/invite-feedback.js';
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -16,7 +17,7 @@ export function renderSealedWaiting(sessionId = 'aarav') {
   const a = store.getState().sessionA;
   const solo = !store.getState().shared.invitePrepared;
   const partner = partnerLabel(store.getState());
-  const night = NIGHTS_POOL.find((n) => n.id === (a.savedSoloNightId || a.activeNightId)) || NIGHTS_POOL[0];
+  const night = withSoloChoices(store.getState(), NIGHTS_POOL.find((n) => n.id === (a.savedSoloNightId || a.activeNightId)) || NIGHTS_POOL[0]);
   const when = whenLine(timingForNight(night.id, { solo: true }));
   const moods = (a.intents || []).map((id) => INTENTS.find((i) => i.id === id)?.label).filter(Boolean);
   const chips = moods.map((m) => `<li>${escape(m)}</li>`).join('');
