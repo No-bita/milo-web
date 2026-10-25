@@ -6,7 +6,9 @@ export function journeyRoute(state, sessionId) {
   const session = state[SESSION_KEYS[sessionId]];
   const screen = session.screen === 'threshold' ? 's2' : session.screen;
   // Preparing an invite is one page; copying/sharing isn't another Back step.
-  const route = { screen: screen === 's4_waiting' ? 's4_invite' : screen };
+  // A solo seal is its own page (no invite prepared), so Back into it must not land on the invite screen.
+  const soloSealed = screen === 's4_waiting' && !state.shared.invitePrepared && Boolean(session.savedSoloNightId);
+  const route = { screen: screen === 's4_waiting' && !soloSealed ? 's4_invite' : screen };
   if (screen === 's7') {
     route.activeNightId = session.activeNightId || null;
     route.soloTimingStep = session.planningMode === 'solo' ? session.soloTimingStep || null : null;
