@@ -1,6 +1,7 @@
 import { store } from '../domain/store.js';
 import { partnerLabel, isInvited } from '../logic/partner.js';
 import { NIGHTS_POOL } from '../data/mockData.js';
+import { withSoloChoices } from '../logic/planning.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -14,7 +15,7 @@ function whenLine(timing) {
 export function renderBooked(sessionId = 'aarav') {
   const state = store.getState();
   const nightId = state.sessionA.savedSoloNightId || state.shared.confirmedNightId || state.sessionA.activeNightId || NIGHTS_POOL[0].id;
-  const night = NIGHTS_POOL.find((n) => n.id === nightId) || NIGHTS_POOL[0];
+  const night = withSoloChoices(state, NIGHTS_POOL.find((n) => n.id === nightId) || NIGHTS_POOL[0]);
   const partner = partnerLabel(state, sessionId);
   const shareLabel = sessionId === 'sneha' || isInvited(state) ? `Share with ${escape(partner)}` : 'Share the plan';
   const timing = timingForNight(night.id) || timingForNight(night.id, { solo: true });
@@ -51,7 +52,7 @@ export function renderBooked(sessionId = 'aarav') {
 
 function nightFromState(state) {
   const nightId = state.sessionA.savedSoloNightId || state.shared.confirmedNightId || state.sessionA.activeNightId || NIGHTS_POOL[0].id;
-  const night = NIGHTS_POOL.find((n) => n.id === nightId) || NIGHTS_POOL[0];
+  const night = withSoloChoices(state, NIGHTS_POOL.find((n) => n.id === nightId) || NIGHTS_POOL[0]);
   return { night, timing: timingForNight(night.id) || timingForNight(night.id, { solo: true }) };
 }
 
