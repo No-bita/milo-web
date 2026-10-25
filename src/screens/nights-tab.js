@@ -30,6 +30,7 @@ export function attachNightsListeners(container, sessionId = 'aarav') {
   const summary = homeSummary(store.getState());
   container.querySelector('#miloNightsOpen')?.addEventListener('click', () => {
     if (summary.action === 'open-waiting') store.setSessionScreen(sessionId, 's4_waiting');
+    else if (summary.action === 'resume') store.setSessionScreen(sessionId, summary.resumeStep || 's2');
     else store.updateSession(sessionId, { screen: 's7', activeNightId: summary.nightId });
   });
 }
