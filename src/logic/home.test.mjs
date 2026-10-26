@@ -90,3 +90,15 @@ test('server plan: a copied (not shared) invite link shows the waiting card, not
   assert.equal(h.kind, 'waiting');
   assert.equal(h.action, 'open-waiting');
 });
+
+test('a booked solo night shows its booking status and opens the Sealed screen', () => {
+  const s = fresh();
+  s.sessionA.savedSoloNightId = 'little-adventure';
+  s.sessionA.soloBooking = { nightId: 'little-adventure', booking: { status: 'requested' } };
+  let h = homeSummary(s);
+  assert.equal(h.kind, 'booked'); assert.equal(h.action, 'open-booked'); assert.equal(h.planStatus, 'Milo is booking it');
+  s.sessionA.soloBooking.booking.status = 'booked';
+  assert.equal(homeSummary(s).planStatus, 'Booked');
+  s.sessionA.soloBooking.nightId = 'middle-ground';
+  assert.equal(homeSummary(s).kind, 'draft', 'a booking for another night does not count');
+});

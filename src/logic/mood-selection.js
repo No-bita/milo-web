@@ -5,8 +5,10 @@ export function hasThreeMoods(intents = []) {
   return intents.length === 3 && new Set(intents).size === 3 && intents.every(id => knownMoods.has(id));
 }
 
+// The button stays disabled until three are picked; the label nudges along the way.
 export function moodCtaLabel(count = 0) {
-  if (count === 1) return 'Pick 2 more moods';
-  if (count === 2) return 'Pick 1 more mood';
+  if (count <= 0) return "What's the vibe?";
+  if (count === 1) return 'Ooh. Two more.';
+  if (count === 2) return 'Last one, make it count';
   return 'Show me what fits →';
 }

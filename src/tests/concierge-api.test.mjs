@@ -14,7 +14,7 @@ const BASE = Date.parse('2026-11-01T06:30:00Z');
 let db, api, clock = BASE;
 before(async () => {
   db = new PGlite();
-  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
   let tail = Promise.resolve();
   const acquire = async () => { const previous = tail; let release; tail = new Promise(r => { release = r; }); await previous; return { query: (q, a) => db.query(q, a), release }; };
   api = createApi({ acquire, clientIp: () => '127.0.0.1', now: () => clock,
@@ -68,7 +68,7 @@ test('either person requests once; the other sees only the status; requester can
   const p = await plan();
   const mine = await request(p, p.b, REQ);
   assert.equal(mine.status, 200);
-  assert.deepEqual(mine.data.booking, { status: 'requested', requested_by_me: true, venues: [], budget_band: '2k_4k', window_hours: 4, notes: REQ.notes });
+  assert.deepEqual(mine.data.booking, { status: 'requested', requested_by_me: true, venues: [], budget_band: '2k_4k', window_hours: 4, notes: REQ.notes, requests: null, surprise: true });
   const theirs = await view(p, p.a);
   assert.deepEqual(theirs.data.booking, { status: 'requested', requested_by_me: false, venues: [] });
   assert.equal(theirs.data.can_request, false);

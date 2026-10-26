@@ -8,7 +8,8 @@ import { timingLabel } from './night-timing.js';
 import '../styles/concierge.css';
 
 // Copy is a first draft for review.
-export const BUDGETS = { under_2k: 'Under ₹2,000', '2k_4k': '₹2,000 - 4,000', '4k_7k': '₹4,000 - 7,000', '7k_plus': '₹7,000+' };
+import { BUDGETS } from '../data/concierge.js';
+export { BUDGETS };
 const PAY = { nothing: 'Nothing', under_200: 'Under ₹200', '200_500': '₹200 - 500', '500_1000': '₹500 - 1,000', '1000_plus': '₹1,000+' };
 const ERRORS = {
   exists: 'Someone already asked Milo to book this one.', locked: "It's already booked, so it can't be cancelled here.",
@@ -122,7 +123,8 @@ export function openBookingSheet(timing) {
   });
 }
 
-export function openCheckinSheet() {
+// send: where the answers go (Together seat by default, or a solo plan).
+export function openCheckinSheet(send = sendCheckin) {
   sheet('How was it?', `<h2>How was it?</h2><p>Only Milo sees this.</p>
     ${radios('differently', { yes: 'Yes', partly: 'A bit', no: 'No' }, 'Would you have planned this differently yourself?')}
     <label>What did Milo do that you wouldn't have? (optional)<textarea name="wouldnt_have" maxlength="300" rows="2"></textarea></label>
@@ -135,7 +137,7 @@ export function openCheckinSheet() {
     if (!body.differently || !body.rating || !body.use_again || !body.recommend || !body.would_pay) return 'Answer the five quick ones first.';
     const extra = form.elements.wouldnt_have.value.trim(); if (extra) body.wouldnt_have = extra;
     busy();
-    const r = await sendCheckin(body);
+    const r = await send(body);
     return r.ok ? '' : errorText(r);
   });
 }

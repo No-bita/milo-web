@@ -5,6 +5,7 @@ import { computeSharedResult } from '../src/logic/shared-result.js';
 import { SafeError, fail, valid, object, keys } from './errors.js';
 import { handleGifts, handleOps, checkOpsSecret } from './gifts.js';
 import { handleConcierge, handleOpsBookings, exportCsv, recordEvent } from './concierge.js';
+import { createSolo, sharedView } from './solo.js';
 
 const occasions = ['date_night','anniversary','proposal','birthday','quality_time','just_because'];
 const moods = new Set(INTENTS.map(x => x.id));
@@ -128,6 +129,8 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       const path = (rewritten ? `/api/${url.searchParams.get('path')}` : url.pathname).replace(/\/+$/, '');
       const method = request.method;
       const create = path === '/api/plans' && method === 'POST';
+      const soloCreate = path === '/api/plans/solo' && method === 'POST';
+      const shared = method === 'GET' ? path.match(/^\/api\/shared\/([A-Za-z0-9_-]+)$/) : null;
       const invite = path.match(/^\/api\/invites\/([A-Za-z0-9_-]+)(\/join)?$/);
       const planPath = path.match(/^\/api\/plans\/([^/]+)(\/(me|actions|gifts|booking|checkin|events)(?:\/([^/]+))?)?$/);
       const opsPath = path.match(/^\/api\/ops\/(gifts|bookings|export\.csv)(?:\/([^/]+))?$/);
@@ -135,8 +138,9 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       // Launch gate: product routes stay off until enabled. Authenticated
       // cleanup always runs so stored plans are still deleted while paused.
       if (env.MILO_PHASE1_ENABLED !== 'true' && !cleanup) return response(503, { error:'unavailable' });
-      const publicScope = create ? 'create' : invite && !invite[2] && method === 'GET' ? 'preview' : invite?.[2] && method === 'POST' ? 'join' : null;
+      const publicScope = create || soloCreate ? 'create' : (invite && !invite[2] && method === 'GET') || shared ? 'preview' : invite?.[2] && method === 'POST' ? 'join' : null;
       if (!publicScope && !planPath && !cleanup && !opsPath) return response(404, { error:'not_found' });
+      if (path === '/api/plans/solo' && !soloCreate) return response(405, { error:'method_not_allowed' });
       // No forwarded-host construction: only owner-configured canonical origin.
       valid(typeof env.MILO_PUBLIC_ORIGIN === 'string');
       const origin = new URL(env.MILO_PUBLIC_ORIGIN);
@@ -174,6 +178,11 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         const removed = await db.query("DELETE FROM plans WHERE created_at < now()-interval '30 days' RETURNING id");
         return response(200, { deleted:removed.rows.length });
       }
+      if (soloCreate) {
+        const result = await createSolo({ db, body: await jsonBody(request), origin: origin.origin, helpers: { name, timing, picks } });
+        return response(201, result);
+      }
+      if (shared) return response(200, await sharedView({ db, token: shared[1] }));
       if (create) {
         const body = await jsonBody(request); keys(body, ['name','partnerName','occasion']);
         const displayName = name(body.name); if (body.partnerName !== undefined) name(body.partnerName);
@@ -190,7 +199,8 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         const body = publicScope === 'join' ? await jsonBody(request) : null;
         const displayName = body ? (keys(body, ['name']), name(body.name)) : null;
         await db.query('BEGIN');
-        const { rows:[plan] } = await db.query('SELECT *, expires_at <= now() AS expired FROM plans WHERE invite_token=$1 FOR UPDATE', [invite[1]]);
+        // Solo plans carry an invite_token only because the column is required; it is never usable.
+        const { rows:[plan] } = await db.query("SELECT *, expires_at <= now() AS expired FROM plans WHERE invite_token=$1 AND mode='together' FOR UPDATE", [invite[1]]);
         if (!plan) fail(404, 'not_found');
         const { rows:people } = await db.query('SELECT * FROM participants WHERE plan_id=$1', [plan.id]);
         const taken = people.some(x => x.role === 'partner');

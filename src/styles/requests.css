@@ -14,3 +14,17 @@
 .milo-booked-private { margin: 56px 12px 0; padding: 16px; text-align: left; border: 1px dashed rgba(110, 34, 40, .45); border-radius: 14px; background: rgba(110, 34, 40, .04); }
 .milo-booked-private .milo-booked-label { display: flex; align-items: center; gap: 8px; }
 .milo-booked-private p:not(.milo-booked-label) { margin-top: 8px; font-size: 14px; line-height: 20px; white-space: pre-line; }
+/* Booking step: surprise toggle and booking details. */
+.milo-req-body.milo-gift-form { display: flex; flex-direction: column; gap: 16px; }
+.milo-req-body .milo-req-note, .milo-req-body .milo-req-chips { margin-top: 0; }
+.milo-req-toggle { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 14px; background: #EFE8DE; cursor: pointer; position: relative; }
+.milo-req-toggle input { position: absolute; opacity: 0; width: 44px; height: 26px; margin: 0; cursor: pointer; }
+.milo-switch { flex: none; width: 44px; height: 26px; border-radius: 999px; background: var(--color-taupe); position: relative; transition: background .2s var(--ease-milo); }
+.milo-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s var(--ease-milo); }
+.milo-req-toggle input:checked + .milo-switch { background: var(--color-oxblood); }
+.milo-req-toggle input:checked + .milo-switch::after { transform: translateX(18px); }
+.milo-req-toggle input:focus-visible + .milo-switch { outline: 2px solid var(--color-oxblood); outline-offset: 2px; }
+.milo-req-toggle b { display: block; font: 600 14px var(--font-sans); color: var(--color-ink); }
+.milo-req-toggle small { display: block; margin-top: 2px; font-size: 12px; line-height: 17px; color: var(--color-ink-muted); }
+.milo-req-fineprint { margin: 0; font: 400 12px/1.5 var(--font-sans); color: var(--color-ink-muted); }
+.milo-req [hidden] { display: none !important; }

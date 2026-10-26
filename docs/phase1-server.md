@@ -161,6 +161,21 @@ Owner-only (Bearer OPS_SECRET):
 - GET /api/ops/export.csv -> one row per plan with the Master Doc PMF scorecard columns (see EXPORT_COLUMNS in server/concierge.js).
   Contact numbers are not exported; cells starting with = + - @ are prefixed with ' to stop spreadsheet formulas.
 
-Known limits: solo plans never reach the server, so the export cannot compare solo vs together (hypothesis 2) yet.
+Solo plans reach the server too (see below), so the export can compare solo vs together via `mode`.
 There is no notification: people see booking updates and the check-in when they open the app.
 Tests: src/tests/concierge-api.test.mjs and src/tests/two-phone-concierge.test.mjs.
+
+## Solo plans and share link (V1)
+
+Apply `server/solo.sql` AFTER `schema.sql`, `gifts.sql` and `concierge.sql` (required once this ships: the
+invite and export queries read the new `mode` column).
+
+- POST /api/plans/solo (public, per-IP `create` limit) {name, occasion?, night_id, night_rank?, timing, stops?, intents, reactions,
+  booking:{budget_band, window_hours, contact, requests? (<=1000), surprise (default true)}} -> 201 {plan_id, seat_key, share_url}.
+  Creates a confirmed one-seat plan (mode `solo`) and its booking request in one transaction. Its invite token is never accepted.
+- The solo seat then uses the normal seat routes: GET/POST/DELETE /booking (requester view now includes `requests` and `surprise`)
+  and POST /checkin. The app keeps the solo seat in `milo_solo_seat_v1`, separate from the Together seat.
+- GET /api/shared/:token (public, per-IP `preview` limit) -> {from, night, stops, timing, status planned|booking|booked, venues, requests}.
+  `requests` is null when the planner kept them a surprise. Never returns contact, budget, notes, picks or check-ins.
+- Ops: booking rows carry `mode`, `requests`, `surprise`; solo plans show SOLO and the surprise flag. The CSV gains
+  `mode`, `requests_given` and `surprise`; for solo plans `confirmed_rank` is the night's position (1-3) in the planner's list.

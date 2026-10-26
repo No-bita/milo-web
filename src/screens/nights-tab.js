@@ -11,7 +11,7 @@ export function renderNights(sessionId = 'aarav') {
   const upcoming = summary.kind === 'fresh'
     ? '<p class="milo-nights-empty">Nothing coming up yet.</p>'
     : (() => {
-        const timing = summary.nightId ? timingForNight(summary.nightId, { solo: summary.kind === 'draft' }) : null;
+        const timing = summary.nightId ? timingForNight(summary.nightId, { solo: summary.kind === 'draft' || summary.kind === 'booked' }) : null;
         return `<button type="button" class="milo-nights-item" id="miloNightsOpen"><b>${escape(summary.planName)}</b><span>${escape(timing ? timingLabel(timing) : 'Time not set yet')}</span><span>${escape(summary.planStatus)}</span></button>`;
       })();
   return `<div class="milo-home milo-tabscreen" data-session-id="${sessionId}">

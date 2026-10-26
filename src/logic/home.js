@@ -12,6 +12,12 @@ export function homeSummary(state) {
   if (shared.confirmedNightId) {
     return { kind: 'confirmed', nightId: shared.confirmedNightId, planName: nightName(shared.confirmedNightId), partner, planStatus: 'Both of you are in', partnerStatus: `${partner} is in`, action: 'open-plan' };
   }
+  // A solo night handed to Milo: show its booking status and open the Sealed screen.
+  const soloBooking = a.soloBooking?.nightId && a.soloBooking.nightId === a.savedSoloNightId ? a.soloBooking.booking : null;
+  if (a.savedSoloNightId && soloBooking && soloBooking.status !== 'cancelled') {
+    const planStatus = soloBooking.status === 'booked' ? 'Booked' : soloBooking.status === 'failed' ? "Milo couldn't book it" : 'Milo is booking it';
+    return { kind: 'booked', invited, nightId: a.savedSoloNightId, planName: nightName(a.savedSoloNightId), partner, planStatus, partnerStatus: null, action: 'open-booked' };
+  }
   if (a.savedSoloNightId) {
     return { kind: 'draft', invited, nightId: a.savedSoloNightId, planName: nightName(a.savedSoloNightId), partner, planStatus: invited ? 'Draft. Not shared yet' : 'Just yours for now', partnerStatus: shared.inviteSent ? `Invite sent to ${partner}` : invited ? `${partner} has not seen this yet` : 'Not invited yet', action: 'open-plan' };
   }

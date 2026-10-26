@@ -1,5 +1,5 @@
 import { renderItinerary, attachItinerary } from '../components/itinerary.js';
-import { renderNightTiming, attachNightTiming, timingForNight } from '../components/night-timing.js';
+import { renderNightTiming, attachNightTiming, liveTimingForNight } from '../components/night-timing.js';
 import { store } from '../domain/store.js';
 import { partnerLabel } from '../logic/partner.js';
 import { computePlanningOutput } from '../logic/planning.js';
@@ -15,7 +15,7 @@ export function renderSoloNight(sessionId = 'aarav') {
   if (timingStep) return `<div class="milo-s7-container milo-closing-state" data-session-id="${sessionId}">
     <header class="milo-header"><button class="milo-header-back" id="miloSoloTimingBack" aria-label="Back to itinerary">←</button><span class="milo-wordmark">milo.</span></header>
     <div class="milo-s7-body">${renderNightTiming(night.id, sessionId, { solo: true })}
-      ${timingForNight(night.id, { solo: true }) ? '<div class="milo-s7-actions"><button class="milo-cta-button" id="miloSoloContinue">Seal it</button></div>' : ''}
+      ${liveTimingForNight(night.id, { solo: true }) ? '<div class="milo-s7-actions"><button class="milo-cta-button" id="miloSoloContinue">Continue</button></div>' : ''}
     </div>
   </div>`;
   return `<div class="milo-s7-container milo-visual-plan" data-session-id="${sessionId}">

@@ -19,9 +19,9 @@ function resumeCard(summary) {
 }
 
 function planCard(summary, state) {
-  const timing = summary.nightId ? timingForNight(summary.nightId, { solo: summary.kind === 'draft' }) : null;
+  const timing = summary.nightId ? timingForNight(summary.nightId, { solo: summary.kind === 'draft' || summary.kind === 'booked' }) : null;
   const when = timing ? timingLabel(timing) : 'Time not set yet';
-  const label = summary.kind === 'draft' ? 'YOUR DRAFT' : 'THIS WEEK';
+  const label = summary.kind === 'draft' ? 'YOUR DRAFT' : summary.kind === 'booked' ? 'YOUR NIGHT' : 'THIS WEEK';
   return `<section class="milo-home-card" aria-label="Your plan">
     <p class="milo-home-label">${label}</p>
     <h2 class="milo-home-plan">${escape(summary.planName)}</h2>
@@ -74,6 +74,7 @@ export function attachHomeListeners(container, sessionId = 'aarav') {
   });
   container.querySelector('#miloHomeOpen')?.addEventListener('click', () => {
     if (summary.action === 'open-waiting') store.setSessionScreen(sessionId, 's4_waiting');
+    else if (summary.action === 'open-booked') store.setSessionScreen(sessionId, 'booked');
     else if (summary.action === 'open-together') store.setSessionScreen(sessionId, 's5');
     else store.updateSession(sessionId, { screen: 's7', activeNightId: summary.nightId });
   });

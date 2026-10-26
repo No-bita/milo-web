@@ -155,7 +155,7 @@ test('Email login screen is shown after the plan is made; signup is mandatory', 
           savedSoloNightId: 'middle-ground',
           soloTimingStep: 'middle-ground',
           soloTimings: {
-            'middle-ground': { nightId: 'middle-ground', date: '2026-10-24', time: '19:30', timeZone: 'Asia/Kolkata' }
+            'middle-ground': { nightId: 'middle-ground', date: new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10), time: '19:30', timeZone: 'Asia/Kolkata' }
           }
         },
         sessionB: { id: 'sneha', screen: 's0', intents: [], reactions: [] },
@@ -167,7 +167,7 @@ test('Email login screen is shown after the plan is made; signup is mandatory', 
     await p.goto(origin + '?screen=s7');
     await p.locator('.milo-closing-state').waitFor();
 
-    // Wait for the timing view with "Seal it" CTA
+    // Wait for the timing view with its "Continue" CTA
     const sealBtn = p.locator('#miloSoloContinue');
     await sealBtn.waitFor();
     await sealBtn.click();
