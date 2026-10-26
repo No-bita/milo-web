@@ -96,3 +96,35 @@ connection, Vercel routing, trusted ingress IP or deployed cron execution.
 Run npm test, npm run build, and node --test src/tests/two-phone-privacy.test.mjs.
 Existing browser regressions stay unchanged; all other new scenarios use the
 manual checklist in v2 after account setup and approved frontend wiring.
+
+## Gifting (V1)
+
+Off with the rest of Phase 1 (`MILO_PHASE1_ENABLED`). Apply `server/gifts.sql`
+AFTER `server/schema.sql`. Gifts cascade-delete with their plan, so the daily
+cleanup also removes delivery addresses and contact numbers after 30 days.
+Owner adds one more server env var for the ops page: `OPS_SECRET` (random,
+16+ characters). Without it, `/api/ops/*` returns 503 (fails closed).
+
+Seat-authenticated (Bearer seat_key, same plan only):
+
+- GET /api/plans/:id/gifts -> {can_add, mine, for_me, sealed_waiting, hint, memory:{open,mine,theirs}, from}
+- POST /api/plans/:id/gifts {kind, ...} -> same view. Needs status confirmed AND a time set (409 not_ready).
+  - moment_drop {item_id, stop_index 0-2, venue, contact, note?, show_hint?}
+  - home_delivery {item_id, address, deliver_window morning|afternoon|evening, contact, note?, show_hint?}
+  - sealed_note {note <=500, stop_index?} · teaser {note <=140} · memory {note <=200, only after start}
+  - item_id must be in src/data/gifts.js and allow that kind; 409 too_soon if the night is closer than the item's leadDays.
+  - Limits per giver: 3 physical, 1 sealed note, 1 teaser, 1 memory line (409 limit).
+- DELETE /api/plans/:id/gifts/:giftId -> giver only; physical while `requested`, digital before it opens (409 locked).
+
+Reveal rules (computed from plans.timing at read time; changing the time moves them):
+- The recipient never receives a physical gift's item, venue, address, card text or contact. Only `hint:true` when the giver ticked it.
+- Teaser text from 00:00 on the day before the night (plan time zone). Sealed note text from the start time; before that, only `sealed_waiting:true`.
+- Memory lines open at the start time; the other line is returned only once both lines exist.
+- The giver's contact number is stored for the ops list only and is never returned to either seat.
+
+Owner-only (Bearer OPS_SECRET): GET /api/ops/gifts lists physical gifts with fulfilment details; POST /api/ops/gifts/:id {status}
+with requested|confirmed|dispatched|delivered|cancelled. The giver sees the status; the recipient does not. The /ops/ page is not
+linked, is noindex, and keeps the key in sessionStorage for that tab only. There is no per-IP limit on ops routes (the key is the gate).
+
+Prices are placeholders ("Price on confirmation"); there is no payment, no notification and no vendor integration in V1.
+Tests: src/tests/gifts-api.test.mjs (contract, secrecy, clocked reveals, ops) and src/tests/two-phone-gifting.test.mjs (UI journey).
