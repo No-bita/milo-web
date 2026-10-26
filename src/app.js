@@ -34,6 +34,7 @@ import { renderGroupSoon, attachGroupSoonListeners } from './screens/group-soon.
 import { renderSealedWaiting, attachSealedWaitingListeners } from './screens/sealed-waiting.js';
 import { planScreenApplies, renderPlanScreen, attachPlanScreenListeners } from './screens/plan-screen.js';
 import { refreshPlan } from './domain/plan-view.js';
+import { refreshGifts } from './domain/gifts.js';
 
 // Partner A waits on the sealed screen until the partner's half lands.
 function showSealedWaiting() {
@@ -204,10 +205,12 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   if (isPhase1Enabled()) attachNetworkSync(store);
   // Plan state refreshes on app open and on return to the tab only - no timers,
   // no repeated checks while the screen stays open.
-  const onVisibilityRefresh = () => { if (document.visibilityState === 'visible') refreshPlan(); };
-  const onFocusRefresh = () => refreshPlan();
+  // Gifts follow the plan: their reveal times depend on the confirmed night and time.
+  const refreshAll = () => refreshPlan().then(() => refreshGifts());
+  const onVisibilityRefresh = () => { if (document.visibilityState === 'visible') refreshAll(); };
+  const onFocusRefresh = () => refreshAll();
   if (isPhase1Enabled()) {
-    refreshPlan();
+    refreshAll();
     document.addEventListener('visibilitychange', onVisibilityRefresh);
     window.addEventListener('focus', onFocusRefresh);
   }
