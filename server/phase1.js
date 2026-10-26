@@ -136,7 +136,7 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       const opsPath = path.match(/^\/api\/ops\/(gifts|bookings|export\.csv)(?:\/([^/]+))?$/);
       const cleanup = path === '/api/cleanup' && method === 'GET';
       // Launch gate: product routes stay off until enabled. Authenticated
-      // cleanup always runs so stored plans are still deleted while paused.
+      // The cleanup route stays reachable while paused; it deletes nothing.
       if (env.MILO_PHASE1_ENABLED !== 'true' && !cleanup) return response(503, { error:'unavailable' });
       const publicScope = create || soloCreate ? 'create' : (invite && !invite[2] && method === 'GET') || shared ? 'preview' : invite?.[2] && method === 'POST' ? 'join' : null;
       if (!publicScope && !planPath && !cleanup && !opsPath) return response(404, { error:'not_found' });
@@ -175,8 +175,9 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         if (count.rows[0].hits > (publicScope === 'preview' ? 60 : 20)) fail(429, 'rate_limited');
       }
       if (cleanup) {
-        const removed = await db.query("DELETE FROM plans WHERE created_at < now()-interval '30 days' RETURNING id");
-        return response(200, { deleted:removed.rows.length });
+        // Retention policy: nothing is deleted. Kept as an authenticated no-op so an
+        // external scheduler, if one exists, keeps getting 200 without removing data.
+        return response(200, { deleted:0 });
       }
       if (soloCreate) {
         const result = await createSolo({ db, body: await jsonBody(request), origin: origin.origin, helpers: { name, timing, picks } });

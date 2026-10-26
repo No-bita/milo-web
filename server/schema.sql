@@ -48,8 +48,8 @@ COMMIT;
 -- rate limited 429 {error:'rate_limited'} + Retry-After, unavailable 503
 -- {error:'unavailable'}. No stacks, DB errors, tokens or private picks in logs.
 -- Invite preview returns only status/name/occasion/day (when set), never keys.
--- Cleanup: authenticated daily cron deletes plans older than 30 days, cascading
--- participants. Actual retention is 30-31 days. Old rate-limit rows are NOT
+-- Retention: nothing is deleted; /api/cleanup is an authenticated no-op. ON DELETE
+-- CASCADE remains for a manual plan deletion. Old rate-limit rows are NOT
 -- pruned in v2. That growth/compute cost is explicitly parked, not fixed here.
 -- Parked v2 choices: changing phone creates a NEW plan (loses picks); shared
 -- display result is computed ONCE; polling stays 5s->30s, stops after 10 min.
