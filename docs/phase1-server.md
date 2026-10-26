@@ -128,3 +128,11 @@ linked, is noindex, and keeps the key in sessionStorage for that tab only. There
 
 Prices are placeholders ("Price on confirmation"); there is no payment, no notification and no vendor integration in V1.
 Tests: src/tests/gifts-api.test.mjs (contract, secrecy, clocked reveals, ops) and src/tests/two-phone-gifting.test.mjs (UI journey).
+
+## Intent model v3.1 switch (phases A + B)
+
+The shared result goes through `src/logic/shared-result.js`. Optional server env var
+`MILO_INTENT_MODEL=v3.1` (and `VITE_MILO_INTENT_MODEL=v3.1` for the app build) selects the
+intent model in `src/logic/intent/`, but only when both seats carry v3.1 quiz answers. No seat
+stores those until the new quiz screens (phase C) and server fields (phase D) ship, so today it
+has no effect. Python reference and parity data: `docs/intent-model/`.

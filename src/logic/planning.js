@@ -1,4 +1,4 @@
-import { computeSharedOutput } from './shared.js';
+import { computeSharedResult } from './shared-result.js';
 import { computeTraitLeanings } from './synthesis.js';
 import { TRAIT_DIMENSIONS } from './deck.js';
 import { NIGHTS_POOL } from '../data/mockData.js';
@@ -7,7 +7,8 @@ export const isSoloPlanning = (state, sessionId = 'aarav') => sessionId !== 'sne
 
 // The solo route never reads, averages or attributes the partner's signals.
 export function computePlanningOutput(state, sessionId = 'aarav') {
-  if (!isSoloPlanning(state, sessionId)) return computeSharedOutput(state.sessionA, state.sessionB);
+  // Same switch as the server; v3.1 needs quiz_v31 answers on both halves (phase C).
+  if (!isSoloPlanning(state, sessionId)) return computeSharedResult(state.sessionA, state.sessionB, { model: import.meta.env?.VITE_MILO_INTENT_MODEL === 'v3.1' ? 'v3.1' : 'v3' });
   const planner = state.sessionA;
   const leanings = computeTraitLeanings(planner.intents || [], planner.reactions || []);
   const ranked = NIGHTS_POOL.map(night => ({
