@@ -16,7 +16,7 @@ const DAY = 86400000;
 
 before(async () => {
   db = new PGlite();
-  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
   let tail = Promise.resolve();
   const acquire = async () => { const previous = tail; let release; tail = new Promise(r => { release = r; }); await previous; return { query: (q, a) => db.query(q, a), release }; };
   api = createApi({ acquire, clientIp: () => '127.0.0.1', now: () => clock,
@@ -35,7 +35,7 @@ async function call(method, path, { body, key } = {}) {
 
 // A confirmed plan with a time set: 7:30 PM IST on Sat 7 Nov 2026.
 async function confirmedPlan({ timing = { date: '2026-11-07', time: '19:30', time_zone: 'Asia/Kolkata' } } = {}) {
-  const created = await call('POST', '/api/plans', { body: { name: 'Asha' } });
+  const created = await call('POST', '/api/plans', { body: { name: 'Asha', city: 'bengaluru' } });
   const a = created.data.seat_key, id = created.data.plan_id;
   const token = new URL(created.data.invite_url).searchParams.get('invite');
   const b = (await call('POST', `/api/invites/${token}/join`, { body: { name: 'Ravi' } })).data.seat_key;
