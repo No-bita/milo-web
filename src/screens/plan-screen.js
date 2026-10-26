@@ -11,6 +11,8 @@ import { partnerLabel, monograms, escapeHtml, sentenceName, hasPartnerName } fro
 import { renderItinerary } from '../components/itinerary.js';
 import { renderNightTiming, attachNightTiming, timingForNight, timingLabel } from '../components/night-timing.js';
 import { calendarFile } from './booked.js';
+import { renderGiftsPanel, attachGiftsPanel } from '../components/gifts-panel.js';
+import { currentGifts, refreshGifts } from '../domain/gifts.js';
 import '../styles/plan-screen.css';
 
 // Edits-off copy (mockup 13), same wording as the reviewed shared-result work.
@@ -189,6 +191,7 @@ function renderAgreed(state, sessionId, confirmedId) {
           <div class="milo-section-label">YOUR PLAN</div>
           <div class="milo-plan-static">${tiles}</div>
         </div>
+        ${renderGiftsPanel(night, sessionId)}
       </div>
       <div class="milo-closing-footer">
         <button class="milo-pill-btn-secondary" id="miloPsShare-${sessionId}">Share plan on WhatsApp</button>
@@ -263,6 +266,12 @@ export function attachPlanScreenListeners(container, sessionId = 'aarav') {
     const item = togetherOutput(state).selectedNights.find(entry => entry.night.id === confirmedId) || togetherOutput(state).selectedNights[0];
     const night = item.night;
     attachNightTiming(container, night.id, sessionId);
+    const timing = timingForNight(night.id);
+    attachGiftsPanel(container, night, sessionId, { timing });
+    // First visit, or the time was just set: fetch this phone's gifts view.
+    // refreshGifts only writes on a real change, so this cannot loop.
+    const gifts = currentGifts();
+    if (!gifts || (!gifts.can_add && timing)) refreshGifts();
     container.querySelector(`#miloPsShare-${sessionId}`)?.addEventListener('click', () => {
       const partnerName = partnerLabel(store.getState(), sessionId);
       const steps = night.beats.map(beat => beat.name).join(' → ');

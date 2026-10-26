@@ -1,0 +1,45 @@
+/* Gifting V1 (agreed screen + add-a-gift sheet). Existing ivory/oxblood tokens only. */
+.milo-gifts { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--color-taupe); display: flex; flex-direction: column; gap: 12px; }
+.milo-gifts .milo-section-label { margin-bottom: 4px; }
+.milo-gift-hint { margin: 0; padding: 12px 16px; border-radius: 12px; background: var(--color-oxblood-wash); color: var(--color-ink); font: 400 14px/1.5 var(--font-sans); }
+.milo-gift-card { padding: 16px; border-radius: 16px; background: var(--color-sand); display: flex; flex-direction: column; gap: 8px; }
+.milo-gift-eyebrow { margin: 0; font: 600 11px/1.4 var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--color-ink-muted); }
+.milo-gift-note { margin: 0; font: 400 20px/1.35 var(--font-serif); color: var(--color-ink); white-space: pre-wrap; overflow-wrap: anywhere; }
+.milo-gift-note span { font: 500 13px/1.4 var(--font-sans); color: var(--color-ink-muted); margin-right: 4px; }
+.milo-gift-title { display: block; margin: 0; font: 500 15px/1.4 var(--font-sans); color: var(--color-ink); }
+.milo-gift-sub { display: block; margin: 0; font: 400 13px/1.5 var(--font-sans); color: var(--color-ink-muted); overflow-wrap: anywhere; }
+.milo-gift-price { display: block; margin-top: 4px; font: 500 12px/1.4 var(--font-sans); color: var(--color-oxblood); }
+.milo-gift-error { margin: 0; font: 500 13px/1.5 var(--font-sans); color: var(--color-oxblood); }
+.milo-gift-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.milo-gift-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--color-taupe); }
+.milo-gift-row > div:first-child { min-width: 0; }
+.milo-gift-row-end { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+.milo-gift-status { padding: 4px 10px; border-radius: 999px; background: var(--color-sand); font: 500 12px/1.4 var(--font-sans); color: var(--color-ink); white-space: nowrap; }
+.milo-gift-status[data-status=delivered] { background: var(--color-oxblood); color: var(--color-on-dark); }
+.milo-gift-remove { min-height: 32px; padding: 0 4px; border: 0; background: none; font: 500 12px/1 var(--font-sans); color: var(--color-ink-muted); text-decoration: underline; cursor: pointer; }
+.milo-gift-add { width: 100%; min-height: 48px; }
+.milo-gift-memory { display: flex; flex-direction: column; gap: 10px; }
+.milo-gift-memory textarea, .milo-gift-form textarea, .milo-gift-form input:not([type=radio]):not([type=checkbox]), .milo-gift-form select {
+  width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid var(--color-taupe); border-radius: 12px;
+  background: #fff; font: 400 16px/1.4 var(--font-sans); color: var(--color-ink);
+}
+.milo-gift-vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Sheet */
+.milo-gift-sheet-body { display: flex; flex-direction: column; gap: 14px; }
+.milo-gift-sheet-body > p { margin: 0; font: 400 14px/1.6 var(--font-sans); color: var(--color-ink-muted); }
+.milo-gift-kinds { display: flex; flex-direction: column; gap: 10px; }
+.milo-gift-kind { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px 16px; border: 1px solid var(--color-taupe); border-radius: 16px; background: #fff; text-align: left; cursor: pointer; }
+.milo-gift-kind:hover { border-color: var(--color-oxblood); }
+.milo-gift-form { display: flex; flex-direction: column; gap: 14px; }
+.milo-gift-form > label, .milo-gift-form fieldset { display: flex; flex-direction: column; gap: 6px; font: 500 13px/1.4 var(--font-sans); color: var(--color-ink); }
+.milo-gift-form fieldset { margin: 0; padding: 0; border: 0; gap: 8px; }
+.milo-gift-form legend { padding: 0; margin-bottom: 8px; font: 500 13px/1.4 var(--font-sans); }
+.milo-gift-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border: 1px solid var(--color-taupe); border-radius: 14px; background: #fff; cursor: pointer; }
+.milo-gift-item:has(input:checked) { border-color: var(--color-oxblood); box-shadow: 0 0 0 1px var(--color-oxblood); }
+.milo-gift-item.is-disabled { opacity: .55; cursor: not-allowed; }
+.milo-gift-item input { margin-top: 3px; accent-color: var(--color-oxblood); }
+.milo-gift-form > .milo-gift-check { flex-direction: row; align-items: center; gap: 10px; font-weight: 400; }
+.milo-gift-check input { width: 18px; height: 18px; accent-color: var(--color-oxblood); }
+.milo-gift-sheet :focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 3px; }
+.milo-gifts [hidden], .milo-gift-sheet [hidden] { display: none !important; }

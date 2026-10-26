@@ -33,7 +33,8 @@ export async function api(method, path, { body, seatKey } = {}) {
     });
     const data = await response.json().catch(() => ({}));
     if (response.ok) return { ok: true, status: response.status, data };
-    return { ok: false, status: response.status, reason: REASONS[response.status] || (response.status >= 500 ? 'unreachable' : 'invalid') };
+    // `code` is the server's safe error code (e.g. limit, too_soon), never exception text.
+    return { ok: false, status: response.status, reason: REASONS[response.status] || (response.status >= 500 ? 'unreachable' : 'invalid'), code: typeof data.error === 'string' ? data.error : undefined };
   } catch { return { ok: false, reason: 'unreachable' }; }
 }
 

@@ -2,6 +2,8 @@ import { isIP } from 'node:net';
 import { randomBytes, randomUUID, createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { INTENTS, EXPERIENCE_POOL, NIGHTS_POOL } from '../src/data/mockData.js';
 import { computeSharedOutput } from '../src/logic/shared.js';
+import { SafeError, fail, valid, object, keys } from './errors.js';
+import { handleGifts, handleOps, checkOpsSecret } from './gifts.js';
 
 const occasions = ['date_night','anniversary','proposal','birthday','quality_time','just_because'];
 const moods = new Set(INTENTS.map(x => x.id));
@@ -34,13 +36,6 @@ function normalizedIp(value) {
   }
   return `${n.slice(0,4).map(word => word.toString(16)).join(':')}::/64`;
 }
-class SafeError extends Error {
-  constructor(status, code) { super(code); this.status = status; }
-}
-const fail = (status, code) => { throw new SafeError(status, code); };
-const valid = condition => { if (!condition) fail(400, 'invalid_request'); };
-function object(value) { valid(value && typeof value === 'object' && !Array.isArray(value)); return value; }
-function keys(value, allowed) { object(value); valid(Object.keys(value).every(key => allowed.includes(key))); }
 function name(value) {
   valid(typeof value === 'string'); const result = value.trim();
   valid([...result].length > 0 && [...result].length <= 40 && !/[\p{C}<>@]/u.test(result));
@@ -116,7 +111,8 @@ function response(status, body, extra = {}) {
 
 // acquire() returns a single connected SQL client plus release(). Every plan
 // mutation locks the plan BEFORE its seats, serializing finish/join/actions.
-export function createApi({ acquire, env = process.env, clientIp }) {
+// `now` is injectable so tests can move the clock for gift reveal times.
+export function createApi({ acquire, env = process.env, clientIp, now = Date.now }) {
   return async request => {
     let db;
     try {
@@ -132,13 +128,14 @@ export function createApi({ acquire, env = process.env, clientIp }) {
       const method = request.method;
       const create = path === '/api/plans' && method === 'POST';
       const invite = path.match(/^\/api\/invites\/([A-Za-z0-9_-]+)(\/join)?$/);
-      const planPath = path.match(/^\/api\/plans\/([^/]+)(\/(me|actions))?$/);
+      const planPath = path.match(/^\/api\/plans\/([^/]+)(\/(me|actions|gifts)(?:\/([^/]+))?)?$/);
+      const opsPath = path.match(/^\/api\/ops\/gifts(?:\/([^/]+))?$/);
       const cleanup = path === '/api/cleanup' && method === 'GET';
       // Launch gate: product routes stay off until enabled. Authenticated
       // cleanup always runs so stored plans are still deleted while paused.
       if (env.MILO_PHASE1_ENABLED !== 'true' && !cleanup) return response(503, { error:'unavailable' });
       const publicScope = create ? 'create' : invite && !invite[2] && method === 'GET' ? 'preview' : invite?.[2] && method === 'POST' ? 'join' : null;
-      if (!publicScope && !planPath && !cleanup) return response(404, { error:'not_found' });
+      if (!publicScope && !planPath && !cleanup && !opsPath) return response(404, { error:'not_found' });
       // No forwarded-host construction: only owner-configured canonical origin.
       valid(typeof env.MILO_PUBLIC_ORIGIN === 'string');
       const origin = new URL(env.MILO_PUBLIC_ORIGIN);
@@ -148,6 +145,14 @@ export function createApi({ acquire, env = process.env, clientIp }) {
         const actual = Buffer.from(request.headers.get('authorization') || '');
         const expected = Buffer.from(`Bearer ${env.CRON_SECRET}`);
         if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) fail(401, 'unauthorized');
+      }
+      if (opsPath) {
+        // Owner-only fulfilment list for physical gifts. Fails closed without OPS_SECRET.
+        checkOpsSecret(request, env);
+        db = await acquire();
+        const result = await handleOps({ db, method, giftId: opsPath[1], readBody: () => jsonBody(request) });
+        if (!result) return response(405, { error:'method_not_allowed' });
+        return response(200, result);
       }
       if (publicScope && (!env.RATE_LIMIT_SECRET || !clientIp)) fail(503, 'unavailable');
       db = await acquire();
@@ -197,7 +202,10 @@ export function createApi({ acquire, env = process.env, clientIp }) {
       }
       if (!planPath || !uuidPattern.test(planPath[1])) fail(404, 'not_found');
       const action = planPath[3];
-      if (!((!action && method === 'GET') || (action === 'me' && method === 'PUT') || (action === 'actions' && method === 'POST'))) return response(405, { error:'method_not_allowed' });
+      const giftId = planPath[4];
+      if (giftId && action !== 'gifts') fail(404, 'not_found');
+      const giftRoute = action === 'gifts' && ((!giftId && (method === 'GET' || method === 'POST')) || (giftId && method === 'DELETE'));
+      if (!((!action && method === 'GET') || (action === 'me' && method === 'PUT') || (action === 'actions' && method === 'POST') || giftRoute)) return response(405, { error:'method_not_allowed' });
       const bearer = request.headers.get('authorization')?.match(/^Bearer ([A-Za-z0-9_-]{22})$/)?.[1];
       if (!bearer) fail(401, 'unauthorized');
       await db.query('BEGIN');
@@ -208,6 +216,10 @@ export function createApi({ acquire, env = process.env, clientIp }) {
       if (!plan) fail(404, 'not_found');
       const { rows:people } = await db.query('SELECT * FROM participants WHERE plan_id=$1 ORDER BY role', [plan.id]);
       const me = people.find(x => x.id === identity.id);
+      if (action === 'gifts') {
+        const result = await handleGifts({ db, plan, people, me, method, giftId, readBody: () => jsonBody(request), now: now() });
+        await db.query('COMMIT'); return response(200, result);
+      }
       if (action === 'me') {
         const body = picks(await jsonBody(request));
         const { rows:[updated] } = await db.query(`UPDATE participants SET intents=$1::jsonb,reactions=$2::jsonb,
