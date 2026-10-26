@@ -211,7 +211,7 @@ export async function handleOps({ db, method, giftId, readBody }) {
     valid(giftIdPattern.test(giftId));
     const body = await readBody(); keys(body, ['status']);
     valid(GIFT_STATUSES.includes(body.status));
-    const { rows } = await db.query("UPDATE gifts SET status=$1, updated_at=now() WHERE id=$2 AND kind IN ('moment_drop','home_delivery') RETURNING id,status", [body.status, giftId]);
+    const { rows } = await db.query("UPDATE gifts SET status=$1, updated_at=now() WHERE id=$2 AND status <> 'cancelled' AND kind IN ('moment_drop','home_delivery') RETURNING id,status", [body.status, giftId]);
     if (!rows.length) fail(404, 'not_found');
     return { id: rows[0].id, status: rows[0].status };
   }
