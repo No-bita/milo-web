@@ -51,7 +51,8 @@ export async function setTime(page, hour, minute) {
 }
 
 // Asha (A, creator) and Ravi (B, partner) reach "You're both in" with 7:30 PM set.
-export async function agreedPair({ site, browser, errors }) {
+// browse: how many times B taps "See the other two" before confirming.
+export async function agreedPair({ site, browser, errors, browse = 0 }) {
   const a = await phone(browser, errors);
   const b = await phone(browser, errors);
   await a.page.goto(`${site}/app/`);
@@ -84,6 +85,9 @@ export async function agreedPair({ site, browser, errors }) {
   await a.page.locator('.milo-cta-suggested-notice').waitFor();
   await b.page.goto(`${site}/app/?as=sneha`);
   await comeBack(b.page);
+  for (let i = 0; i < browse; i++) { await b.page.locator('#miloPsOther-sneha').click(); await b.page.waitForTimeout(150); }
+  // Back to the suggested night through the partner banner, if browsing moved away from it.
+  if (browse && !(await b.page.locator('#miloPsConfirm-sneha').count())) await b.page.locator('#miloPsBanner-sneha').click();
   await b.page.locator('#miloPsConfirm-sneha').click();
   await b.page.locator('.milo-closing-state').waitFor();
   await setTime(b.page, 7, 30);

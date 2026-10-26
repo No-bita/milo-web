@@ -10,7 +10,7 @@ import { EXPERIENCE_POOL } from '../data/mockData.js';
 
 test('two isolated phones never receive the other seat picks or derived leanings', async () => {
   const db = new PGlite();
-  await db.exec(await readFile(new URL('../../server/schema.sql', import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
   // One SQL connection in PGlite: serialize requests, matching a connected
   // transaction client. Live Postgres plan locks handle real concurrency.
   let tail = Promise.resolve();

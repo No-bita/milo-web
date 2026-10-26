@@ -4,6 +4,7 @@ import { INTENTS, EXPERIENCE_POOL, NIGHTS_POOL } from '../src/data/mockData.js';
 import { computeSharedResult } from '../src/logic/shared-result.js';
 import { SafeError, fail, valid, object, keys } from './errors.js';
 import { handleGifts, handleOps, checkOpsSecret } from './gifts.js';
+import { handleConcierge, handleOpsBookings, exportCsv, recordEvent } from './concierge.js';
 
 const occasions = ['date_night','anniversary','proposal','birthday','quality_time','just_because'];
 const moods = new Set(INTENTS.map(x => x.id));
@@ -128,8 +129,8 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       const method = request.method;
       const create = path === '/api/plans' && method === 'POST';
       const invite = path.match(/^\/api\/invites\/([A-Za-z0-9_-]+)(\/join)?$/);
-      const planPath = path.match(/^\/api\/plans\/([^/]+)(\/(me|actions|gifts)(?:\/([^/]+))?)?$/);
-      const opsPath = path.match(/^\/api\/ops\/gifts(?:\/([^/]+))?$/);
+      const planPath = path.match(/^\/api\/plans\/([^/]+)(\/(me|actions|gifts|booking|checkin|events)(?:\/([^/]+))?)?$/);
+      const opsPath = path.match(/^\/api\/ops\/(gifts|bookings|export\.csv)(?:\/([^/]+))?$/);
       const cleanup = path === '/api/cleanup' && method === 'GET';
       // Launch gate: product routes stay off until enabled. Authenticated
       // cleanup always runs so stored plans are still deleted while paused.
@@ -150,7 +151,12 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         // Owner-only fulfilment list for physical gifts. Fails closed without OPS_SECRET.
         checkOpsSecret(request, env);
         db = await acquire();
-        const result = await handleOps({ db, method, giftId: opsPath[1], readBody: () => jsonBody(request) });
+        if (opsPath[1] === 'export.csv') {
+          if (method !== 'GET' || opsPath[2]) return response(405, { error:'method_not_allowed' });
+          return new Response(await exportCsv(db), { status:200, headers:{ 'Content-Type':'text/csv; charset=utf-8', 'Content-Disposition':'attachment; filename="milo-plans.csv"', 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff' } });
+        }
+        const handler = opsPath[1] === 'bookings' ? handleOpsBookings : handleOps;
+        const result = await handler({ db, method, giftId: opsPath[2], id: opsPath[2], readBody: () => jsonBody(request) });
         if (!result) return response(405, { error:'method_not_allowed' });
         return response(200, result);
       }
@@ -205,7 +211,8 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       const giftId = planPath[4];
       if (giftId && action !== 'gifts') fail(404, 'not_found');
       const giftRoute = action === 'gifts' && ((!giftId && (method === 'GET' || method === 'POST')) || (giftId && method === 'DELETE'));
-      if (!((!action && method === 'GET') || (action === 'me' && method === 'PUT') || (action === 'actions' && method === 'POST') || giftRoute)) return response(405, { error:'method_not_allowed' });
+      const conciergeRoute = !giftId && ((action === 'booking' && ['GET','POST','DELETE'].includes(method)) || (['checkin','events'].includes(action) && method === 'POST'));
+      if (!((!action && method === 'GET') || (action === 'me' && method === 'PUT') || (action === 'actions' && method === 'POST') || giftRoute || conciergeRoute)) return response(405, { error:'method_not_allowed' });
       const bearer = request.headers.get('authorization')?.match(/^Bearer ([A-Za-z0-9_-]{22})$/)?.[1];
       if (!bearer) fail(401, 'unauthorized');
       await db.query('BEGIN');
@@ -218,6 +225,10 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       const me = people.find(x => x.id === identity.id);
       if (action === 'gifts') {
         const result = await handleGifts({ db, plan, people, me, method, giftId, readBody: () => jsonBody(request), now: now() });
+        await db.query('COMMIT'); return response(200, result);
+      }
+      if (conciergeRoute) {
+        const result = await handleConcierge({ db, plan, me, action, method, readBody: () => jsonBody(request), now: now() });
         await db.query('COMMIT'); return response(200, result);
       }
       if (action === 'me') {
@@ -248,10 +259,12 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
             if (plan.status === 'confirmed') fail(409, 'already_confirmed');
             plan.suggestion = { by:me.role, night_id:body.night_id }; plan.status = 'suggested';
             await db.query("UPDATE plans SET suggestion=$1::jsonb,status='suggested' WHERE id=$2", [JSON.stringify(plan.suggestion),plan.id]);
+            await recordEvent(db, plan.id, me.id, 'suggest', body.night_id);   // PMF: suggestions before agreement
           } else {
             if (plan.suggestion?.night_id !== body.night_id) fail(409, 'not_suggested');
             plan.confirmed_night_id = body.night_id; plan.status = 'confirmed';
             await db.query("UPDATE plans SET confirmed_night_id=$1,status='confirmed' WHERE id=$2", [body.night_id,plan.id]);
+            await recordEvent(db, plan.id, me.id, 'confirm', body.night_id);
           }
         }
       }
