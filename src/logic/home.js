@@ -34,7 +34,7 @@ export function homeSummary(state) {
   const ratedCount = (a.reactions || []).length;
   const started = ratedCount > 0 || (a.intents || []).length > 0 || !!a.planningMode;
   if (started) {
-    return { kind: 'in-progress', invited, nightId: null, planName: 'Your night', partner, planStatus: 'Picks saved on this phone', partnerStatus: null, ratedCount, resumeStep: a.pausedScreen || (ratedCount > 0 ? 's2' : 's1'), action: 'resume' };
+    return { kind: 'in-progress', invited, nightId: null, planName: 'Your night', partner, planStatus: 'Picks saved on this phone', partnerStatus: null, ratedCount, resumeStep: resumeStepFor(a, ratedCount), action: 'resume' };
   }
   return { kind: 'fresh', invited, nightId: null, planName: null, partner, planStatus: null, partnerStatus: null, action: null };
 }
@@ -42,4 +42,13 @@ export function homeSummary(state) {
 // Home opens on every ordinary open; a mid-journey plan resumes from its card.
 export function shouldShowHome() {
   return true;
+}
+
+// Where Home's Resume card returns to. A finished deck (8 reactions) goes to the synthesis
+// screen even when an older pre-completion screen was remembered. 'threshold' is a transient
+// crossfade whose auto-advance clears the deck, so it resumes at the deck instead.
+function resumeStepFor(a, ratedCount) {
+  const paused = a.pausedScreen === 'threshold' ? 's2' : a.pausedScreen;
+  if (ratedCount >= 8 && paused !== 's3' && paused !== 's4_invite') return 's3';
+  return paused || (ratedCount > 0 ? 's2' : 's1');
 }
