@@ -15,7 +15,20 @@ export function homeSummary(state) {
   if (a.savedSoloNightId) {
     return { kind: 'draft', invited, nightId: a.savedSoloNightId, planName: nightName(a.savedSoloNightId), partner, planStatus: invited ? 'Draft. Not shared yet' : 'Just yours for now', partnerStatus: shared.inviteSent ? `Invite sent to ${partner}` : invited ? `${partner} has not seen this yet` : 'Not invited yet', action: 'open-plan' };
   }
-  if (shared.inviteSent) {
+  // Phase 1 server plans only: partnerFinished and serverResult are written from
+  // the server plan view, never by the local demo. Once the partner's half is in,
+  // the card stops saying "waiting" and opens the plan screen instead.
+  // inviteSent is not required: copying the link creates the server plan without marking it sent.
+  if (shared.partnerFinished || shared.serverResult) {
+    const mine = shared.suggestion?.by === 'aarav';
+    const planStatus = !shared.serverResult ? `${partner} is done. Your night is coming together`
+      : shared.suggestion ? (mine ? `Suggested. Waiting on ${partner}` : `${partner} picked a night`)
+      : `${partner} is done. Pick your night`;
+    return { kind: 'together', invited, nightId: shared.suggestion?.nightId || null, planName: 'Your night with ' + partner, partner, planStatus, partnerStatus: `${partner} is done`, action: 'open-plan' };
+  }
+  // A server invite link exists once it is shared OR copied; copying alone never
+  // sets inviteSent, so without this the creator saw 'Resume' back into the deck.
+  if (shared.inviteSent || shared.serverInviteUrl) {
     return { kind: 'waiting', nightId: null, planName: 'Your night with ' + partner, partner, planStatus: `Waiting for ${partner}`, partnerStatus: `Invite sent. Waiting for ${partner}`, action: 'open-waiting' };
   }
   const ratedCount = (a.reactions || []).length;
