@@ -6,6 +6,7 @@ import { SafeError, fail, valid, object, keys } from './errors.js';
 import { handleGifts, handleOps, checkOpsSecret } from './gifts.js';
 import { handleConcierge, handleOpsBookings, exportCsv, recordEvent } from './concierge.js';
 import { createSolo, sharedView } from './solo.js';
+import { CITIES } from '../src/data/cities.js';
 
 const occasions = ['date_night','anniversary','proposal','birthday','quality_time','just_because'];
 const moods = new Set(INTENTS.map(x => x.id));
@@ -183,12 +184,13 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       }
       if (shared) return response(200, await sharedView({ db, token: shared[1] }));
       if (create) {
-        const body = await jsonBody(request); keys(body, ['name','partnerName','occasion']);
+        const body = await jsonBody(request); keys(body, ['name','partnerName','occasion','city']);
+        valid(Object.hasOwn(CITIES, body.city));
         const displayName = name(body.name); if (body.partnerName !== undefined) name(body.partnerName);
         valid(body.occasion === undefined || occasions.includes(body.occasion));
         const id = randomUUID(), token = secret(), seatKey = secret();
         await db.query('BEGIN');
-        await db.query('INSERT INTO plans(id,invite_token,occasion) VALUES($1,$2,$3)', [id,token,body.occasion || null]);
+        await db.query('INSERT INTO plans(id,invite_token,occasion,city) VALUES($1,$2,$3,$4)', [id,token,body.occasion || null,body.city]);
         await db.query("INSERT INTO participants(id,plan_id,role,display_name,seat_key_hash) VALUES($1,$2,'initiator',$3,$4)", [randomUUID(),id,displayName,hash(seatKey)]);
         await db.query('COMMIT');
         return response(201, { plan_id:id, invite_url:`${origin.origin}/app/?invite=${token}`, seat_key:seatKey });
