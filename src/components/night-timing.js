@@ -1,5 +1,8 @@
-// Frontend timing contract. Replace the shared.timing write with server coordination later.
+// Frontend timing contract. With a Phase 1 server seat, the together time is
+// posted to the server (set_time) and both phones read it back from the plan
+// view; without one, shared.timing stays a local write.
 import { store } from '../domain/store.js';
+import { hasServerSeat, postPlanAction } from '../domain/plan-view.js';
 import { defaultStart, buildDateStrip, isPastStart, to24h, from24h, disabledTimes, toDateKey } from '../logic/timing-picker.js';
 
 const STRIP_DAYS = 14;
@@ -74,8 +77,9 @@ export function attachNightTiming(container, nightId, sessionId, { solo = false 
     form.hidden = false;
     feed.querySelector('.milo-strip-day')?.focus({ preventScroll: true });
   });
-  form.addEventListener('submit', event => {
+  form.addEventListener('submit', async event => {
     event.preventDefault();
+    if (form.dataset.saving === 'true') return;
     const { date, time } = form.elements;
     const start = parseNightStart(date.value, time.value);
     const error = feed.querySelector('.milo-timing-error');
@@ -89,7 +93,24 @@ export function attachNightTiming(container, nightId, sessionId, { solo = false 
     const scroll = container.querySelector('.milo-s7-container')?.scrollTop || 0;
     const timing = { version: 1, nightId, date: date.value, time: time.value, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Device local time', startAt: start.toISOString(), chosenBy: sessionId };
     if (solo) store.updateSession(sessionId, { soloTimings: { ...store.getState().sessionA.soloTimings, [nightId]: timing } });
-    else store.updateShared({ timing });
+    else if (hasServerSeat()) {
+      // Save on the server first so both phones agree; the plan view it returns
+      // writes shared.timing. A failure keeps the form open with the picked time.
+      const submit = form.querySelector('[type=submit]');
+      form.dataset.saving = 'true';
+      if (submit) submit.disabled = true;
+      const outcome = await postPlanAction('set_time', undefined, { date: timing.date, time: timing.time, time_zone: timing.timeZone });
+      form.dataset.saving = 'false';
+      if (submit) submit.disabled = false;
+      if (!outcome.ok) {
+        error.textContent = outcome.reason === 'invalid' ? "Milo couldn't save that time. Pick another." : "Couldn't reach Milo. Try again.";
+        error.hidden = false;
+        return;
+      }
+      // Re-saving the time already on the server changes nothing, so no render
+      // happened; render once so the saved line replaces the open form.
+      if (form.isConnected) store.updateShared({});
+    } else store.updateShared({ timing });
     // The store renders synchronously. Restore position and focus in the replacement view.
     const replacement = document.querySelector(`#viewport-${sessionId}`);
     replacement?.querySelector('.milo-s7-container')?.scrollTo(0, scroll);
