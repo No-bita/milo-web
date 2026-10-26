@@ -136,3 +136,31 @@ The shared result goes through `src/logic/shared-result.js`. Optional server env
 intent model in `src/logic/intent/`, but only when both seats carry v3.1 quiz answers. No seat
 stores those until the new quiz screens (phase C) and server fields (phase D) ship, so today it
 has no effect. Python reference and parity data: `docs/intent-model/`.
+
+## Concierge and PMF (V1)
+
+Apply `server/concierge.sql` AFTER `schema.sql` and `gifts.sql`. It is required once this
+code ships: suggest/confirm now record a PMF event, so without the table those actions fail.
+Everything cascades with the plan (30-day cleanup also removes contacts, notes, check-ins, events).
+
+Seat-authenticated:
+- GET /api/plans/:id/booking -> {can_request, booking:{status, requested_by_me, venues, budget_band?, window_hours?, notes?}|null, checkin:{open, done}}
+  Budget/window/notes only for the requester. Venues only once ops marks it `booked`. No contact numbers.
+- POST /api/plans/:id/booking {budget_band under_2k|2k_4k|4k_7k|7k_plus, window_hours 3|4, contact, notes?}
+  Needs a confirmed night with a time (409 not_ready); one active booking per plan (409 exists).
+- DELETE /api/plans/:id/booking -> requester only, while `requested` (409 locked after).
+- POST /api/plans/:id/checkin {differently yes|partly|no, wouldnt_have?, rating 1-5, use_again, recommend yes|maybe|no,
+  would_pay nothing|under_200|200_500|500_1000|1000_plus}. Opens 09:00 (plan time zone) the day after the night; once per person.
+  Answers are never returned to either seat.
+- POST /api/plans/:id/events {type:'see_other', night_id?} -> {ok}. Capped at 200 per seat. Never returned to a seat.
+  The server itself records `suggest` and `confirm` events.
+
+Owner-only (Bearer OPS_SECRET):
+- GET /api/ops/bookings · POST /api/ops/bookings/:id {status requested|booked|failed|cancelled, venues:[{stop_index, venue, area?, time?}], ops_minutes}
+  `booked` needs at least one venue.
+- GET /api/ops/export.csv -> one row per plan with the Master Doc PMF scorecard columns (see EXPORT_COLUMNS in server/concierge.js).
+  Contact numbers are not exported; cells starting with = + - @ are prefixed with ' to stop spreadsheet formulas.
+
+Known limits: solo plans never reach the server, so the export cannot compare solo vs together (hypothesis 2) yet.
+There is no notification: people see booking updates and the check-in when they open the app.
+Tests: src/tests/concierge-api.test.mjs and src/tests/two-phone-concierge.test.mjs.

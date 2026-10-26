@@ -13,6 +13,8 @@ import { renderNightTiming, attachNightTiming, timingForNight, timingLabel } fro
 import { calendarFile } from './booked.js';
 import { renderGiftsPanel, attachGiftsPanel } from '../components/gifts-panel.js';
 import { currentGifts, refreshGifts } from '../domain/gifts.js';
+import { renderConciergePanel, attachConciergePanel } from '../components/concierge-panel.js';
+import { currentConcierge, refreshConcierge, trackSeeOther } from '../domain/concierge.js';
 import '../styles/plan-screen.css';
 
 // Edits-off copy (mockup 13), same wording as the reviewed shared-result work.
@@ -187,6 +189,7 @@ function renderAgreed(state, sessionId, confirmedId) {
         <h1 class="milo-headline">You're both in.</h1>
         <p class="milo-closing-sub">${night.name}.</p>
         ${renderNightTiming(night.id, sessionId)}
+        ${renderConciergePanel(night, sessionId)}
         <div class="milo-closing-plan">
           <div class="milo-section-label">YOUR PLAN</div>
           <div class="milo-plan-static">${tiles}</div>
@@ -226,6 +229,8 @@ export function attachPlanScreenListeners(container, sessionId = 'aarav') {
     const ids = nights.map(entry => entry.night.id);
     const active = (sessionId === 'sneha' ? live.sessionB : live.sessionA).activeNightId;
     const next = ids[(ids.indexOf(active) + 1) % ids.length] || ids[0];
+    // PMF: browsing between Milo's three nights (joint view only, not the provisional plan).
+    if (currentPlanResult(live)) trackSeeOther(next);
     store.updateSession(sessionId, { activeNightId: next });
   });
 
@@ -268,6 +273,9 @@ export function attachPlanScreenListeners(container, sessionId = 'aarav') {
     attachNightTiming(container, night.id, sessionId);
     const timing = timingForNight(night.id);
     attachGiftsPanel(container, night, sessionId, { timing });
+    attachConciergePanel(container, night, sessionId, { timing });
+    const concierge = currentConcierge();
+    if (!concierge || (!concierge.can_request && !concierge.booking && timing)) refreshConcierge();
     // First visit, or the time was just set: fetch this phone's gifts view.
     // refreshGifts only writes on a real change, so this cannot loop.
     const gifts = currentGifts();

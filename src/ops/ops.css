@@ -17,3 +17,12 @@ form { display: flex; flex-direction: column; gap: 12px; }
 .ops-error { color: var(--oxblood); font-weight: 500; }
 .ops-muted { color: var(--muted); }
 a { color: var(--oxblood); }
+.ops-section { font: 400 22px/1.2 'DM Serif Display', Georgia, serif; margin: 12px 0 0; }
+.ops-venues { border: 1px solid var(--sand); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; margin: 0; }
+.ops-venues legend { font-size: 13px; font-weight: 500; padding: 0 4px; }
+.ops-venue { display: grid; grid-template-columns: 90px 1fr; gap: 6px; align-items: center; }
+.ops-venue span { grid-row: span 3; font-weight: 500; font-size: 13px; }
+.ops-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+.ops-row label { flex: 1 1 120px; }
+.ops-status[data-status=booked], .ops-status[data-status=delivered] { background: #2f5d3a; color: #fff; }
+.ops-venue input { width: 100%; min-width: 0; box-sizing: border-box; }

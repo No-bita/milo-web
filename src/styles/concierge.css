@@ -1,0 +1,24 @@
+/* Concierge handover + check-in (agreed screen and sheets). Existing tokens only. */
+.milo-concierge { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+.milo-concierge:empty { display: none; }
+.milo-concierge-card { padding: 16px; border-radius: 16px; background: var(--color-sand); display: flex; flex-direction: column; gap: 10px; }
+.milo-concierge-card.is-offer, .milo-concierge-card.is-checkin { background: var(--color-oxblood-wash); }
+.milo-concierge-card .milo-pill-btn-primary { width: 100%; min-height: 48px; }
+.milo-concierge-eyebrow { margin: 0; font: 600 11px/1.4 var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--color-ink-muted); }
+.milo-concierge-text { margin: 0; font: 400 14px/1.5 var(--font-sans); color: var(--color-ink); }
+.milo-concierge-thanks { margin: 0; font: 400 13px/1.5 var(--font-sans); color: var(--color-ink-muted); }
+.milo-concierge-link { align-self: flex-start; min-height: 32px; padding: 0; border: 0; background: none; font: 500 13px/1 var(--font-sans); color: var(--color-ink-muted); text-decoration: underline; cursor: pointer; }
+.milo-booked-stops { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.milo-booked-stops li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; }
+.milo-booked-stop { font: 600 11px/1.4 var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted); grid-column: 1 / -1; }
+.milo-booked-venue { font: 400 18px/1.3 var(--font-serif); color: var(--color-ink); overflow-wrap: anywhere; }
+.milo-booked-time { font: 500 13px/1.6 var(--font-sans); color: var(--color-ink); white-space: nowrap; }
+.milo-choice { margin: 0; padding: 0; border: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.milo-choice legend { width: 100%; padding: 0; margin-bottom: 8px; font: 500 13px/1.4 var(--font-sans); color: var(--color-ink); }
+.milo-choice-pill { position: relative; cursor: pointer; }
+.milo-choice-pill input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.milo-choice-pill span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--color-taupe); border-radius: 999px; background: #fff; font: 500 14px/1 var(--font-sans); color: var(--color-ink); }
+.milo-choice-pill input:checked + span { border-color: var(--color-oxblood); background: var(--color-oxblood); color: var(--color-on-dark); }
+.milo-choice-pill input:focus-visible + span { outline: 2px solid var(--color-oxblood); outline-offset: 2px; }
+.milo-concierge [hidden], .milo-concierge-sheet [hidden] { display: none !important; }
+.milo-gift-form fieldset.milo-choice { flex-direction: row; flex-wrap: wrap; gap: 8px; }

@@ -16,8 +16,7 @@ const DAY = 86400000;
 
 before(async () => {
   db = new PGlite();
-  await db.exec(await readFile(new URL('../../server/schema.sql', import.meta.url), 'utf8'));
-  await db.exec(await readFile(new URL('../../server/gifts.sql', import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
   let tail = Promise.resolve();
   const acquire = async () => { const previous = tail; let release; tail = new Promise(r => { release = r; }); await previous; return { query: (q, a) => db.query(q, a), release }; };
   api = createApi({ acquire, clientIp: () => '127.0.0.1', now: () => clock,
