@@ -5,6 +5,7 @@ import { store } from '../domain/store.js';
 import { currentConcierge, requestBooking, cancelBooking, sendCheckin } from '../domain/concierge.js';
 import { escapeHtml, partnerLabel } from '../logic/partner.js';
 import { timingLabel } from './night-timing.js';
+import { openGiftSheet } from './gifts-panel.js';
 import '../styles/concierge.css';
 
 // Copy is a first draft for review.
@@ -65,7 +66,7 @@ export function renderConciergePanel(night, sessionId) {
 
 export function attachConciergePanel(container, night, sessionId, { timing } = {}) {
   const note = text => { const el = container.querySelector(`#miloConciergeNote-${sessionId}`); if (el) { el.textContent = text; el.hidden = !text; } };
-  container.querySelector(`#miloBookingOpen-${sessionId}`)?.addEventListener('click', () => openBookingSheet(timing));
+  container.querySelector(`#miloBookingOpen-${sessionId}`)?.addEventListener('click', () => openBookingSheet(timing, { night }));
   container.querySelector(`#miloCheckinOpen-${sessionId}`)?.addEventListener('click', () => openCheckinSheet());
   const cancel = container.querySelector(`#miloBookingCancel-${sessionId}`);
   cancel?.addEventListener('click', async () => {
@@ -75,7 +76,8 @@ export function attachConciergePanel(container, night, sessionId, { timing } = {
   });
 }
 
-function sheet(label, html, onSubmit) {
+// after(form): runs once the sheet has closed after a successful submit.
+function sheet(label, html, onSubmit, after) {
   document.querySelector('.milo-concierge-sheet')?.remove();
   const dialog = document.createElement('dialog');
   dialog.className = 'milo-invite-feedback milo-gift-sheet milo-concierge-sheet';
@@ -91,7 +93,7 @@ function sheet(label, html, onSubmit) {
     const error = form.querySelector('.milo-gift-error');
     const submit = form.querySelector('[type=submit]');
     const problem = await onSubmit(form, () => { submit.disabled = true; });
-    if (problem) { error.textContent = problem; error.hidden = false; submit.disabled = false; } else dialog.close();
+    if (problem) { error.textContent = problem; error.hidden = false; submit.disabled = false; } else { dialog.close(); after?.(form); }
   });
   document.body.append(dialog);
   dialog.addEventListener('close', () => dialog.remove(), { once: true });
@@ -103,14 +105,17 @@ const radios = (name, options, legend) => `<fieldset class="milo-choice"><legend
   `<label class="milo-choice-pill"><input type="radio" name="${name}" value="${v}"><span>${l}</span></label>`).join('')}</fieldset>`;
 const picked = (form, name) => form.querySelector(`input[name="${name}"]:checked`)?.value;
 
-export function openBookingSheet(timing) {
+// night: when given, the sheet offers "Add a surprise", opened right after the request succeeds.
+export function openBookingSheet(timing, { night } = {}) {
   const from = timing ? timingLabel(timing) : 'your agreed time';
   sheet('Let Milo book it', `<h2>Let Milo book it</h2>
     <p>We book every stop for ${escapeHtml(from)} and confirm on WhatsApp. Nothing is charged in the app.</p>
     ${radios('budget_band', BUDGETS, 'Budget for two')}
     ${radios('window_hours', { 3: '3 hours', 4: '4 hours' }, 'How long is the night?')}
     <label>Your WhatsApp number<input name="contact" type="tel" inputmode="tel" maxlength="20" placeholder="+91 98765 43210" autocomplete="tel"></label>
-    <label>Anything we should know? (optional)<textarea name="requests" maxlength="1000" rows="3" placeholder="Area, diet, no alcohol, a place you love"></textarea></label>`,
+    <label>Anything we should know? (optional)<textarea name="requests" maxlength="1000" rows="3" placeholder="Area, diet, no alcohol, a place you love"></textarea></label>
+    ${night ? `<label class="milo-gift-check"><input type="checkbox" name="add_surprise"> Add a surprise</label>
+    <p class="milo-gift-sub">Something waiting at the table, at their door, or a note for later. Only you see what you pick.</p>` : ''}`,
   async (form, busy) => {
     const body = { budget_band: picked(form, 'budget_band'), window_hours: Number(picked(form, 'window_hours')), contact: form.elements.contact.value.trim() };
     const requests = form.elements.requests.value.trim(); if (requests) body.requests = requests;
@@ -120,6 +125,8 @@ export function openBookingSheet(timing) {
     busy();
     const r = await requestBooking(body);
     return r.ok ? '' : errorText(r);
+  }, form => {
+    if (night && form.elements.add_surprise?.checked) openGiftSheet(night, timing);
   });
 }
 

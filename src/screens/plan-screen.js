@@ -190,11 +190,11 @@ function renderAgreed(state, sessionId, confirmedId) {
         <p class="milo-closing-sub">${night.name}.</p>
         ${renderNightTiming(night.id, sessionId, { allowPast: Boolean(currentConcierge()?.booking || currentConcierge()?.checkin?.open) })}
         ${renderConciergePanel(night, sessionId)}
+        ${renderGiftsPanel(night, sessionId)}
         <div class="milo-closing-plan">
           <div class="milo-section-label">YOUR PLAN</div>
           <div class="milo-plan-static">${tiles}</div>
         </div>
-        ${renderGiftsPanel(night, sessionId)}
       </div>
       <div class="milo-closing-footer">
         <button class="milo-pill-btn-secondary" id="miloPsShare-${sessionId}">Share plan on WhatsApp</button>

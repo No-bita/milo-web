@@ -53,6 +53,8 @@ export function renderRequests(sessionId = 'aarav') {
       ${live ? `${pills('budget_band', BUDGETS, 'Budget for two')}
         ${pills('window_hours', { 3: '3 hours', 4: '4 hours' }, 'How long is the night?')}
         <label>Your WhatsApp number<input name="contact" type="tel" inputmode="tel" maxlength="20" placeholder="+91 98765 43210" autocomplete="tel"></label>
+        <label class="milo-gift-check"><input type="checkbox" name="add_surprise" id="miloReqSurpriseGift"> Add a surprise</label>
+        <p class="milo-gift-sub">Something waiting at the table or at their door. You pick it right after this.</p>
         <p class="milo-req-fineprint">Milo books every stop and confirms on WhatsApp. Nothing is charged in the app.</p>`
       : `<p class="milo-req-fineprint">Preview: this is saved on this phone. Nothing is booked.</p>`}
       <p class="milo-gift-error" id="miloReqError" role="alert" hidden></p>
@@ -88,7 +90,8 @@ export function attachRequestsListeners(container, sessionId = 'aarav') {
   container.querySelector('#miloReqBack')?.addEventListener('click', () => store.updateSession(sessionId, { bookingDraft: note.value, bookingSurprise: surprise.checked, screen: 's4_waiting' }));
   const error = container.querySelector('#miloReqError');
   const fail = (text) => { error.textContent = text; error.hidden = !text; };
-  const done = (text) => store.updateSession(sessionId, { bookingRequests: text, bookingSurprise: surprise.checked, bookingDraft: null, screen: 'booked' });
+  // pendingSurprise: the booked screen opens the surprise sheet once, right after the request lands.
+  const done = (text) => store.updateSession(sessionId, { bookingRequests: text, bookingSurprise: surprise.checked, bookingDraft: null, pendingSurprise: Boolean(form.elements.add_surprise?.checked), screen: 'booked' });
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const text = note.value.trim().slice(0, REQUEST_MAX);

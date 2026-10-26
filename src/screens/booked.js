@@ -3,6 +3,7 @@ import { partnerLabel, isInvited } from '../logic/partner.js';
 import { NIGHTS_POOL } from '../data/mockData.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
 import { soloSeatFor, currentSoloBooking, sendSoloCheckin } from '../domain/solo.js';
+import { currentGifts, refreshGifts } from '../domain/gifts.js';
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -68,6 +69,7 @@ export function renderBooked(sessionId = 'aarav') {
         <div class="milo-booked-seal" aria-hidden="true"><span>m.</span></div>
       </article>
       ${privateBox}
+      ${live ? '<div id="miloBookedGifts"></div>' : ''}
     </div>
     <div class="milo-booked-cta">
       <button class="milo-cta-button" type="button" id="miloBookedDone">Done</button>
@@ -138,7 +140,37 @@ export function calendarFile(night, timing) {
   ].join('\r\n');
 }
 
+// The solo night as booked, with the planner's own stop swaps.
+function soloNight(state) {
+  const { night, timing } = nightFromState(state);
+  const overrides = state.sessionA.soloItineraryOverrides?.[night.id] || {};
+  return { night: { ...night, beats: night.beats.map((beat, i) => overrides[i] || beat) }, timing };
+}
+
+// Solo surprises: opened right after booking when asked for in the booking step,
+// and listed here once added. Loaded on demand (the panel imports a stylesheet).
+function attachSoloGifts(container, sessionId) {
+  const state = store.getState();
+  const { night, timing } = soloNight(state);
+  if (sessionId === 'sneha' || !soloSeatFor(night.id)) return false;
+  if (state.sessionA.pendingSurprise) {
+    store.updateSession('aarav', { pendingSurprise: false });
+    import('../components/gifts-panel.js').then(m => m.openGiftSheet(night, timing, { solo: true }));
+    return true;
+  }
+  const slot = container.querySelector('#miloBookedGifts');
+  if (!currentGifts()) { refreshGifts(); return false; }
+  if (slot) import('../components/gifts-panel.js').then(m => {
+    if (!slot.isConnected) return;
+    slot.innerHTML = m.renderGiftsPanel(night, sessionId, { solo: true, listOnly: true });
+    m.attachGiftsPanel(slot, night, sessionId, { timing, solo: true });
+  });
+  return false;
+}
+
 export function attachBookedListeners(container, sessionId = 'aarav') {
+  // A re-render already wired the fresh screen when the surprise sheet opened.
+  if (attachSoloGifts(container, sessionId)) return;
   /* Calendar sync commented out for now:
   container.querySelector('#miloBookedCalendar')?.addEventListener('click', () => {
     const { night, timing } = nightFromState(store.getState());
