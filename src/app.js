@@ -35,6 +35,9 @@ import { renderSealedWaiting, attachSealedWaitingListeners } from './screens/sea
 import { planScreenApplies, renderPlanScreen, attachPlanScreenListeners } from './screens/plan-screen.js';
 import { refreshPlan } from './domain/plan-view.js';
 import { refreshGifts } from './domain/gifts.js';
+import { refreshConcierge } from './domain/concierge.js';
+import { refreshSolo } from './domain/solo.js';
+import { showSharedPlan } from './screens/shared-plan.js';
 
 // Partner A waits on the sealed screen until the partner's half lands.
 function showSealedWaiting() {
@@ -198,6 +201,11 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   const screenParam = urlParams.get('screen');
 
   // Server invite (/app/?invite=<token>, no ?as): the partner joins a real plan. Only with the launch flag.
+  // Shared solo plan (/app/?shared=<token>): read-only, for the planner's partner.
+  if (isPhase1Enabled() && urlParams.has('shared')) {
+    showSharedPlan(container, urlParams.get('shared'));
+    return;
+  }
   if (isPhase1Enabled() && urlParams.has('invite') && !urlParams.has('as')) {
     showPartnerJoin(container, urlParams.get('invite'));
     return;
@@ -206,7 +214,7 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   // Plan state refreshes on app open and on return to the tab only - no timers,
   // no repeated checks while the screen stays open.
   // Gifts follow the plan: their reveal times depend on the confirmed night and time.
-  const refreshAll = () => refreshPlan().then(() => refreshGifts());
+  const refreshAll = () => Promise.all([refreshPlan().then(() => Promise.all([refreshGifts(), refreshConcierge()])), refreshSolo()]);
   const onVisibilityRefresh = () => { if (document.visibilityState === 'visible') refreshAll(); };
   const onFocusRefresh = () => refreshAll();
   if (isPhase1Enabled()) {

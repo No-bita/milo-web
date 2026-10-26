@@ -22,11 +22,11 @@ has no PostHog dependency. The public analytics token also uses secure entry.
 
 The Vercel rewrite routes all /api paths to one Node fetch handler; the
 platform passes the original subpath as the `path` query param and the handler
-reconstructs it. A single 00:00 UTC cron calls /api/cleanup/ daily using
-Vercel's CRON_SECRET bearer: the trailing slash is required because
-trailingSlash redirects /api/cleanup and cron requests do not follow the 308.
-Cleanup stays authenticated and runs even while MILO_PHASE1_ENABLED is off, so
-stored plans are still deleted while the product API is paused.
+reconstructs it. Retention: nothing is deleted. GET /api/cleanup is kept as an
+authenticated no-op (CRON_SECRET bearer, returns {deleted:0}, works while
+MILO_PHASE1_ENABLED is off) so an external scheduler, if one exists, keeps
+getting 200. No schedule is configured in this repo. Stored plans, bookings,
+check-ins, events and gifts are kept indefinitely.
 Do not copy it to a different host without replacing trusted IP handling and
 arranging an authenticated daily scheduler. No cross-origin CORS is enabled.
 Every response is no-store. Bodies are capped at 8 KiB. SQL is parameterized.
@@ -80,8 +80,8 @@ is not stored. This is simple per-IP protection, not edge bot protection.
 3. Frontend polling remains 5s -> 30s, stops at 10min. The manual within-30s
    expectation still conflicts with the slow cadence. Not quietly fixed.
 4. Rate-limit rows are not cleaned; writes wake Neon. Compute-hours and
-   accumulated counters need monitoring before scale. Cleanup only cascades
-   plans/participants older than 30 days (30-31 days with daily scheduling).
+   accumulated counters need monitoring before scale. Nothing is deleted
+   automatically, so stored data and the rate-limit table only grow.
 5. Free-host terms/limits and fallback eligibility are launch decisions, not
    optimisations that code can certify. No production launch is claimed.
 
@@ -100,8 +100,10 @@ manual checklist in v2 after account setup and approved frontend wiring.
 ## Gifting (V1)
 
 Off with the rest of Phase 1 (`MILO_PHASE1_ENABLED`). Apply `server/gifts.sql`
-AFTER `server/schema.sql`. Gifts cascade-delete with their plan, so the daily
-cleanup also removes delivery addresses and contact numbers after 30 days.
+AFTER `server/schema.sql`. Gifts are kept: removing a gift marks it
+'cancelled' (hidden from both seats, kept in the ops list), so delivery
+addresses and contact numbers are retained. Database-level ON DELETE CASCADE
+remains, so a manual plan deletion would still remove them.
 Owner adds one more server env var for the ops page: `OPS_SECRET` (random,
 16+ characters). Without it, `/api/ops/*` returns 503 (fails closed).
 
@@ -136,3 +138,46 @@ The shared result goes through `src/logic/shared-result.js`. Optional server env
 intent model in `src/logic/intent/`, but only when both seats carry v3.1 quiz answers. No seat
 stores those until the new quiz screens (phase C) and server fields (phase D) ship, so today it
 has no effect. Python reference and parity data: `docs/intent-model/`.
+
+## Concierge and PMF (V1)
+
+Apply `server/concierge.sql` AFTER `schema.sql` and `gifts.sql`. It is required once this
+code ships: suggest/confirm now record a PMF event, so without the table those actions fail.
+Nothing is deleted automatically: contacts, notes, check-ins and events are kept. Database-level ON DELETE CASCADE remains for any manual plan deletion.
+
+Seat-authenticated:
+- GET /api/plans/:id/booking -> {can_request, booking:{status, requested_by_me, venues, budget_band?, window_hours?, notes?}|null, checkin:{open, done}}
+  Budget/window/notes only for the requester. Venues only once ops marks it `booked`. No contact numbers.
+- POST /api/plans/:id/booking {budget_band under_2k|2k_4k|4k_7k|7k_plus, window_hours 3|4, contact, notes?}
+  Needs a confirmed night with a time (409 not_ready); one active booking per plan (409 exists).
+- DELETE /api/plans/:id/booking -> requester only, while `requested` (409 locked after).
+- POST /api/plans/:id/checkin {differently yes|partly|no, wouldnt_have?, rating 1-5, use_again, recommend yes|maybe|no,
+  would_pay nothing|under_200|200_500|500_1000|1000_plus}. Opens 09:00 (plan time zone) the day after the night; once per person.
+  Answers are never returned to either seat.
+- POST /api/plans/:id/events {type:'see_other', night_id?} -> {ok}. Capped at 200 per seat. Never returned to a seat.
+  The server itself records `suggest` and `confirm` events.
+
+Owner-only (Bearer OPS_SECRET):
+- GET /api/ops/bookings · POST /api/ops/bookings/:id {status requested|booked|failed|cancelled, venues:[{stop_index, venue, area?, time?}], ops_minutes}
+  `booked` needs at least one venue.
+- GET /api/ops/export.csv -> one row per plan with the Master Doc PMF scorecard columns (see EXPORT_COLUMNS in server/concierge.js).
+  Contact numbers are not exported; cells starting with = + - @ are prefixed with ' to stop spreadsheet formulas.
+
+Solo plans reach the server too (see below), so the export can compare solo vs together via `mode`.
+There is no notification: people see booking updates and the check-in when they open the app.
+Tests: src/tests/concierge-api.test.mjs and src/tests/two-phone-concierge.test.mjs.
+
+## Solo plans and share link (V1)
+
+Apply `server/solo.sql` AFTER `schema.sql`, `gifts.sql` and `concierge.sql` (required once this ships: the
+invite and export queries read the new `mode` column).
+
+- POST /api/plans/solo (public, per-IP `create` limit) {name, occasion?, night_id, night_rank?, timing, stops?, intents, reactions,
+  booking:{budget_band, window_hours, contact, requests? (<=1000), surprise (default true)}} -> 201 {plan_id, seat_key, share_url}.
+  Creates a confirmed one-seat plan (mode `solo`) and its booking request in one transaction. Its invite token is never accepted.
+- The solo seat then uses the normal seat routes: GET/POST/DELETE /booking (requester view now includes `requests` and `surprise`)
+  and POST /checkin. The app keeps the solo seat in `milo_solo_seat_v1`, separate from the Together seat.
+- GET /api/shared/:token (public, per-IP `preview` limit) -> {from, night, stops, timing, status planned|booking|booked, venues, requests}.
+  `requests` is null when the planner kept them a surprise. Never returns contact, budget, notes, picks or check-ins.
+- Ops: booking rows carry `mode`, `requests`, `surprise`; solo plans show SOLO and the surprise flag. The CSV gains
+  `mode`, `requests_given` and `surprise`; for solo plans `confirmed_rank` is the night's position (1-3) in the planner's list.

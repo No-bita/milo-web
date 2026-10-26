@@ -113,7 +113,9 @@ const ownGift = g => ({
 });
 
 // The ONLY projection of gifts sent to a seat. Explicit allowlists, no spreads.
-export function giftsView(plan, people, me, gifts, now) {
+export function giftsView(plan, people, me, allGifts, now) {
+  // Removed gifts are kept as 'cancelled' rows (nothing is deleted) and never shown to either seat.
+  const gifts = allGifts.filter(g => g.status !== 'cancelled');
   const other = people.find(p => p.id !== me.id);
   const times = revealTimes(plan.timing);
   const mine = gifts.filter(g => g.giver_id === me.id && g.kind !== 'memory').map(ownGift);
@@ -156,7 +158,7 @@ export async function handleGifts({ db, plan, people, me, method, giftId, readBo
     if (gift.kind === 'memory' && now < revealTimes(plan.timing).start) fail(409, 'not_ready');
     const existing = (await load()).filter(g => g.giver_id === me.id);
     const physical = GIFT_KINDS[gift.kind]?.physical;
-    const count = existing.filter(g => physical ? GIFT_KINDS[g.kind]?.physical && g.status !== 'cancelled' : g.kind === gift.kind).length;
+    const count = existing.filter(g => physical ? GIFT_KINDS[g.kind]?.physical && g.status !== 'cancelled' : g.kind === gift.kind && g.status !== 'cancelled').length;
     if (count >= (physical ? GIFT_LIMITS.physical : GIFT_LIMITS[gift.kind])) fail(409, 'limit');
     await db.query(`INSERT INTO gifts(id,plan_id,giver_id,kind,item_id,stop_index,venue,address,deliver_window,note,contact,show_hint,status)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
@@ -166,12 +168,13 @@ export async function handleGifts({ db, plan, people, me, method, giftId, readBo
   if (method === 'DELETE' && giftId) {
     valid(giftIdPattern.test(giftId));
     const { rows: [gift] } = await db.query('SELECT * FROM gifts WHERE id=$1 AND plan_id=$2 AND giver_id=$3', [giftId, plan.id, me.id]);
-    if (!gift || gift.kind === 'memory') fail(404, 'not_found');
+    if (!gift || gift.kind === 'memory' || gift.status === 'cancelled') fail(404, 'not_found');
     const times = revealTimes(plan.timing);
     const locked = GIFT_KINDS[gift.kind].physical ? gift.status !== 'requested'
       : !times || now >= (gift.kind === 'teaser' ? times.teaser : times.start);
     if (locked) fail(409, 'locked');
-    await db.query('DELETE FROM gifts WHERE id=$1', [gift.id]);
+    // Keep the row: removal marks it cancelled, so no stored data is deleted.
+    await db.query("UPDATE gifts SET status='cancelled', updated_at=now() WHERE id=$1", [gift.id]);
     return giftsView(plan, people, me, await load(), now);
   }
   return null;
@@ -208,7 +211,7 @@ export async function handleOps({ db, method, giftId, readBody }) {
     valid(giftIdPattern.test(giftId));
     const body = await readBody(); keys(body, ['status']);
     valid(GIFT_STATUSES.includes(body.status));
-    const { rows } = await db.query("UPDATE gifts SET status=$1, updated_at=now() WHERE id=$2 AND kind IN ('moment_drop','home_delivery') RETURNING id,status", [body.status, giftId]);
+    const { rows } = await db.query("UPDATE gifts SET status=$1, updated_at=now() WHERE id=$2 AND status <> 'cancelled' AND kind IN ('moment_drop','home_delivery') RETURNING id,status", [body.status, giftId]);
     if (!rows.length) fail(404, 'not_found');
     return { id: rows[0].id, status: rows[0].status };
   }

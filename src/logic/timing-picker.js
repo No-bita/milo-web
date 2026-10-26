@@ -42,15 +42,20 @@ export function from24h(time) {
 }
 export const snapMinute = m => (Math.round(m / 5) * 5) % 60;
 
-// Which hours/minutes are disabled for the chosen day (only matters for today).
-export function disabledTimes(date, now = new Date()) {
-  if (date !== toDateKey(now)) return () => false;
-  return time => isPastStart(date, time, now);
+// Milo needs time to book: a start must be at least this far away.
+export const MIN_LEAD_MINUTES = 180;
+
+// A start is too soon when it is less than MIN_LEAD_MINUTES from now (or past).
+export function isTooSoon(date, time, now = new Date(), leadMinutes = MIN_LEAD_MINUTES) {
+  return isPastStart(date, time, new Date(now.getTime() + leadMinutes * 60000));
 }
 
-// Default start: 7:30 PM today, or tomorrow if that has already passed.
-export function defaultStart(now = new Date()) {
-  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 19, 30);
-  if (t.getTime() <= now.getTime()) t.setDate(t.getDate() + 1);
-  return { date: toDateKey(t), time: '19:30' };
+// Which hours/minutes are disabled for the chosen day. Only today (and, late at
+// night, tomorrow's earliest hours) can fall inside the booking lead time.
+export function disabledTimes(date, now = new Date(), leadMinutes = MIN_LEAD_MINUTES) {
+  const edge = new Date(now.getTime() + leadMinutes * 60000);
+  if (date > toDateKey(edge)) return () => false;
+  return time => isTooSoon(date, time, now, leadMinutes);
 }
+
+// No default: the picker starts empty so a time is always a real choice.

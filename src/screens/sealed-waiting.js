@@ -3,6 +3,7 @@ import { partnerLabel } from '../logic/partner.js';
 import { NIGHTS_POOL, INTENTS } from '../data/mockData.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
 import { copyInvite } from '../components/invite-feedback.js';
+import { soloSeatFor } from '../domain/solo.js';
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -24,8 +25,8 @@ export function renderSealedWaiting(sessionId = 'aarav') {
   return `<div class="milo-booked" data-session-id="${sessionId}">
     <header class="milo-header"><span class="milo-wordmark">milo.</span></header>
     <div class="milo-booked-body">
-      <h1 class="milo-booked-title">Sealed.</h1>
-      <p class="milo-booked-sub">${solo ? 'Your night is set.' : `Your half is done. Waiting on ${escape(partner)}'s.`}</p>
+      <h1 class="milo-booked-title">${solo ? 'Your night is set.' : 'Your half is in.'}</h1>
+      <p class="milo-booked-sub">${solo ? 'Want Milo to book it?' : `Waiting on ${escape(partner)}'s half.`}</p>
       <article class="milo-booked-card" aria-label="${solo ? 'Your night' : 'Your night so far'}">
         <p class="milo-booked-label">${solo ? 'YOUR NIGHT' : 'YOUR NIGHT, SO FAR'}</p>
         <h2 class="milo-booked-night">${escape(night.name)}</h2>
@@ -34,11 +35,10 @@ export function renderSealedWaiting(sessionId = 'aarav') {
         <p class="milo-booked-reason">${escape(night.reasonLine)}</p>
         <ul class="milo-booked-beats">${beats}</ul>
         ${solo ? '' : `<p class="milo-booked-ref">Milo blends it with ${escape(partner)}'s picks once they're in.</p>`}
-        <div class="milo-booked-seal" aria-hidden="true"><span>m.</span></div>
       </article>
     </div>
     ${solo ? `<div class="milo-booked-cta">
-      <button class="milo-cta-button" type="button" id="miloBookedBook">Book this night</button>
+      <button class="milo-cta-button" type="button" id="miloBookedBook">${soloSeatFor(night.id) ? 'See your booking' : 'Let Milo book it'}</button>
       <button class="milo-text-button" type="button" id="miloBookedInvite">Bring ${escape(partner)} in</button>
     </div>` : `<div class="milo-booked-cta">
       <div class="milo-booked-cta-row">
@@ -50,6 +50,10 @@ export function renderSealedWaiting(sessionId = 'aarav') {
 }
 
 export function attachSealedWaitingListeners(container, sessionId = 'aarav') {
-  container.querySelector('#miloBookedBook')?.addEventListener('click', () => store.setSessionScreen(sessionId, 'requests'));
+  // "Sealed" is reserved for after booking; an already-booked night goes straight there.
+  container.querySelector('#miloBookedBook')?.addEventListener('click', () => {
+    const a = store.getState().sessionA;
+    store.setSessionScreen(sessionId, soloSeatFor(a.savedSoloNightId || a.activeNightId) ? 'booked' : 'requests');
+  });
   container.querySelector('#miloBookedInvite')?.addEventListener('click', () => copyInvite({ onPrepared: () => {} }));
 }

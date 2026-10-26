@@ -107,11 +107,11 @@ test('gifts stay secret, reveal on time, and reach the ops list', async () => {
     await ops.page.locator('.ops-error').waitFor();
     await ops.page.locator('#opsKey').fill(server.opsSecret);
     await ops.page.locator('#opsLogin button').click();
-    const card = ops.page.locator('.ops-gift', { hasText: 'Hand-tied bouquet' });
+    const card = ops.page.locator('.ops-gift:not(.ops-booking)', { hasText: 'Hand-tied bouquet' });
     await card.waitFor();
     const text = await card.textContent();
     for (const detail of ['Asha', 'Ravi', 'Courtyard Cafe, Indiranagar', 'Happy Saturday', '+919876543210', 'Hint shown: yes']) assert.ok(text.includes(detail), `ops card missing ${detail}`);
-    assert.equal(await ops.page.locator('.ops-gift').count(), 1, 'digital gifts are not in the ops list');
+    assert.equal(await ops.page.locator('.ops-gift:not(.ops-booking)').count(), 1, 'digital gifts are not in the ops list');
     await card.locator('select').selectOption('dispatched');
     await card.locator('.ops-status', { hasText: 'dispatched' }).waitFor();
     await comeBack(a.page);

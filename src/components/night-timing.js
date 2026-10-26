@@ -3,7 +3,7 @@
 // view; without one, shared.timing stays a local write.
 import { store } from '../domain/store.js';
 import { hasServerSeat, postPlanAction } from '../domain/plan-view.js';
-import { defaultStart, buildDateStrip, isPastStart, to24h, from24h, disabledTimes, toDateKey } from '../logic/timing-picker.js';
+import { buildDateStrip, isPastStart, isTooSoon, to24h, from24h, disabledTimes, toDateKey } from '../logic/timing-picker.js';
 
 const STRIP_DAYS = 14;
 const FACE = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -37,12 +37,22 @@ export function timingLabel(timing) {
 
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-export function renderNightTiming(nightId, sessionId, { solo = false } = {}) {
+// A saved time that has already passed is not a plan: unless the caller says the
+// night is booked or done (allowPast), it is treated as unset and re-asked.
+export function liveTimingForNight(nightId, { solo = false, allowPast = false } = {}) {
   const timing = timingForNight(nightId, { solo });
+  return timing && !allowPast && isPastStart(timing.date, timing.time) ? null : timing;
+}
+
+export function renderNightTiming(nightId, sessionId, { solo = false, allowPast = false } = {}) {
+  const saved = timingForNight(nightId, { solo });
+  const timing = liveTimingForNight(nightId, { solo, allowPast });
+  const stale = Boolean(saved && !timing);
   const id = `milo-timing-${sessionId}`;
   return `
     <section class="milo-timing-feed" aria-labelledby="${id}-title">
       <h2 id="${id}-title">When's your night?</h2>
+      ${stale ? `<p class="milo-timing-stale" role="status">${escape(timingLabel(saved))} has passed. Pick a new time.</p>` : ''}
       <p class="milo-timing-saved" role="status" ${timing ? '' : 'hidden'}>${timing ? escape(timingLabel(timing)) : ''}</p>
       <form class="milo-timing-form" ${timing ? 'hidden' : ''} novalidate>
         <input type="hidden" name="date" value="${timing ? timing.date : ''}">
@@ -59,7 +69,8 @@ export function renderNightTiming(nightId, sessionId, { solo = false } = {}) {
           <div class="milo-clock-nums"></div>
         </div>
         <p class="milo-timing-error" role="alert" hidden></p>
-        <button type="submit" class="milo-pill-btn-primary">Set the time</button>
+        <p class="milo-timing-hint">Milo needs about 3 hours to book, so earlier times today are off.</p>
+        <button type="submit" class="milo-pill-btn-primary" disabled>Set the time</button>
       </form>
       <button type="button" class="milo-secondary-link milo-timing-change" ${timing ? '' : 'hidden'}>Change date &amp; time</button>
     </section>`;
@@ -89,6 +100,7 @@ export function attachNightTiming(container, nightId, sessionId, { solo = false 
       return;
     }
     if (isPastStart(date.value, time.value)) { error.textContent = 'That time has already passed.'; error.hidden = false; return; }
+    if (isTooSoon(date.value, time.value)) { error.textContent = 'Give Milo at least 3 hours to book it. Pick a later time.'; error.hidden = false; return; }
     error.hidden = true;
     const scroll = container.querySelector('.milo-s7-container')?.scrollTop || 0;
     const timing = { version: 1, nightId, date: date.value, time: time.value, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Device local time', startAt: start.toISOString(), chosenBy: sessionId };
@@ -129,9 +141,12 @@ function wirePicker(feed, form) {
   const dateInput = form.elements.date, timeInput = form.elements.time;
   const pad = n => String(n).padStart(2, '0');
 
+  const submit = form.querySelector('[type=submit]');
   const sync = () => {
     const ok = sel.hour != null && sel.minute != null;
     timeInput.value = ok ? to24h(sel.hour, sel.minute, sel.meridiem) : '';
+    // Nothing is pre-selected: "Set the time" waits for a real day and time.
+    if (form.dataset.saving !== 'true') submit.disabled = !(dateInput.value && timeInput.value);
     parts.hour.textContent = sel.hour == null ? '--' : pad(sel.hour);
     parts.minute.textContent = sel.minute == null ? '--' : pad(sel.minute);
     ampm.forEach(b => b.setAttribute('aria-checked', String(b.dataset.m === sel.meridiem)));
@@ -155,7 +170,7 @@ function wirePicker(feed, form) {
   };
   const reconcile = () => {
     // A day change can make the chosen time past (today only). Clear it rather than keep an invalid time.
-    if (timeInput.value && isPastStart(dateInput.value, timeInput.value)) { sel.hour = sel.minute = null; clock.dataset.mode = 'hour'; }
+    if (timeInput.value && isTooSoon(dateInput.value, timeInput.value)) { sel.hour = sel.minute = null; clock.dataset.mode = 'hour'; }
     sync(); draw();
   };
   const pick = key => {
@@ -173,8 +188,7 @@ function wirePicker(feed, form) {
   });
   Object.entries(parts).forEach(([k, el]) => el.addEventListener('click', () => { clock.dataset.mode = k; draw(); }));
   ampm.forEach(b => b.addEventListener('click', () => { sel.meridiem = b.dataset.m; reconcile(); }));
-  // Restore an existing value when the form is reopened via Change.
-  if (!dateInput.value && !timeInput.value) { const d = defaultStart(); dateInput.value = d.date; timeInput.value = d.time; }
+  // Restore the person's own earlier choice when the form is reopened via Change; never invent one.
   const had = from24h(timeInput.value);
   if (had) { sel.hour = had.hour12; sel.minute = had.minute; sel.meridiem = had.meridiem; }
   sync(); draw();

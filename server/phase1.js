@@ -4,6 +4,8 @@ import { INTENTS, EXPERIENCE_POOL, NIGHTS_POOL } from '../src/data/mockData.js';
 import { computeSharedResult } from '../src/logic/shared-result.js';
 import { SafeError, fail, valid, object, keys } from './errors.js';
 import { handleGifts, handleOps, checkOpsSecret } from './gifts.js';
+import { handleConcierge, handleOpsBookings, exportCsv, recordEvent } from './concierge.js';
+import { createSolo, sharedView } from './solo.js';
 
 const occasions = ['date_night','anniversary','proposal','birthday','quality_time','just_because'];
 const moods = new Set(INTENTS.map(x => x.id));
@@ -127,15 +129,18 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       const path = (rewritten ? `/api/${url.searchParams.get('path')}` : url.pathname).replace(/\/+$/, '');
       const method = request.method;
       const create = path === '/api/plans' && method === 'POST';
+      const soloCreate = path === '/api/plans/solo' && method === 'POST';
+      const shared = method === 'GET' ? path.match(/^\/api\/shared\/([A-Za-z0-9_-]+)$/) : null;
       const invite = path.match(/^\/api\/invites\/([A-Za-z0-9_-]+)(\/join)?$/);
-      const planPath = path.match(/^\/api\/plans\/([^/]+)(\/(me|actions|gifts)(?:\/([^/]+))?)?$/);
-      const opsPath = path.match(/^\/api\/ops\/gifts(?:\/([^/]+))?$/);
+      const planPath = path.match(/^\/api\/plans\/([^/]+)(\/(me|actions|gifts|booking|checkin|events)(?:\/([^/]+))?)?$/);
+      const opsPath = path.match(/^\/api\/ops\/(gifts|bookings|export\.csv)(?:\/([^/]+))?$/);
       const cleanup = path === '/api/cleanup' && method === 'GET';
       // Launch gate: product routes stay off until enabled. Authenticated
-      // cleanup always runs so stored plans are still deleted while paused.
+      // The cleanup route stays reachable while paused; it deletes nothing.
       if (env.MILO_PHASE1_ENABLED !== 'true' && !cleanup) return response(503, { error:'unavailable' });
-      const publicScope = create ? 'create' : invite && !invite[2] && method === 'GET' ? 'preview' : invite?.[2] && method === 'POST' ? 'join' : null;
+      const publicScope = create || soloCreate ? 'create' : (invite && !invite[2] && method === 'GET') || shared ? 'preview' : invite?.[2] && method === 'POST' ? 'join' : null;
       if (!publicScope && !planPath && !cleanup && !opsPath) return response(404, { error:'not_found' });
+      if (path === '/api/plans/solo' && !soloCreate) return response(405, { error:'method_not_allowed' });
       // No forwarded-host construction: only owner-configured canonical origin.
       valid(typeof env.MILO_PUBLIC_ORIGIN === 'string');
       const origin = new URL(env.MILO_PUBLIC_ORIGIN);
@@ -145,12 +150,20 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         const actual = Buffer.from(request.headers.get('authorization') || '');
         const expected = Buffer.from(`Bearer ${env.CRON_SECRET}`);
         if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) fail(401, 'unauthorized');
+        // Retention policy: nothing is deleted. Authenticated no-op, answered before any
+        // database connection so it stays 200 even if the database is unreachable.
+        return response(200, { deleted:0 });
       }
       if (opsPath) {
         // Owner-only fulfilment list for physical gifts. Fails closed without OPS_SECRET.
         checkOpsSecret(request, env);
         db = await acquire();
-        const result = await handleOps({ db, method, giftId: opsPath[1], readBody: () => jsonBody(request) });
+        if (opsPath[1] === 'export.csv') {
+          if (method !== 'GET' || opsPath[2]) return response(405, { error:'method_not_allowed' });
+          return new Response(await exportCsv(db), { status:200, headers:{ 'Content-Type':'text/csv; charset=utf-8', 'Content-Disposition':'attachment; filename="milo-plans.csv"', 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff' } });
+        }
+        const handler = opsPath[1] === 'bookings' ? handleOpsBookings : handleOps;
+        const result = await handler({ db, method, giftId: opsPath[2], id: opsPath[2], readBody: () => jsonBody(request) });
         if (!result) return response(405, { error:'method_not_allowed' });
         return response(200, result);
       }
@@ -164,10 +177,11 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
           ON CONFLICT(scope,ip_hash,window_start) DO UPDATE SET hits=rate_limits.hits+1 RETURNING hits`, [publicScope,ipHash]);
         if (count.rows[0].hits > (publicScope === 'preview' ? 60 : 20)) fail(429, 'rate_limited');
       }
-      if (cleanup) {
-        const removed = await db.query("DELETE FROM plans WHERE created_at < now()-interval '30 days' RETURNING id");
-        return response(200, { deleted:removed.rows.length });
+      if (soloCreate) {
+        const result = await createSolo({ db, body: await jsonBody(request), origin: origin.origin, helpers: { name, timing, picks } });
+        return response(201, result);
       }
+      if (shared) return response(200, await sharedView({ db, token: shared[1] }));
       if (create) {
         const body = await jsonBody(request); keys(body, ['name','partnerName','occasion']);
         const displayName = name(body.name); if (body.partnerName !== undefined) name(body.partnerName);
@@ -184,7 +198,8 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         const body = publicScope === 'join' ? await jsonBody(request) : null;
         const displayName = body ? (keys(body, ['name']), name(body.name)) : null;
         await db.query('BEGIN');
-        const { rows:[plan] } = await db.query('SELECT *, expires_at <= now() AS expired FROM plans WHERE invite_token=$1 FOR UPDATE', [invite[1]]);
+        // Solo plans carry an invite_token only because the column is required; it is never usable.
+        const { rows:[plan] } = await db.query("SELECT *, expires_at <= now() AS expired FROM plans WHERE invite_token=$1 AND mode='together' FOR UPDATE", [invite[1]]);
         if (!plan) fail(404, 'not_found');
         const { rows:people } = await db.query('SELECT * FROM participants WHERE plan_id=$1', [plan.id]);
         const taken = people.some(x => x.role === 'partner');
@@ -205,7 +220,8 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       const giftId = planPath[4];
       if (giftId && action !== 'gifts') fail(404, 'not_found');
       const giftRoute = action === 'gifts' && ((!giftId && (method === 'GET' || method === 'POST')) || (giftId && method === 'DELETE'));
-      if (!((!action && method === 'GET') || (action === 'me' && method === 'PUT') || (action === 'actions' && method === 'POST') || giftRoute)) return response(405, { error:'method_not_allowed' });
+      const conciergeRoute = !giftId && ((action === 'booking' && ['GET','POST','DELETE'].includes(method)) || (['checkin','events'].includes(action) && method === 'POST'));
+      if (!((!action && method === 'GET') || (action === 'me' && method === 'PUT') || (action === 'actions' && method === 'POST') || giftRoute || conciergeRoute)) return response(405, { error:'method_not_allowed' });
       const bearer = request.headers.get('authorization')?.match(/^Bearer ([A-Za-z0-9_-]{22})$/)?.[1];
       if (!bearer) fail(401, 'unauthorized');
       await db.query('BEGIN');
@@ -218,6 +234,10 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       const me = people.find(x => x.id === identity.id);
       if (action === 'gifts') {
         const result = await handleGifts({ db, plan, people, me, method, giftId, readBody: () => jsonBody(request), now: now() });
+        await db.query('COMMIT'); return response(200, result);
+      }
+      if (conciergeRoute) {
+        const result = await handleConcierge({ db, plan, me, action, method, readBody: () => jsonBody(request), now: now() });
         await db.query('COMMIT'); return response(200, result);
       }
       if (action === 'me') {
@@ -248,10 +268,12 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
             if (plan.status === 'confirmed') fail(409, 'already_confirmed');
             plan.suggestion = { by:me.role, night_id:body.night_id }; plan.status = 'suggested';
             await db.query("UPDATE plans SET suggestion=$1::jsonb,status='suggested' WHERE id=$2", [JSON.stringify(plan.suggestion),plan.id]);
+            await recordEvent(db, plan.id, me.id, 'suggest', body.night_id);   // PMF: suggestions before agreement
           } else {
             if (plan.suggestion?.night_id !== body.night_id) fail(409, 'not_suggested');
             plan.confirmed_night_id = body.night_id; plan.status = 'confirmed';
             await db.query("UPDATE plans SET confirmed_night_id=$1,status='confirmed' WHERE id=$2", [body.night_id,plan.id]);
+            await recordEvent(db, plan.id, me.id, 'confirm', body.night_id);
           }
         }
       }
