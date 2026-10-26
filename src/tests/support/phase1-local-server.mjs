@@ -10,9 +10,10 @@ import { createApi } from '../../../server/phase1.js';
 
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.json': 'application/json', '.woff2': 'font/woff2', '.txt': 'text/plain', '.md': 'text/markdown' };
 
-export async function startPhase1LocalServer({ distDir }) {
+export async function startPhase1LocalServer({ distDir, opsSecret = 'local-ops-secret-for-tests' }) {
   const db = new PGlite();
   await db.exec(await readFile(new URL('../../../server/schema.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../../../server/gifts.sql', import.meta.url), 'utf8'));
   // PGlite has one connection: serialize requests like a single pooled client.
   let tail = Promise.resolve();
   const acquire = async () => {
@@ -20,8 +21,10 @@ export async function startPhase1LocalServer({ distDir }) {
     tail = new Promise(resolve => { release = resolve; }); await previous;
     return { query: (sql, args) => db.query(sql, args), release };
   };
-  const env = { NODE_ENV: 'test', MILO_PHASE1_ENABLED: 'true', MILO_PUBLIC_ORIGIN: 'http://127.0.0.1', RATE_LIMIT_SECRET: 'local-test-only' };
-  const api = createApi({ acquire, env, clientIp: () => '127.0.0.1' });
+  const env = { NODE_ENV: 'test', MILO_PHASE1_ENABLED: 'true', MILO_PUBLIC_ORIGIN: 'http://127.0.0.1', RATE_LIMIT_SECRET: 'local-test-only', OPS_SECRET: opsSecret };
+  // The server clock can be moved forward to test gift reveal times.
+  let clockOffset = 0;
+  const api = createApi({ acquire, env, clientIp: () => '127.0.0.1', now: () => Date.now() + clockOffset });
 
   const serveFile = async (pathname, res) => {
     let file = normalize(join(distDir, decodeURIComponent(pathname)));
@@ -47,5 +50,5 @@ export async function startPhase1LocalServer({ distDir }) {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const site = `http://127.0.0.1:${server.address().port}`;
   env.MILO_PUBLIC_ORIGIN = site; // invite links must point back at this server
-  return { site, db, close: async () => { await new Promise(resolve => server.close(resolve)); await db.close(); } };
+  return { site, db, opsSecret, setClock: (ms) => { clockOffset = ms - Date.now(); }, close: async () => { await new Promise(resolve => server.close(resolve)); await db.close(); } };
 }
