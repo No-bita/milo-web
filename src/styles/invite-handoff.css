@@ -1,0 +1,57 @@
+/* Contribution handoff: A (screen) and B (sheet). No illustration region. */
+.milo-viewport .milo-s4-container.milo-handoff-screen {
+  justify-content: flex-start; align-items: stretch; text-align: left;
+  overflow-y: auto; overscroll-behavior: contain; padding-bottom: 0; background: var(--color-ivory);
+}
+.milo-handoff-body { flex: 1 0 auto; display: flex; flex-direction: column; gap: 18px; padding: 8px 0 24px; }
+.milo-handoff-body .milo-headline { margin: 4px 0 0; }
+.milo-handoff-body .milo-body-text { margin: 0; }
+.milo-handoff-actions { position: sticky; bottom: 0; z-index: 1; display: flex; flex-direction: column; gap: 10px; margin: 0 calc(-1 * var(--milo-gutter, 20px)); padding: 14px var(--milo-gutter, 20px) max(20px, env(safe-area-inset-bottom)); background: var(--color-ivory); border-top: 1px solid var(--color-taupe); }
+.milo-handoff-actions .milo-s4-reassure, .milo-bring-sheet .milo-s4-reassure { margin: 0; text-align: center; font: 400 12px/1.4 var(--font-sans); color: var(--color-ink-muted); }
+
+.milo-handoff-inputs { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--color-taupe); }
+.milo-handoff-inputs li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--color-taupe); font: 500 15px/1.4 var(--font-sans); color: var(--color-ink); }
+.milo-handoff-inputs b { font-weight: 500; color: var(--color-ink-muted); text-align: right; }
+.milo-handoff-inputs b.is-added { color: var(--color-oxblood); font-weight: 600; }
+
+.milo-handoff-label { margin: 0; font: 600 12px/1.3 var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted); }
+.milo-handoff-sender { display: flex; flex-direction: column; gap: 8px; }
+.milo-handoff-sender-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+.milo-handoff-sender-row[hidden], .milo-handoff-sender .milo-name-field[hidden] { display: none; }
+.milo-handoff-sender-name { min-width: 0; overflow-wrap: anywhere; font: 400 20px/1.25 var(--font-serif); color: var(--color-ink); }
+.milo-handoff-edit { flex: none; min-width: 44px; min-height: 44px; padding: 0 12px; border: 0; background: transparent; color: var(--color-oxblood); font: 600 15px var(--font-sans); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.milo-handoff-edit:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 2px; border-radius: 8px; }
+
+.milo-handoff-preview { display: flex; flex-direction: column; gap: 8px; }
+.milo-handoff-message { margin: 0; padding: 14px 16px; border-radius: 16px 16px 16px 4px; background: #fff; border: 1px solid var(--color-taupe); font: 400 15px/1.55 var(--font-sans); color: var(--color-ink); overflow-wrap: anywhere; }
+.milo-handoff-link { display: inline-block; margin-top: 4px; color: var(--color-oxblood); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
+.milo-handoff-link.is-placeholder { color: var(--color-ink-muted); text-decoration: none; font-style: italic; word-break: normal; }
+.milo-handoff-privacy { margin: 0; font: 400 13px/1.5 var(--font-sans); color: var(--color-ink-muted); }
+
+.milo-handoff-actions .milo-pill-btn-primary, .milo-handoff-actions .milo-pill-btn-secondary,
+.milo-bring-sheet .milo-pill-btn-primary, .milo-bring-sheet .milo-pill-btn-secondary { width: 100%; min-height: 50px; }
+.milo-bring-sheet .milo-pill-btn-primary:disabled, .milo-bring-sheet .milo-pill-btn-secondary:disabled { opacity: .45; cursor: default; }
+
+/* B: focused sheet over the existing plan (also used for the ask-first booking check). */
+.milo-bring-sheet {
+  position: fixed; top: auto; right: auto; margin: 0; max-width: 430px; box-sizing: border-box;
+  max-height: min(92dvh, 760px); overflow-y: auto; overscroll-behavior: contain;
+  border: 0; border-radius: 28px 28px 0 0; padding: 14px 22px max(22px, env(safe-area-inset-bottom));
+  background: var(--color-ivory); color: var(--color-ink); font-family: var(--font-sans);
+  box-shadow: 0 -12px 48px #1c19171a; animation: milo-bring-enter 260ms var(--ease-milo);
+}
+.milo-bring-sheet::backdrop { background: rgba(18,18,20,.42); }
+.milo-bring-sheet-body { display: flex; flex-direction: column; gap: 16px; }
+.milo-bring-handle { width: 34px; height: 4px; border-radius: 8px; background: #bcb7b2; margin: 0 auto 6px; }
+.milo-bring-close { position: absolute; right: 10px; top: 10px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: var(--color-ink-muted); font-size: 28px; line-height: 1; cursor: pointer; }
+.milo-bring-close:focus-visible, .milo-bring-sheet button:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 2px; }
+.milo-bring-sheet h2.milo-bring-title { margin: 0; padding-right: 40px; font: 400 clamp(24px, 6.4vw, 28px)/1.15 var(--font-serif); }
+.milo-bring-sheet .milo-bring-lede { margin: 0; font: 400 15px/1.5 var(--font-sans); color: var(--color-ink-muted); }
+.milo-bring-sheet .milo-bring-actions { display: flex; flex-direction: column; gap: 10px; }
+@keyframes milo-bring-enter { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .milo-bring-sheet { animation: none; } }
+
+/* The solo three-nights card: status after an invite is prepared. */
+.milo-bring-card .milo-bring-status { margin: 0; font: 600 14px/1.4 var(--font-sans); color: var(--color-oxblood); }
+.milo-handoff-actions .milo-invite-status { margin: 0; text-align: center; font: 600 14px/1.4 var(--font-sans); color: var(--color-oxblood); }
+.milo-handoff-actions .milo-invite-status:empty { display: none; }

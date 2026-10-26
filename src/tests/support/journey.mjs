@@ -65,9 +65,9 @@ export async function agreedPair({ site, browser, errors, browse = 0 }) {
   await a.page.locator('#miloPasswordInput-aarav').fill('local-only');
   await a.page.locator('#miloLoginSubmit-aarav').click();
   await a.page.locator('#miloBringIn-aarav').click();
-  await a.page.locator('#miloMyName').fill('Asha');
-  await a.page.locator('#miloTheirName').fill('Ravi');
-  await a.page.locator('#miloCopyLinkBtn').click();
+  // B: the sheet over the three nights. The creator never names the recipient.
+  await a.page.locator('#miloBringName').fill('Asha');
+  await a.page.locator('#miloBringCopy').click();
   await a.page.waitForFunction(() => window.__copied.length === 1);
   const inviteUrl = await a.page.evaluate(() => window.__copied[0]);
   const seatA = await seat(a.page);

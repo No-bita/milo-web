@@ -89,20 +89,27 @@ test('two phones plan one night together through the server', async () => {
     await a.page.locator('#miloPasswordInput-aarav').fill('local-only');
     await a.page.locator('#miloLoginSubmit-aarav').click();
     await a.page.locator('#miloBringIn-aarav').click();
-    await a.page.locator('#miloMyName').fill('Asha');
-    await a.page.locator('#miloTheirName').fill('Ravi');
-    await a.page.locator('#miloCopyLinkBtn').click();
+    // B: the sheet over the three nights. The creator never names the recipient.
+    await a.page.locator('#miloBringName').fill('Asha');
+    await a.page.locator('#miloBringCopy').click();
     await a.page.waitForFunction(() => window.__copied.length === 1);
     const inviteUrl = await a.page.evaluate(() => window.__copied[0]);
     assert.ok(inviteUrl.startsWith(`${server.site}/app/?invite=`), 'the copied link is the server invite, not a demo link');
     const seatA = await seat(a.page);
     assert.equal(seatA.role, 'initiator');
-    // Copying (not sharing) the link: Home must say "waiting", not "Resume".
+    // B keeps momentum: the creator stays on their own three nights, still solo, with an honest line.
+    await a.page.locator('.milo-bring-status').waitFor();
+    assert.equal(await a.page.locator('.milo-bring-status').textContent(), 'Link copied.');
+    assert.equal((await state(a.page)).sessionA.screen, 's6');
+    assert.equal((await state(a.page)).sessionA.planningMode, 'solo');
+    // Home never claims the invite was sent, and Resume returns to the three nights.
     await a.page.goto(`${server.site}/app/`);
     await a.page.locator('.milo-first-open').click({ timeout: 3000 }).catch(() => {});
     await a.page.locator('.milo-home').waitFor();
-    assert.match(await a.page.locator('.milo-home-card').textContent(), /Waiting for Ravi/);
-    assert.equal(await a.page.locator('#miloHomeResume').count(), 0);
+    assert.doesNotMatch(await a.page.locator('.milo-home-card').textContent(), /Invite sent|Waiting for|Delivered/);
+    await a.page.locator('#miloHomeResume').click();
+    await a.page.locator('.milo-bring-card').waitFor();
+    assert.match(await a.page.locator('.milo-bring-status').textContent(), /Your link is ready\./);
     // A's own half reaches the server (debounced sync) without the partner.
     await until(async () => (await serverView(a.page, seatA)).me.finished, 15000, "A's half on the server");
 
@@ -123,6 +130,11 @@ test('two phones plan one night together through the server', async () => {
     assert.equal(viewA.partner.display_name, 'Ravi');
     assert.equal(viewA.partner.finished, true);
     assert.equal(viewA.shared_result.selectedNights.length, 3);
+
+    // ---- Phone A, still on its three nights: coming back shows their picks are in ----
+    await comeBack(a.page);
+    await a.page.locator('#miloSeeShared-aarav').waitFor();
+    assert.equal(await a.page.locator('.milo-bring-card h2').textContent(), 'Their picks are in.');
 
     // ---- Phone A: reopening the app, Home no longer says "waiting" ----
     await a.page.goto(`${server.site}/app/`);

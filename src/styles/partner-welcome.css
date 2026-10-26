@@ -57,3 +57,8 @@
   .milo-partner-invitation { margin-top: 24px; padding-top: 20px; }
   .milo-partner-privacy { margin-top: 12px; }
 }
+
+/* Invited partner: what Milo is and the three steps, before their name. */
+.milo-partner-steps { counter-reset: milo-step; list-style: none; max-width: 310px; margin: 18px auto 0; padding: 0; display: grid; gap: 10px; text-align: left; }
+.milo-partner-steps li { counter-increment: milo-step; display: flex; align-items: center; gap: 12px; font-size: 15px; line-height: 1.4; color: var(--color-ink); }
+.milo-partner-steps li::before { content: counter(milo-step); flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--color-oxblood-wash); color: var(--color-oxblood); font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; }

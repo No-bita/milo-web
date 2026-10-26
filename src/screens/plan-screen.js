@@ -15,6 +15,7 @@ import { renderGiftsPanel, attachGiftsPanel } from '../components/gifts-panel.js
 import { currentGifts, refreshGifts } from '../domain/gifts.js';
 import { renderConciergePanel, attachConciergePanel } from '../components/concierge-panel.js';
 import { currentConcierge, refreshConcierge, trackSeeOther } from '../domain/concierge.js';
+import { PREPARED_COPY, peekPrepared } from '../components/invite-handoff.js';
 import '../styles/plan-screen.css';
 
 // Edits-off copy (mockup 13), same wording as the reviewed shared-result work.
@@ -26,7 +27,9 @@ const EDITS_OFF_FOOTNOTE = 'Time and stop changes stay off for now.';
 export function planScreenApplies(sessionId, screen) {
   if (!hasServerSeat()) return false;
   const role = readSeat()?.role;
-  if (role === 'initiator') return sessionId === 'aarav' && ['s4_waiting', 's5', 's6', 's7'].includes(screen);
+  // A solo planner who invited someone from the three nights keeps their solo
+  // screens; they move to the shared plan themselves once both halves are in.
+  if (role === 'initiator') return sessionId === 'aarav' && store.getState().sessionA.planningMode !== 'solo' && ['s4_waiting', 's5', 's6', 's7'].includes(screen);
   if (role === 'partner') return sessionId === 'sneha' && ['s5', 's6', 's7'].includes(screen);
   return false;
 }
@@ -62,6 +65,9 @@ function renderPartnerPending(state, sessionId) {
 
 function statusLine(state, sessionId) {
   const label = partnerLabel(state, sessionId);
+  // Straight after sharing on this page: say what happened, never that it was delivered.
+  const prepared = !state.shared.partnerJoined && !state.shared.partnerFinished ? peekPrepared() : null;
+  if (prepared) return `${PREPARED_COPY[prepared]} Waiting for ${escapeHtml(label)} to join.`;
   if (state.shared.partnerFinished) return `${sentenceName(label)} finished - your night is on its way.`;
   if (state.shared.partnerJoined) return `${sentenceName(label)} is choosing their half.`;
   return `Waiting for ${escapeHtml(label)} to join.`;

@@ -23,6 +23,7 @@ import './styles/requests.css';
 import './styles/concierge.css';
 import './styles/login.css';
 import './styles/plan.css';
+import './styles/invite-handoff.css';
 import { showFirstOpen } from './components/first-open.js';
 import { initApp } from './app.js';
 import { installPremiumIcons } from './components/premium-icons.js';

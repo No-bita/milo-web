@@ -190,7 +190,7 @@ class DomainStore {
     this.updateSession(sessionId, {
       intents: [], reactions: [], currentCardIndex: 0,
       pausedScreen: null, activeNightId: null, savedSoloNightId: null,
-      soloTimingStep: null, planningMode: 'solo', localOnlyPlan: true, screen: 's1'
+      soloTimingStep: null, planningMode: 'solo', localOnlyPlan: true, bringIn: null, screen: 's1'
     });
   }
 

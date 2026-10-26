@@ -1,7 +1,8 @@
 // Who the user is planning with. Names are typed by the initiator. Until then, "your person".
 export function isInvited(state) {
   const shared = state.shared || {};
-  return Boolean(shared.invitePrepared || shared.inviteSent || shared.confirmedNightId);
+  // bringIn: an invite prepared from a solo plan (B). Prepared, not proof it was received.
+  return Boolean(shared.invitePrepared || shared.inviteSent || shared.confirmedNightId || state.sessionA?.bringIn?.prepared);
 }
 
 export const FALLBACK_PARTNER = 'your person';
