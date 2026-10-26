@@ -188,7 +188,7 @@ function renderAgreed(state, sessionId, confirmedId) {
         </div>
         <h1 class="milo-headline">You're both in.</h1>
         <p class="milo-closing-sub">${night.name}.</p>
-        ${renderNightTiming(night.id, sessionId)}
+        ${renderNightTiming(night.id, sessionId, { allowPast: Boolean(currentConcierge()?.booking || currentConcierge()?.checkin?.open) })}
         ${renderConciergePanel(night, sessionId)}
         <div class="milo-closing-plan">
           <div class="milo-section-label">YOUR PLAN</div>

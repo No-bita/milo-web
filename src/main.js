@@ -20,6 +20,7 @@ import './styles/tab-bar.css';
 import './styles/candle-loader.css';
 import './styles/booked.css';
 import './styles/requests.css';
+import './styles/concierge.css';
 import './styles/login.css';
 import './styles/plan.css';
 import { showFirstOpen } from './components/first-open.js';

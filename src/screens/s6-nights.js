@@ -9,6 +9,18 @@ import { partnerLabel, escapeHtml } from '../logic/partner.js';
 import { computePlanningOutput, isSoloPlanning } from '../logic/planning.js';
 import { renderNightAccordion, attachNightAccordion } from '../components/night-accordion.js';
 
+// Solo only: an invitation to plan together, below the nights so it never competes with them.
+function bringInCard(state, sessionId) {
+  const label = partnerLabel(state);
+  const name = label === 'your person' ? 'your person' : label;
+  const cta = label === 'your person' ? 'Invite them' : `Invite ${label}`;
+  return `<section class="milo-bring-card" aria-labelledby="miloBringTitle-${sessionId}">
+    <h2 id="miloBringTitle-${sessionId}">Planning this with someone?</h2>
+    <p>Bring ${escapeHtml(name)} in. They pick privately, Milo finds the overlap.</p>
+    <button type="button" class="milo-pill-btn-secondary" id="miloBringIn-${sessionId}">${escapeHtml(cta)}</button>
+  </section>`;
+}
+
 export function renderScreen06(sessionId = 'aarav') {
   const state = store.getState();
   const partnerName = partnerLabel(state, sessionId);
@@ -36,12 +48,13 @@ export function renderScreen06(sessionId = 'aarav') {
 
       <div class="milo-s6-intro">
         <h1 class="milo-headline">${solo ? 'Three nights, shaped by you' : 'Three nights for the two of you'}</h1>
-        ${solo ? `<p class="milo-subline">Your picks are the starting point. No partner input yet.</p><button type="button" class="milo-text-button milo-bring-in" id="miloBringIn-${sessionId}">Bring ${escapeHtml(solo ? partnerLabel(state) : partnerName)} in</button>` : ''}
+        ${solo ? `<p class="milo-subline">Your picks are the starting point. No partner input yet.</p>` : ''}
       </div>
 
       <div class="milo-nights-list">
         ${rowsHtml}
       </div>
+      ${solo ? bringInCard(state, sessionId) : ''}
     </div>
   `;
 }

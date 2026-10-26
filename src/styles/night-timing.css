@@ -28,3 +28,6 @@
   .milo-timing-feed { margin-top: 20px; padding: 20px 0; }
 }
 .milo-s7-body > .milo-timing-feed:first-child { margin-top: 4px; border-top: 0; padding-top: 8px; }
+.milo-timing-stale { margin: 8px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--color-oxblood-wash); color: var(--color-ink); font: 500 13px/1.5 var(--font-sans); }
+.milo-timing-hint { margin: 0; font: 400 12px/1.5 var(--font-sans); color: var(--color-ink-muted); text-align: center; }
+.milo-timing-form button[type=submit]:disabled { opacity: .45; cursor: not-allowed; }

@@ -58,7 +58,7 @@ async function conciergeView(db, plan, me, now) {
       status: booking.status,
       requested_by_me: mine,
       venues: booking.status === 'booked' ? booking.venues : [],
-      ...(mine ? { budget_band: booking.budget_band, window_hours: booking.window_hours, notes: booking.notes } : {})
+      ...(mine ? { budget_band: booking.budget_band, window_hours: booking.window_hours, notes: booking.notes, requests: booking.requests ?? null, surprise: booking.surprise } : {})
     } : null,
     checkin: { open: opens !== null && now >= opens, done: Boolean(done) }
   };
@@ -70,14 +70,12 @@ export async function handleConcierge({ db, plan, me, action, method, readBody, 
   if (action === 'booking' && method === 'GET') return conciergeView(db, plan, me, now);
   if (action === 'booking' && method === 'POST') {
     const body = await readBody();
-    keys(body, ['budget_band', 'window_hours', 'contact', 'notes']);
+    keys(body, ['budget_band', 'window_hours', 'contact', 'notes', 'requests', 'surprise']);
     if (plan.status !== 'confirmed' || !plan.timing) fail(409, 'not_ready');
-    valid(BUDGET_BANDS.includes(body.budget_band) && [3, 4].includes(body.window_hours));
-    const contact = phone(body.contact);
-    const notes = body.notes === undefined || body.notes === '' ? null : text(body.notes, 1, 300);
+    const contact = validBooking(body);
+    const { notes, requests, surprise } = bookingExtras(body);
     if (await activeBooking(db, plan.id)) fail(409, 'exists');
-    await db.query(`INSERT INTO bookings(id,plan_id,requester_id,budget_band,window_hours,contact,notes,status)
-      VALUES($1,$2,$3,$4,$5,$6,$7,'requested')`, [randomUUID(), plan.id, me.id, body.budget_band, body.window_hours, contact, notes]);
+    await insertBooking(db, { planId: plan.id, requesterId: me.id, budget: body.budget_band, hours: body.window_hours, contact, notes, requests, surprise });
     return conciergeView(db, plan, me, now);
   }
   if (action === 'booking' && method === 'DELETE') {
@@ -113,17 +111,37 @@ export async function handleConcierge({ db, plan, me, action, method, readBody, 
   return null;
 }
 
+// Optional booking fields shared by Together and solo bookings.
+export function bookingExtras(body) {
+  valid(body.surprise === undefined || typeof body.surprise === 'boolean');
+  return {
+    notes: body.notes === undefined || body.notes === '' ? null : text(body.notes, 1, 300),
+    requests: body.requests === undefined || body.requests === '' ? null : text(body.requests, 1, 1000),
+    surprise: body.surprise !== false
+  };
+}
+export function validBooking(body) {
+  valid(BUDGET_BANDS.includes(body.budget_band) && [3, 4].includes(body.window_hours));
+  return phone(body.contact);
+}
+export const insertBooking = (db, b) => db.query(`INSERT INTO bookings(id,plan_id,requester_id,budget_band,window_hours,contact,notes,requests,surprise,status)
+  VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'requested')`, [randomUUID(), b.planId, b.requesterId, b.budget, b.hours, b.contact, b.notes, b.requests, b.surprise]);
+
 export const recordEvent = (db, planId, participantId, type, nightId = null) =>
   db.query('INSERT INTO plan_events(plan_id,participant_id,type,night_id) VALUES($1,$2,$3,$4)', [planId, participantId, type, nightId ?? null]);
 
 // ---------- Owner-only (OPS_SECRET) ----------
 
+// A solo planner may have swapped stops; their version wins over the night's defaults.
+export const stopNames = (custom, night) => (Array.isArray(custom) && custom.length ? custom : night?.beats.map(x => x.name) ?? []);
+
 function validVenues(list, plan) {
   valid(Array.isArray(list) && list.length <= 6);
   const night = NIGHTS_POOL.find(n => n.id === plan.confirmed_night_id);
+  const stopCount = stopNames(plan.stops, night).length || 3;
   return list.map(v => {
     keys(v, ['stop_index', 'venue', 'area', 'time']);
-    valid(Number.isInteger(v.stop_index) && v.stop_index >= 0 && v.stop_index < (night?.beats.length || 3));
+    valid(Number.isInteger(v.stop_index) && v.stop_index >= 0 && v.stop_index < stopCount);
     valid(v.time === undefined || v.time === '' || (typeof v.time === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(v.time)));
     return { stop_index: v.stop_index, venue: text(v.venue, 2, 120), ...(v.area ? { area: text(v.area, 2, 80) } : {}), ...(v.time ? { time: v.time } : {}) };
   });
@@ -131,7 +149,7 @@ function validVenues(list, plan) {
 
 export async function handleOpsBookings({ db, method, id, readBody }) {
   if (method === 'GET' && !id) {
-    const { rows } = await db.query(`SELECT b.*, p.timing, p.confirmed_night_id, p.occasion, r.display_name AS requester_name,
+    const { rows } = await db.query(`SELECT b.*, p.timing, p.confirmed_night_id, p.occasion, p.mode, p.stops AS custom_stops, r.display_name AS requester_name,
         (SELECT o.display_name FROM participants o WHERE o.plan_id=b.plan_id AND o.id<>b.requester_id) AS partner_name,
         (SELECT count(*)::int FROM gifts g WHERE g.plan_id=b.plan_id AND g.kind IN ('moment_drop','home_delivery') AND g.status<>'cancelled') AS physical_gifts
       FROM bookings b JOIN plans p ON p.id=b.plan_id JOIN participants r ON r.id=b.requester_id
@@ -140,9 +158,10 @@ export async function handleOpsBookings({ db, method, id, readBody }) {
       bookings: rows.map(b => {
         const night = NIGHTS_POOL.find(n => n.id === b.confirmed_night_id);
         return {
-          id: b.id, status: b.status, budget_band: b.budget_band, window_hours: b.window_hours, contact: b.contact, notes: b.notes,
+          id: b.id, status: b.status, mode: b.mode, budget_band: b.budget_band, window_hours: b.window_hours, contact: b.contact, notes: b.notes,
+          requests: b.requests, surprise: b.surprise,
           venues: b.venues, ops_minutes: b.ops_minutes, requester_name: b.requester_name, partner_name: b.partner_name,
-          occasion: b.occasion, night_name: night?.name ?? null, stops: night?.beats.map(x => x.name) ?? [], timing: b.timing,
+          occasion: b.occasion, night_name: night?.name ?? null, stops: stopNames(b.custom_stops, night), timing: b.timing,
           physical_gifts: b.physical_gifts, created_at: b.created_at
         };
       })
@@ -151,7 +170,7 @@ export async function handleOpsBookings({ db, method, id, readBody }) {
   if (method === 'POST' && id) {
     valid(idPattern.test(id));
     const body = await readBody(); keys(body, ['status', 'venues', 'ops_minutes']);
-    const { rows: [booking] } = await db.query('SELECT b.*, p.confirmed_night_id FROM bookings b JOIN plans p ON p.id=b.plan_id WHERE b.id=$1', [id]);
+    const { rows: [booking] } = await db.query('SELECT b.*, p.confirmed_night_id, p.stops FROM bookings b JOIN plans p ON p.id=b.plan_id WHERE b.id=$1', [id]);
     if (!booking) fail(404, 'not_found');
     const status = body.status ?? booking.status;
     valid(['requested', 'booked', 'failed', 'cancelled'].includes(status));
@@ -167,9 +186,9 @@ export async function handleOpsBookings({ db, method, id, readBody }) {
 
 // One row per plan for the PMF scorecard (Master Doc, Part E). CSV-safe.
 export const EXPORT_COLUMNS = [
-  'plan_id', 'created_at', 'occasion', 'status', 'partner_joined', 'both_finished', 'confirmed_night', 'confirmed_rank',
+  'plan_id', 'created_at', 'mode', 'occasion', 'status', 'partner_joined', 'both_finished', 'confirmed_night', 'confirmed_rank',
   'accepted_first_plan', 'suggestions', 'see_other_initiator', 'see_other_partner', 'time_set', 'night_date',
-  'booking_status', 'budget_band', 'window_hours', 'ops_minutes', 'physical_gifts', 'digital_gifts', 'gift_statuses',
+  'booking_status', 'budget_band', 'window_hours', 'ops_minutes', 'requests_given', 'surprise', 'physical_gifts', 'digital_gifts', 'gift_statuses',
   'checkins', 'rating_initiator', 'rating_partner', 'differently_initiator', 'differently_partner',
   'use_again_initiator', 'use_again_partner', 'recommend_initiator', 'recommend_partner',
   'would_pay_initiator', 'would_pay_partner', 'wouldnt_have_initiator', 'wouldnt_have_partner'
@@ -187,7 +206,7 @@ export async function exportCsv(db) {
   const { rows: people } = await db.query('SELECT id, plan_id, role, finished_at FROM participants');
   const { rows: events } = await db.query('SELECT plan_id, participant_id, type FROM plan_events');
   const { rows: gifts } = await db.query('SELECT plan_id, kind, status FROM gifts');
-  const { rows: bookings } = await db.query("SELECT DISTINCT ON (plan_id) plan_id, status, budget_band, window_hours, ops_minutes FROM bookings ORDER BY plan_id, (status<>'cancelled') DESC, created_at DESC");
+  const { rows: bookings } = await db.query("SELECT DISTINCT ON (plan_id) plan_id, status, budget_band, window_hours, ops_minutes, requests, surprise FROM bookings ORDER BY plan_id, (status<>'cancelled') DESC, created_at DESC");
   const { rows: checkins } = await db.query('SELECT plan_id, participant_id, answers FROM checkins');
   const lines = [EXPORT_COLUMNS.join(',')];
   for (const plan of plans) {
@@ -196,20 +215,21 @@ export async function exportCsv(db) {
     const ev = events.filter(e => e.plan_id === plan.id);
     const seeOther = role => ev.filter(e => e.type === 'see_other' && roleOf(e.participant_id) === role).length;
     const ranked = plan.shared_result?.selectedNights?.map(x => x.night.id) || [];
-    const rank = plan.confirmed_night_id ? ranked.indexOf(plan.confirmed_night_id) + 1 || null : null;
+    const rank = plan.mode === 'solo' ? plan.solo_rank ?? null : plan.confirmed_night_id ? ranked.indexOf(plan.confirmed_night_id) + 1 || null : null;
     const pg = gifts.filter(g => g.plan_id === plan.id);
     const physical = pg.filter(g => ['moment_drop', 'home_delivery'].includes(g.kind) && g.status !== 'cancelled');
     const booking = bookings.find(b => b.plan_id === plan.id);
     const answers = role => checkins.find(c => c.plan_id === plan.id && roleOf(c.participant_id) === role)?.answers || {};
     const a = answers('initiator'), b = answers('partner');
     const row = {
-      plan_id: plan.id.slice(0, 8), created_at: new Date(plan.created_at).toISOString(), occasion: plan.occasion, status: plan.status,
+      plan_id: plan.id.slice(0, 8), created_at: new Date(plan.created_at).toISOString(), mode: plan.mode, occasion: plan.occasion, status: plan.status,
       partner_joined: seats.some(s => s.role === 'partner'), both_finished: seats.length === 2 && seats.every(s => s.finished_at),
       confirmed_night: plan.confirmed_night_id, confirmed_rank: rank, accepted_first_plan: plan.confirmed_night_id ? rank === 1 : null,
       suggestions: ev.filter(e => e.type === 'suggest').length,
       see_other_initiator: seeOther('initiator'), see_other_partner: seeOther('partner'),
       time_set: Boolean(plan.timing), night_date: plan.timing?.date,
       booking_status: booking?.status, budget_band: booking?.budget_band, window_hours: booking?.window_hours, ops_minutes: booking?.ops_minutes,
+      requests_given: booking ? Boolean(booking.requests) : null, surprise: booking?.requests ? booking.surprise : null,
       physical_gifts: physical.length, digital_gifts: pg.filter(g => ['sealed_note', 'teaser'].includes(g.kind)).length,
       gift_statuses: physical.map(g => g.status).join('|'),
       checkins: checkins.filter(c => c.plan_id === plan.id).length,

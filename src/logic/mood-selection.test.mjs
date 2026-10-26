@@ -7,8 +7,8 @@ test('Continue needs exactly three distinct known moods', () => {
 });
 
 test('CTA guidance updates reactively with mood count', () => {
-  assert.equal(moodCtaLabel(0), 'Show me what fits →');
-  assert.equal(moodCtaLabel(1), 'Pick 2 more moods');
-  assert.equal(moodCtaLabel(2), 'Pick 1 more mood');
+  assert.equal(moodCtaLabel(0), "What's the vibe?");
+  assert.equal(moodCtaLabel(1), 'Ooh. Two more.');
+  assert.equal(moodCtaLabel(2), 'Last one, make it count');
   assert.equal(moodCtaLabel(3), 'Show me what fits →');
 });

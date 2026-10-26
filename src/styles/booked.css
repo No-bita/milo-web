@@ -23,3 +23,11 @@
 @keyframes milo-seal-stamp { 0% { opacity: 0; transform: scale(1.35); } 60% { opacity: 1; transform: scale(.96); } 100% { opacity: 1; transform: scale(1); } }
 .milo-booked-seal { animation: milo-seal-stamp 400ms cubic-bezier(.2, .7, .3, 1) 150ms both; }
 @media (prefers-reduced-motion: reduce) { .milo-booked-seal { animation: none; } }
+/* Sealed screen: stops with venues once booked, Done + Share. */
+.milo-booked-stops-list li { display: flex; flex-direction: column; gap: 2px; }
+.milo-booked-stops-list small { font: 400 13px/1.4 var(--font-sans); color: var(--color-ink-muted); }
+.milo-booked-cta { display: flex; flex-direction: column; gap: 10px; }
+.milo-booked-cta > button { width: 100%; min-height: 48px; }
+.milo-booked .milo-concierge { margin: 16px 12px 0; }
+.milo-shared-plan .milo-booked-title { font-size: 34px; line-height: 1.1; }
+.milo-shared-cta { display: flex; align-items: center; justify-content: center; min-height: 48px; text-decoration: none; }

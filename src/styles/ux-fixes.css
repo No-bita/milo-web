@@ -81,3 +81,8 @@
 
 .milo-bring-in { display: block; margin: 6px auto 0; color: var(--color-ink-muted); font-size: 13px; min-height: 44px; }
 .milo-s6-intro .milo-bring-in { margin: 0; padding: 0; text-align: left; min-height: 36px; }
+/* Solo nights: "Planning this with someone?" card under the three nights. */
+.milo-bring-card { margin: 20px 20px 32px; padding: 18px; border-radius: 18px; background: var(--color-oxblood-wash); display: flex; flex-direction: column; gap: 8px; }
+.milo-bring-card h2 { margin: 0; font: 400 22px/1.2 var(--font-serif); color: var(--color-ink); }
+.milo-bring-card p { margin: 0; font: 400 14px/1.5 var(--font-sans); color: var(--color-ink-muted); }
+.milo-bring-card .milo-pill-btn-secondary { margin-top: 6px; width: 100%; min-height: 48px; }

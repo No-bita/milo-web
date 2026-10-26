@@ -7,7 +7,8 @@ export const STATE_KEY = 'milo_prototype_v1_state';
 export async function phone(browser, errors) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'Asia/Kolkata' });
   await context.addInitScript(() => {
-    window.open = () => null;
+    window.__opened = [];
+    window.open = (url) => { window.__opened.push(String(url)); return null; };
     window.__copied = [];
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => window.__copied.push(text) } });
   });
