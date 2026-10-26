@@ -12,6 +12,7 @@ import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { fail, valid, keys } from './errors.js';
 import { GIFT_KINDS, GIFT_ITEMS, GIFT_LIMITS, GIFT_STATUSES, DELIVERY_WINDOWS, giftItem } from '../src/data/gifts.js';
 import { NIGHTS_POOL } from '../src/data/mockData.js';
+import { saveContact } from './concierge.js';
 
 const DAY = 86400000;
 const giftIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -160,9 +161,10 @@ export async function handleGifts({ db, plan, people, me, method, giftId, readBo
     const physical = GIFT_KINDS[gift.kind]?.physical;
     const count = existing.filter(g => physical ? GIFT_KINDS[g.kind]?.physical && g.status !== 'cancelled' : g.kind === gift.kind && g.status !== 'cancelled').length;
     if (count >= (physical ? GIFT_LIMITS.physical : GIFT_LIMITS[gift.kind])) fail(409, 'limit');
-    await db.query(`INSERT INTO gifts(id,plan_id,giver_id,kind,item_id,stop_index,venue,address,deliver_window,note,contact,show_hint,status)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-      [randomUUID(), plan.id, me.id, gift.kind, gift.item_id, gift.stop_index, gift.venue, gift.address, gift.deliver_window, gift.note, gift.contact, gift.show_hint, physical ? 'requested' : 'sent']);
+    if (gift.contact) await saveContact(db, me.id, gift.contact);
+    await db.query(`INSERT INTO gifts(id,plan_id,giver_id,kind,item_id,stop_index,venue,address,deliver_window,note,show_hint,status)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      [randomUUID(), plan.id, me.id, gift.kind, gift.item_id, gift.stop_index, gift.venue, gift.address, gift.deliver_window, gift.note, gift.show_hint, physical ? 'requested' : 'sent']);
     return giftsView(plan, people, me, await load(), now);
   }
   if (method === 'DELETE' && giftId) {
@@ -190,7 +192,7 @@ export function checkOpsSecret(request, env) {
 
 export async function handleOps({ db, method, giftId, readBody }) {
   if (method === 'GET' && !giftId) {
-    const { rows } = await db.query(`SELECT g.*, p.timing, p.confirmed_night_id, giver.display_name AS giver_name,
+    const { rows } = await db.query(`SELECT g.*, p.timing, p.confirmed_night_id, p.city, giver.display_name AS giver_name, giver.contact,
         (SELECT r.display_name FROM participants r WHERE r.plan_id=g.plan_id AND r.id<>g.giver_id) AS recipient_name
       FROM gifts g JOIN plans p ON p.id=g.plan_id JOIN participants giver ON giver.id=g.giver_id
       WHERE g.kind IN ('moment_drop','home_delivery') ORDER BY g.created_at DESC LIMIT 200`);
@@ -201,7 +203,7 @@ export async function handleOps({ db, method, giftId, readBody }) {
           id: g.id, kind: g.kind, item_id: g.item_id, item_name: GIFT_ITEMS.find(i => i.id === g.item_id)?.name ?? g.item_id,
           stop: g.stop_index === null ? null : night?.beats?.[g.stop_index]?.name ?? null,
           venue: g.venue, address: g.address, deliver_window: g.deliver_window, note: g.note, show_hint: g.show_hint,
-          contact: g.contact, status: g.status, giver_name: g.giver_name, recipient_name: g.recipient_name, night_name: night?.name ?? null,
+          contact: g.contact, city: g.city, status: g.status, giver_name: g.giver_name, recipient_name: g.recipient_name, night_name: night?.name ?? null,
           timing: g.timing, created_at: g.created_at
         };
       })
