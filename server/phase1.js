@@ -1,7 +1,7 @@
 import { isIP } from 'node:net';
 import { randomBytes, randomUUID, createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { INTENTS, EXPERIENCE_POOL, NIGHTS_POOL } from '../src/data/mockData.js';
-import { computeSharedOutput } from '../src/logic/shared.js';
+import { computeSharedResult } from '../src/logic/shared-result.js';
 import { SafeError, fail, valid, object, keys } from './errors.js';
 import { handleGifts, handleOps, checkOpsSecret } from './gifts.js';
 
@@ -63,7 +63,7 @@ function timing(value) {
   try { new Intl.DateTimeFormat('en', { timeZone: value.time_zone }); } catch { fail(400, 'invalid_request'); }
   return value;
 }
-// Explicit allowlist, not a blacklist or a spread of computeSharedOutput.
+// Explicit allowlist, not a blacklist or a spread of the shared result.
 // Static night records are public data, but omit profile/scoring fields anyway.
 export function projectShared(output) {
   return {
@@ -228,7 +228,8 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         // v2 computes once. Editing later can make the result stale: parked.
         if (!plan.shared_result && people.length === 2 && people.every(x => x.finished_at)) {
           const a = people.find(x => x.role === 'initiator'), b = people.find(x => x.role === 'partner');
-          const shared = projectShared(computeSharedOutput(a,b));
+          // MILO_INTENT_MODEL=v3.1 only takes effect once seats store v3.1 quiz answers (phase D).
+          const shared = projectShared(computeSharedResult(a,b,{ model: env.MILO_INTENT_MODEL === 'v3.1' ? 'v3.1' : 'v3' }));
           await db.query("UPDATE plans SET shared_result=$1::jsonb,status='both_done' WHERE id=$2", [JSON.stringify(shared),plan.id]);
         }
         await db.query('COMMIT'); return response(200, { ok:true });
