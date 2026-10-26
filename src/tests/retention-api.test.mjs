@@ -68,6 +68,16 @@ test('cleanup is authenticated and deletes nothing, even for very old plans', as
   assert.ok(before.plans > 0 && before.gifts > 0);
 });
 
+test('ops cannot restore a cancelled gift', async () => {
+  const p = await confirmedPlan();
+  await add(p, p.a, { kind: 'moment_drop', item_id: 'bouquet', stop_index: 0, venue: 'Somewhere nice', contact: '+91 98765 43210' });
+  const g = (await gifts(p, p.a)).data.mine[0];
+  assert.equal((await call('DELETE', `/api/plans/${p.id}/gifts/${g.id}`, { key: p.a })).status, 200);
+  assert.equal((await call('POST', `/api/ops/gifts/${g.id}`, { key: OPS, body: { status: 'requested' } })).status, 404);
+  assert.equal((await db.query('SELECT status FROM gifts WHERE id=$1', [g.id])).rows[0].status, 'cancelled', 'row stays cancelled');
+  assert.deepEqual((await gifts(p, p.a)).data.mine, [], 'still hidden');
+});
+
 test('removing a gift keeps the row as cancelled and hides it from both seats', async () => {
   const p = await confirmedPlan();
   await add(p, p.a, { kind: 'sealed_note', note: 'words for later' });
