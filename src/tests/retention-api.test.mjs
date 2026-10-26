@@ -101,3 +101,14 @@ test('removing a gift keeps the row as cancelled and hides it from both seats', 
   assert.equal((await add(p, p.a, { kind: 'sealed_note', note: 'second try' })).status, 200);
   assert.equal((await gifts(p, p.a)).data.mine.length, 1);
 });
+
+test('cleanup answers without opening a database connection', async () => {
+  let acquired = 0;
+  const bare = createApi({ acquire: async () => { acquired += 1; throw new Error('database unreachable'); }, clientIp: () => '127.0.0.1', now: () => clock,
+    env: { NODE_ENV: 'test', MILO_PHASE1_ENABLED: 'true', MILO_PUBLIC_ORIGIN: 'http://127.0.0.1', RATE_LIMIT_SECRET: 'x', OPS_SECRET: OPS, CRON_SECRET: CRON } });
+  const get = async key => { const r = await bare(new Request('http://127.0.0.1/api/cleanup', { method: 'GET', headers: key ? { authorization: `Bearer ${key}` } : {} })); return { status: r.status, data: await r.json() }; };
+  assert.equal((await get()).status, 401);
+  assert.equal((await get('wrong-secret-wrong-secret-xx')).status, 401);
+  assert.deepEqual(await get(CRON), { status: 200, data: { deleted: 0 } });
+  assert.equal(acquired, 0);
+});
