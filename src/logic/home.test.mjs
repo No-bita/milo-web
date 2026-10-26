@@ -45,3 +45,48 @@ test('a user mid-journey still opens Home, with a resume card for the saved step
   assert.equal(h.ratedCount, 1);
   assert.equal(h.resumeStep, 's3');
 });
+
+test('server plan: partner finished switches the card to the plan screen, even after copy-link only', () => {
+  const s = fresh();
+  s.shared.serverInviteUrl = 'https://example.test/app/?invite=x';
+  s.shared.partnerFinished = true;
+  const h = homeSummary(s);
+  assert.equal(h.kind, 'together');
+  assert.equal(h.action, 'open-plan');
+  assert.equal(h.nightId, null);
+});
+
+test('server plan: a partner suggestion opens on the suggested night', () => {
+  const s = fresh();
+  s.shared.inviteSent = true;
+  s.shared.serverResult = { selectedNights: [] };
+  s.shared.suggestion = { by: 'sneha', nightId: 'middle-ground' };
+  const h = homeSummary(s);
+  assert.equal(h.kind, 'together');
+  assert.equal(h.nightId, 'middle-ground');
+  assert.match(h.planStatus, /picked a night/);
+});
+
+test('demo suggestion without a server result keeps the waiting card', () => {
+  const s = fresh();
+  s.shared.inviteSent = true;
+  s.shared.suggestion = { by: 'aarav', nightId: 'middle-ground' };
+  assert.equal(homeSummary(s).kind, 'waiting');
+});
+
+test('a local-only plan ignores server fields', () => {
+  const s = fresh();
+  s.sessionA.localOnlyPlan = true;
+  s.shared.inviteSent = true;
+  s.shared.partnerFinished = true;
+  assert.equal(homeSummary(s).kind, 'fresh');
+});
+
+test('server plan: a copied (not shared) invite link shows the waiting card, not Resume', () => {
+  const s = fresh();
+  s.sessionA.reactions = Array.from({ length: 8 }, (_, i) => ({ cardId: `c${i}`, reaction: 'into_it' }));
+  s.shared.serverInviteUrl = 'https://example.test/app/?invite=x';
+  const h = homeSummary(s);
+  assert.equal(h.kind, 'waiting');
+  assert.equal(h.action, 'open-waiting');
+});
