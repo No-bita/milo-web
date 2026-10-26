@@ -150,6 +150,9 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         const actual = Buffer.from(request.headers.get('authorization') || '');
         const expected = Buffer.from(`Bearer ${env.CRON_SECRET}`);
         if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) fail(401, 'unauthorized');
+        // Retention policy: nothing is deleted. Authenticated no-op, answered before any
+        // database connection so it stays 200 even if the database is unreachable.
+        return response(200, { deleted:0 });
       }
       if (opsPath) {
         // Owner-only fulfilment list for physical gifts. Fails closed without OPS_SECRET.
@@ -173,11 +176,6 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
           VALUES($1,$2,date_trunc('minute',now()),1)
           ON CONFLICT(scope,ip_hash,window_start) DO UPDATE SET hits=rate_limits.hits+1 RETURNING hits`, [publicScope,ipHash]);
         if (count.rows[0].hits > (publicScope === 'preview' ? 60 : 20)) fail(429, 'rate_limited');
-      }
-      if (cleanup) {
-        // Retention policy: nothing is deleted. Kept as an authenticated no-op so an
-        // external scheduler, if one exists, keeps getting 200 without removing data.
-        return response(200, { deleted:0 });
       }
       if (soloCreate) {
         const result = await createSolo({ db, body: await jsonBody(request), origin: origin.origin, helpers: { name, timing, picks } });
