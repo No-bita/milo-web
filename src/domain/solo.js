@@ -4,6 +4,7 @@
 import { store } from './store.js';
 import { api, isPhase1Enabled, cleanName, serverOccasion } from './network-adapter.js';
 import { computePlanningOutput } from '../logic/planning.js';
+import { DEFAULT_CITY } from '../data/cities.js';
 
 const SOLO_SEAT = 'milo_solo_seat_v1';
 
@@ -45,6 +46,7 @@ export function soloPayload(state, booking) {
   const timing = a.soloTimings?.[nightId];
   return {
     name: cleanName(a.name) || cleanName(String(a.user?.email || '').split('@')[0]) || 'Your date',
+    city: DEFAULT_CITY,
     ...(state.shared.occasion ? { occasion: serverOccasion(state.shared.occasion) } : {}),
     night_id: nightId,
     ...(rank ? { night_rank: rank } : {}),
