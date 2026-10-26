@@ -13,7 +13,7 @@ const BASE = Date.parse('2026-11-01T06:30:00Z');
 let db, api, clock = BASE;
 before(async () => {
   db = new PGlite();
-  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
   let tail = Promise.resolve();
   const acquire = async () => { const previous = tail; let release; tail = new Promise(r => { release = r; }); await previous; return { query: (q, a) => db.query(q, a), release }; };
   api = createApi({ acquire, clientIp: () => '127.0.0.1', now: () => clock,
@@ -32,7 +32,7 @@ async function call(method, path, { body, key } = {}) {
 }
 const TIMING = { date: '2026-11-07', time: '19:30', time_zone: 'Asia/Kolkata' };
 const SOLO = (over = {}) => ({
-  name: 'Asha', occasion: 'anniversary', night_id: 'little-adventure', night_rank: 2, timing: TIMING,
+  name: 'Asha', city: 'bengaluru', occasion: 'anniversary', night_id: 'little-adventure', night_rank: 2, timing: TIMING,
   stops: ['Pottery class', 'Dinner', 'Dessert'],
   intents: ['intimate', 'fun', 'novelty'], reactions: EXPERIENCE_POOL.slice(0, 8).map(c => ({ cardId: c.id, reaction: 'into_it' })),
   booking: { budget_band: '4k_7k', window_hours: 4, contact: '+91 98765 43210', requests: 'Flowers at the table: peonies', surprise: true },
@@ -48,7 +48,7 @@ test('creating a solo plan books it in one step and returns a seat and share lin
   assert.match(res.data.share_url, /^http:\/\/127\.0\.0\.1\/app\/\?shared=[A-Za-z0-9_-]{22}$/);
   const view = await call('GET', `/api/plans/${res.data.plan_id}/booking`, { key: res.data.seat_key });
   assert.equal(view.data.can_request, false);
-  assert.deepEqual(view.data.booking, { status: 'requested', requested_by_me: true, venues: [], budget_band: '4k_7k', window_hours: 4, notes: null, requests: 'Flowers at the table: peonies', surprise: true });
+  assert.deepEqual(view.data.booking, { status: 'requested', requested_by_me: true, venues: [], budget_band: '4k_7k', window_hours: 4, requests: 'Flowers at the table: peonies', surprise: true });
   const plan = await call('GET', `/api/plans/${res.data.plan_id}`, { key: res.data.seat_key });
   assert.equal(plan.data.status, 'confirmed'); assert.equal(plan.data.confirmed_night_id, 'little-adventure'); assert.equal(plan.data.partner, null);
 });
