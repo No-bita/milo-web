@@ -12,7 +12,7 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 
 export async function startPhase1LocalServer({ distDir, opsSecret = 'local-ops-secret-for-tests' }) {
   const db = new PGlite();
-  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql']) await db.exec(await readFile(new URL(`../../../server/${file}`, import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql']) await db.exec(await readFile(new URL(`../../../server/${file}`, import.meta.url), 'utf8'));
   // PGlite has one connection: serialize requests like a single pooled client.
   let tail = Promise.resolve();
   const acquire = async () => {

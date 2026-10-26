@@ -58,7 +58,7 @@ async function conciergeView(db, plan, me, now) {
       status: booking.status,
       requested_by_me: mine,
       venues: booking.status === 'booked' ? booking.venues : [],
-      ...(mine ? { budget_band: booking.budget_band, window_hours: booking.window_hours, notes: booking.notes, requests: booking.requests ?? null, surprise: booking.surprise } : {})
+      ...(mine ? { budget_band: booking.budget_band, window_hours: booking.window_hours, requests: booking.requests ?? null, surprise: booking.surprise } : {})
     } : null,
     checkin: { open: opens !== null && now >= opens, done: Boolean(done) }
   };
@@ -70,12 +70,13 @@ export async function handleConcierge({ db, plan, me, action, method, readBody, 
   if (action === 'booking' && method === 'GET') return conciergeView(db, plan, me, now);
   if (action === 'booking' && method === 'POST') {
     const body = await readBody();
-    keys(body, ['budget_band', 'window_hours', 'contact', 'notes', 'requests', 'surprise']);
+    keys(body, ['budget_band', 'window_hours', 'contact', 'requests', 'surprise']);
     if (plan.status !== 'confirmed' || !plan.timing) fail(409, 'not_ready');
     const contact = validBooking(body);
-    const { notes, requests, surprise } = bookingExtras(body);
+    const { requests, surprise } = bookingExtras(body);
     if (await activeBooking(db, plan.id)) fail(409, 'exists');
-    await insertBooking(db, { planId: plan.id, requesterId: me.id, budget: body.budget_band, hours: body.window_hours, contact, notes, requests, surprise });
+    await saveContact(db, me.id, contact);
+    await insertBooking(db, { planId: plan.id, requesterId: me.id, budget: body.budget_band, hours: body.window_hours, requests, surprise });
     return conciergeView(db, plan, me, now);
   }
   if (action === 'booking' && method === 'DELETE') {
@@ -115,7 +116,6 @@ export async function handleConcierge({ db, plan, me, action, method, readBody, 
 export function bookingExtras(body) {
   valid(body.surprise === undefined || typeof body.surprise === 'boolean');
   return {
-    notes: body.notes === undefined || body.notes === '' ? null : text(body.notes, 1, 300),
     requests: body.requests === undefined || body.requests === '' ? null : text(body.requests, 1, 1000),
     surprise: body.surprise !== false
   };
@@ -124,8 +124,11 @@ export function validBooking(body) {
   valid(BUDGET_BANDS.includes(body.budget_band) && [3, 4].includes(body.window_hours));
   return phone(body.contact);
 }
-export const insertBooking = (db, b) => db.query(`INSERT INTO bookings(id,plan_id,requester_id,budget_band,window_hours,contact,notes,requests,surprise,status)
-  VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'requested')`, [randomUUID(), b.planId, b.requesterId, b.budget, b.hours, b.contact, b.notes, b.requests, b.surprise]);
+export const insertBooking = (db, b) => db.query(`INSERT INTO bookings(id,plan_id,requester_id,budget_band,window_hours,requests,surprise,status)
+  VALUES($1,$2,$3,$4,$5,$6,$7,'requested')`, [randomUUID(), b.planId, b.requesterId, b.budget, b.hours, b.requests, b.surprise]);
+// One phone number per person; the latest one they gave wins.
+export const saveContact = (db, participantId, contact) =>
+  db.query('UPDATE participants SET contact=$1 WHERE id=$2', [contact, participantId]);
 
 export const recordEvent = (db, planId, participantId, type, nightId = null) =>
   db.query('INSERT INTO plan_events(plan_id,participant_id,type,night_id) VALUES($1,$2,$3,$4)', [planId, participantId, type, nightId ?? null]);
@@ -149,7 +152,7 @@ function validVenues(list, plan) {
 
 export async function handleOpsBookings({ db, method, id, readBody }) {
   if (method === 'GET' && !id) {
-    const { rows } = await db.query(`SELECT b.*, p.timing, p.confirmed_night_id, p.occasion, p.mode, p.stops AS custom_stops, r.display_name AS requester_name,
+    const { rows } = await db.query(`SELECT b.*, p.timing, p.confirmed_night_id, p.occasion, p.mode, p.city, p.stops AS custom_stops, r.display_name AS requester_name, r.contact,
         (SELECT o.display_name FROM participants o WHERE o.plan_id=b.plan_id AND o.id<>b.requester_id) AS partner_name,
         (SELECT count(*)::int FROM gifts g WHERE g.plan_id=b.plan_id AND g.kind IN ('moment_drop','home_delivery') AND g.status<>'cancelled') AS physical_gifts
       FROM bookings b JOIN plans p ON p.id=b.plan_id JOIN participants r ON r.id=b.requester_id
@@ -158,7 +161,7 @@ export async function handleOpsBookings({ db, method, id, readBody }) {
       bookings: rows.map(b => {
         const night = NIGHTS_POOL.find(n => n.id === b.confirmed_night_id);
         return {
-          id: b.id, status: b.status, mode: b.mode, budget_band: b.budget_band, window_hours: b.window_hours, contact: b.contact, notes: b.notes,
+          id: b.id, status: b.status, mode: b.mode, city: b.city, budget_band: b.budget_band, window_hours: b.window_hours, contact: b.contact,
           requests: b.requests, surprise: b.surprise,
           venues: b.venues, ops_minutes: b.ops_minutes, requester_name: b.requester_name, partner_name: b.partner_name,
           occasion: b.occasion, night_name: night?.name ?? null, stops: stopNames(b.custom_stops, night), timing: b.timing,
@@ -186,8 +189,9 @@ export async function handleOpsBookings({ db, method, id, readBody }) {
 
 // One row per plan for the PMF scorecard (Master Doc, Part E). CSV-safe.
 export const EXPORT_COLUMNS = [
-  'plan_id', 'created_at', 'mode', 'occasion', 'status', 'partner_joined', 'both_finished', 'confirmed_night', 'confirmed_rank',
-  'accepted_first_plan', 'suggestions', 'see_other_initiator', 'see_other_partner', 'time_set', 'night_date',
+  'plan_id', 'created_at', 'mode', 'city', 'occasion', 'status', 'partner_joined', 'both_finished', 'confirmed_night', 'confirmed_rank',
+  'accepted_first_plan', 'suggestions', 'minutes_to_agree', 'see_other_initiator', 'see_other_partner',
+  'nights_browsed_initiator', 'nights_browsed_partner', 'time_set', 'night_date',
   'booking_status', 'budget_band', 'window_hours', 'ops_minutes', 'requests_given', 'surprise', 'physical_gifts', 'digital_gifts', 'gift_statuses',
   'checkins', 'rating_initiator', 'rating_partner', 'differently_initiator', 'differently_partner',
   'use_again_initiator', 'use_again_partner', 'recommend_initiator', 'recommend_partner',
@@ -204,7 +208,7 @@ const cell = value => {
 export async function exportCsv(db) {
   const { rows: plans } = await db.query('SELECT * FROM plans ORDER BY created_at');
   const { rows: people } = await db.query('SELECT id, plan_id, role, finished_at FROM participants');
-  const { rows: events } = await db.query('SELECT plan_id, participant_id, type FROM plan_events');
+  const { rows: events } = await db.query('SELECT plan_id, participant_id, type, night_id, created_at FROM plan_events');
   const { rows: gifts } = await db.query('SELECT plan_id, kind, status FROM gifts');
   const { rows: bookings } = await db.query("SELECT DISTINCT ON (plan_id) plan_id, status, budget_band, window_hours, ops_minutes, requests, surprise FROM bookings ORDER BY plan_id, (status<>'cancelled') DESC, created_at DESC");
   const { rows: checkins } = await db.query('SELECT plan_id, participant_id, answers FROM checkins');
@@ -214,6 +218,10 @@ export async function exportCsv(db) {
     const roleOf = id => seats.find(s => s.id === id)?.role;
     const ev = events.filter(e => e.plan_id === plan.id);
     const seeOther = role => ev.filter(e => e.type === 'see_other' && roleOf(e.participant_id) === role).length;
+    // Distinct nights a person moved to while choosing (their landing night is not an event).
+    const browsed = role => new Set(ev.filter(e => e.type === 'see_other' && e.night_id && roleOf(e.participant_id) === role).map(e => e.night_id)).size;
+    const confirmEvent = ev.find(e => e.type === 'confirm');
+    const minutesToAgree = confirmEvent ? Math.round((new Date(confirmEvent.created_at) - new Date(plan.created_at)) / 60000) : null;
     const ranked = plan.shared_result?.selectedNights?.map(x => x.night.id) || [];
     const rank = plan.mode === 'solo' ? plan.solo_rank ?? null : plan.confirmed_night_id ? ranked.indexOf(plan.confirmed_night_id) + 1 || null : null;
     const pg = gifts.filter(g => g.plan_id === plan.id);
@@ -222,11 +230,12 @@ export async function exportCsv(db) {
     const answers = role => checkins.find(c => c.plan_id === plan.id && roleOf(c.participant_id) === role)?.answers || {};
     const a = answers('initiator'), b = answers('partner');
     const row = {
-      plan_id: plan.id.slice(0, 8), created_at: new Date(plan.created_at).toISOString(), mode: plan.mode, occasion: plan.occasion, status: plan.status,
+      plan_id: plan.id.slice(0, 8), created_at: new Date(plan.created_at).toISOString(), mode: plan.mode, city: plan.city, occasion: plan.occasion, status: plan.status,
       partner_joined: seats.some(s => s.role === 'partner'), both_finished: seats.length === 2 && seats.every(s => s.finished_at),
       confirmed_night: plan.confirmed_night_id, confirmed_rank: rank, accepted_first_plan: plan.confirmed_night_id ? rank === 1 : null,
-      suggestions: ev.filter(e => e.type === 'suggest').length,
+      suggestions: ev.filter(e => e.type === 'suggest').length, minutes_to_agree: minutesToAgree,
       see_other_initiator: seeOther('initiator'), see_other_partner: seeOther('partner'),
+      nights_browsed_initiator: browsed('initiator'), nights_browsed_partner: browsed('partner'),
       time_set: Boolean(plan.timing), night_date: plan.timing?.date,
       booking_status: booking?.status, budget_band: booking?.budget_band, window_hours: booking?.window_hours, ops_minutes: booking?.ops_minutes,
       requests_given: booking ? Boolean(booking.requests) : null, surprise: booking?.requests ? booking.surprise : null,

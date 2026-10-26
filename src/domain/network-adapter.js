@@ -1,6 +1,7 @@
 // Two-phone Phase 1 network adapter. Off unless the build sets VITE_MILO_PHASE1=true (a public,
 // non-secret flag). With it off, nothing here runs and the prototype behaves as before.
 // Contract: docs/phase1-server.md in the API PR (#67). Frontend only; no secrets live here.
+import { DEFAULT_CITY } from '../data/cities.js';
 const SEAT_KEY = 'milo_phase1_seat_v1';
 
 export const isPhase1Enabled = () => import.meta.env?.VITE_MILO_PHASE1 === 'true';
@@ -47,7 +48,7 @@ export async function ensureServerInvite(store) {
   if (!me) return { ok: false, reason: 'invalid' };
   const other = cleanName(partnerName);
   const result = await api('POST', '/api/plans', { body: {
-    name: me, ...(other ? { partnerName: other } : {}), ...(shared.occasion ? { occasion: serverOccasion(shared.occasion) } : {})
+    name: me, city: DEFAULT_CITY, ...(other ? { partnerName: other } : {}), ...(shared.occasion ? { occasion: serverOccasion(shared.occasion) } : {})
   } });
   if (!result.ok) return result;
   saveSeat({ planId: result.data.plan_id, seatKey: result.data.seat_key, role: 'initiator' });

@@ -50,9 +50,8 @@ function bookingRow(b) {
   return `<article class="ops-gift ops-booking" data-booking-id="${esc(b.id)}">
     <header><h2>${b.mode === 'solo' ? '<span class="ops-mode">SOLO</span> ' : ''}${esc(b.night_name || 'Night')}</h2><span class="ops-status" data-status="${esc(b.status)}">${esc(b.status)}</span></header>
     <p><strong>${esc(b.requester_name)}</strong> ${b.mode === 'solo' ? 'is planning for their partner (partner is not on Milo)' : `asked, with <strong>${esc(b.partner_name || '?')}</strong>`}${b.occasion ? ` &middot; ${esc(b.occasion.replace(/_/g, ' '))}` : ''}</p>
-    <p>Night: ${esc(when(b.timing))} &middot; ${esc(b.window_hours)} hours &middot; ${esc(BUDGETS[b.budget_band] || b.budget_band)} for two</p>
-    ${b.notes ? `<p>Notes: "${esc(b.notes)}"</p>` : ''}
-    ${b.requests ? `<div class="ops-requests"><p class="${b.surprise ? 'ops-surprise' : 'ops-open'}">${b.surprise ? "SURPRISE: don't mention these to the partner" : 'Not a secret: the partner can see these'}</p><p>${esc(b.requests).replace(/\n/g, '<br>')}</p></div>` : ''}
+    <p>${esc((b.city || '').replace(/^./, c => c.toUpperCase()))} &middot; Night: ${esc(when(b.timing))} &middot; ${esc(b.window_hours)} hours &middot; ${esc(BUDGETS[b.budget_band] || b.budget_band)} for two</p>
+    ${b.requests ? `<div class="ops-requests"><p class="${b.mode === 'solo' ? (b.surprise ? 'ops-surprise' : 'ops-open') : 'ops-open'}">${b.mode !== 'solo' ? 'Requests' : b.surprise ? "SURPRISE: don't mention these to the partner" : 'Not a secret: the partner can see these'}</p><p>${esc(b.requests).replace(/\n/g, '<br>')}</p></div>` : ''}
     <p>WhatsApp: <a href="https://wa.me/${esc(String(b.contact || '').replace(/\D/g, ''))}" target="_blank" rel="noopener">${esc(b.contact)}</a>${b.physical_gifts ? ` &middot; ${esc(b.physical_gifts)} physical gift(s) on this plan` : ''}</p>
     <fieldset class="ops-venues"><legend>Venues (both phones see these once booked)</legend>
       ${(b.stops || []).map((stop, i) => `<div class="ops-venue" data-stop="${i}"><span>${esc(stop)}</span>

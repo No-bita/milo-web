@@ -9,6 +9,7 @@
 import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { fail, valid, keys } from './errors.js';
 import { bookingExtras, validBooking, insertBooking, stopNames } from './concierge.js';
+import { CITIES } from '../src/data/cities.js';
 import { NIGHTS_POOL } from '../src/data/mockData.js';
 
 const secret = () => randomBytes(16).toString('base64url');
@@ -29,7 +30,8 @@ function stopList(value) {
 
 // helpers: { name, timing, picks } are the handler's own validators, reused as-is.
 export async function createSolo({ db, body, origin, helpers }) {
-  keys(body, ['name', 'occasion', 'night_id', 'night_rank', 'timing', 'stops', 'intents', 'reactions', 'booking']);
+  keys(body, ['name', 'occasion', 'city', 'night_id', 'night_rank', 'timing', 'stops', 'intents', 'reactions', 'booking']);
+  valid(Object.hasOwn(CITIES, body.city));
   const displayName = helpers.name(body.name);
   valid(body.occasion === undefined || occasions.includes(body.occasion));
   valid(NIGHTS_POOL.some(n => n.id === body.night_id));
@@ -43,13 +45,13 @@ export async function createSolo({ db, body, origin, helpers }) {
   const id = randomUUID(), seatKey = secret(), shareToken = secret(), seatId = randomUUID();
   await db.query('BEGIN');
   // invite_token is required by the schema but never accepted for solo plans.
-  await db.query(`INSERT INTO plans(id,invite_token,occasion,status,confirmed_night_id,timing,mode,share_token,stops,solo_rank)
-    VALUES($1,$2,$3,'confirmed',$4,$5::jsonb,'solo',$6,$7::jsonb,$8)`,
-    [id, secret(), body.occasion || null, body.night_id, JSON.stringify(body.timing), shareToken, stops ? JSON.stringify(stops) : null, body.night_rank ?? null]);
-  await db.query(`INSERT INTO participants(id,plan_id,role,display_name,seat_key_hash,intents,reactions,finished_at)
-    VALUES($1,$2,'initiator',$3,$4,$5::jsonb,$6::jsonb,${picks.finished ? 'now()' : 'NULL'})`,
-    [seatId, id, displayName, hash(seatKey), JSON.stringify(picks.intents), JSON.stringify(picks.reactions)]);
-  await insertBooking(db, { planId: id, requesterId: seatId, budget: body.booking.budget_band, hours: body.booking.window_hours, contact, notes: null, requests, surprise });
+  await db.query(`INSERT INTO plans(id,invite_token,occasion,city,status,confirmed_night_id,timing,mode,share_token,stops,solo_rank)
+    VALUES($1,$2,$3,$4,'confirmed',$5,$6::jsonb,'solo',$7,$8::jsonb,$9)`,
+    [id, secret(), body.occasion || null, body.city, body.night_id, JSON.stringify(body.timing), shareToken, stops ? JSON.stringify(stops) : null, body.night_rank ?? null]);
+  await db.query(`INSERT INTO participants(id,plan_id,role,display_name,seat_key_hash,intents,reactions,finished_at,contact)
+    VALUES($1,$2,'initiator',$3,$4,$5::jsonb,$6::jsonb,${picks.finished ? 'now()' : 'NULL'},$7)`,
+    [seatId, id, displayName, hash(seatKey), JSON.stringify(picks.intents), JSON.stringify(picks.reactions), contact]);
+  await insertBooking(db, { planId: id, requesterId: seatId, budget: body.booking.budget_band, hours: body.booking.window_hours, requests, surprise });
   await db.query('COMMIT');
   return { plan_id: id, seat_key: seatKey, share_url: `${origin}/app/?shared=${shareToken}` };
 }

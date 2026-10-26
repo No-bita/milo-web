@@ -10,7 +10,7 @@ import { EXPERIENCE_POOL } from '../data/mockData.js';
 
 test('two isolated phones never receive the other seat picks or derived leanings', async () => {
   const db = new PGlite();
-  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
   // One SQL connection in PGlite: serialize requests, matching a connected
   // transaction client. Live Postgres plan locks handle real concurrency.
   let tail = Promise.resolve();
@@ -42,7 +42,7 @@ test('two isolated phones never receive the other seat picks or derived leanings
       const response = await fetch(path,{ method, headers:{ ...(key ? { Authorization:`Bearer ${key}` } : {}), ...(body ? { 'Content-Type':'application/json' } : {}) }, ...(body ? { body:JSON.stringify(body) } : {}) });
       return { status:response.status, data:await response.json() };
     },{path,method,body});
-    const created = await call(pages[0],'/api/plans','POST',{ name:'PrivateAlpha',occasion:'date_night' });
+    const created = await call(pages[0],'/api/plans','POST',{ name:'PrivateAlpha',city:'bengaluru',occasion:'date_night' });
     assert.equal(created.status,201); const id = created.data.plan_id;
     await pages[0].evaluate(key => localStorage.setItem('seat',key),created.data.seat_key);
     // The recipient follows the generated invite URL itself: the link must

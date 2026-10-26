@@ -110,10 +110,10 @@ export function openBookingSheet(timing) {
     ${radios('budget_band', BUDGETS, 'Budget for two')}
     ${radios('window_hours', { 3: '3 hours', 4: '4 hours' }, 'How long is the night?')}
     <label>Your WhatsApp number<input name="contact" type="tel" inputmode="tel" maxlength="20" placeholder="+91 98765 43210" autocomplete="tel"></label>
-    <label>Anything we should know? (optional)<textarea name="notes" maxlength="300" rows="3" placeholder="Area, diet, no alcohol, a place you love"></textarea></label>`,
+    <label>Anything we should know? (optional)<textarea name="requests" maxlength="1000" rows="3" placeholder="Area, diet, no alcohol, a place you love"></textarea></label>`,
   async (form, busy) => {
     const body = { budget_band: picked(form, 'budget_band'), window_hours: Number(picked(form, 'window_hours')), contact: form.elements.contact.value.trim() };
-    const notes = form.elements.notes.value.trim(); if (notes) body.notes = notes;
+    const requests = form.elements.requests.value.trim(); if (requests) body.requests = requests;
     if (!body.budget_band) return 'Pick a budget.';
     if (!body.window_hours) return 'Pick how long the night is.';
     if ((body.contact.match(/\d/g) || []).length < 10) return 'Add a WhatsApp number we can reach you on.';

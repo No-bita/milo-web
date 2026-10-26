@@ -42,7 +42,7 @@ test('hand the night to Milo, get it booked, check in the next morning, export t
     await sheet.locator('.milo-choice-pill', { hasText: '₹2,000 - 4,000' }).click();
     await sheet.locator('.milo-choice-pill', { hasText: '4 hours' }).click();
     await sheet.locator('input[name=contact]').fill('+91 98765 43210');
-    await sheet.locator('textarea[name=notes]').fill('Indiranagar please');
+    await sheet.locator('textarea[name=requests]').fill('Indiranagar please');
     await sheet.locator('button[type=submit]').click();
     await sheet.waitFor({ state: 'detached' });
     await waitText(a.page, '.milo-concierge', /We're booking every stop/);
