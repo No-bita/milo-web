@@ -49,10 +49,13 @@ export async function refreshPlan() {
 
 // Suggest and "This is our night" go through the server so both phones always
 // see the same state. The actions response is the same plan view as a GET.
-export async function postPlanAction(type, nightId) {
+// set_time carries { date, time, time_zone } and no night id (the contract
+// stores one time per plan); suggest/confirm carry a night id and no timing.
+export async function postPlanAction(type, nightId, timing) {
   const seat = readSeat();
   if (!seat) return { ok: false, reason: 'no_seat' };
-  const result = await withTimeout(api('POST', `/api/plans/${seat.planId}/actions`, { body: { type, night_id: nightId }, seatKey: seat.seatKey }));
+  const body = type === 'set_time' ? { type, timing } : { type, night_id: nightId };
+  const result = await withTimeout(api('POST', `/api/plans/${seat.planId}/actions`, { body, seatKey: seat.seatKey }));
   if (result.ok) {
     const seatNow = readSeat();
     if (!seatNow || seatNow.planId !== seat.planId) return { ok: false, reason: 'seat_changed' };
@@ -82,6 +85,11 @@ export function applyPlanView(view, seat = readSeat()) {
   if (JSON.stringify(suggestion) !== JSON.stringify(current.suggestion ?? null)) patch.suggestion = suggestion;
   const confirmed = view.confirmed_night_id || null;
   if (confirmed !== (current.confirmedNightId ?? null)) patch.confirmedNightId = confirmed;
+  // The server keeps one agreed time per plan, without a night id. Time is only
+  // set on the agreed screen, so it belongs to the confirmed night. The server
+  // copy is the source of truth for both phones: last write wins.
+  const timing = sharedTimingFromView(view.timing, confirmed);
+  if (!sameTiming(timing, current.timing ?? null)) patch.timing = timing;
   // Partner progress powers the small status line on the creator's plan screen.
   const partnerJoined = Boolean(view.partner?.display_name);
   if (partnerJoined !== Boolean(current.partnerJoined)) patch.partnerJoined = partnerJoined;
@@ -100,6 +108,21 @@ export function applyPlanView(view, seat = readSeat()) {
     }
   }
 }
+
+export function sharedTimingFromView(serverTiming, nightId) {
+  if (!serverTiming || !nightId) return null;
+  const { date, time, time_zone: timeZone } = serverTiming;
+  if (typeof date !== 'string' || typeof time !== 'string' || typeof timeZone !== 'string') return null;
+  const start = new Date(`${date}T${time}:00`);
+  if (!Number.isFinite(start.getTime())) return null;
+  return { version: 1, nightId, date, time, timeZone, startAt: start.toISOString() };
+}
+
+// Compare only what the server stores, so a local copy carrying extra fields
+// (chosenBy) does not trigger a rewrite and a render loop.
+const sameTiming = (a, b) => (a && b)
+  ? a.nightId === b.nightId && a.date === b.date && a.time === b.time && a.timeZone === b.timeZone
+  : a === b;
 
 // The server's shared_result projection, shaped the way the screens already
 // expect. Night records are public static data; the static list fills anything
