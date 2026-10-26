@@ -1,8 +1,9 @@
 import { renderItinerary, attachItinerary } from '../components/itinerary.js';
 import { renderNightTiming, attachNightTiming, liveTimingForNight } from '../components/night-timing.js';
 import { store } from '../domain/store.js';
-import { partnerLabel } from '../logic/partner.js';
 import { computePlanningOutput } from '../logic/planning.js';
+import { currentPlanResult, hasServerSeat } from '../domain/plan-view.js';
+import { openBookFirstSheet } from '../components/bring-in-sheet.js';
 
 export function renderSoloNight(sessionId = 'aarav') {
   const state = store.getState();
@@ -10,7 +11,6 @@ export function renderSoloNight(sessionId = 'aarav') {
   const item = nights.find(item => item.night.id === state.sessionA.activeNightId) || nights[0];
   const overrides = state.sessionA.soloItineraryOverrides?.[item.night.id] || {};
   const night = { ...item.night, beats: item.night.beats.map((beat, i) => overrides[i] || beat) };
-  const saved = state.sessionA.savedSoloNightId === night.id;
   const timingStep = state.sessionA.soloTimingStep === night.id;
   if (timingStep) return `<div class="milo-s7-container milo-closing-state" data-session-id="${sessionId}">
     <header class="milo-header"><button class="milo-header-back" id="miloSoloTimingBack" aria-label="Back to itinerary">←</button><span class="milo-wordmark">milo.</span></header>
@@ -27,10 +27,8 @@ export function renderSoloNight(sessionId = 'aarav') {
       <div class="milo-plan-grid">${renderItinerary(night, item.night, { stacked: true, editable: true })}</div>
       <details class="milo-plan-why"><summary>Why this night fits <span aria-hidden="true">+</span></summary><p>${night.reasonLine}</p><p>Skip this one if ${night.skipIf}</p></details>
       <div class="milo-s7-actions">
-        <button class="milo-secondary-link" id="miloSoloOther">See the other two</button>
-        <button class="milo-cta-button" id="miloSoloSave">${saved ? 'Continue to date &amp; time' : 'Save this draft'}</button>
+        <button class="milo-cta-button" id="miloSoloSave">Book this night</button>
       </div>
-      <button type="button" class="milo-text-button milo-bring-in" id="miloSoloBringIn">Bring ${partnerLabel(state)} in</button>
     </div>
   </div>`;
 }
@@ -65,14 +63,21 @@ export function attachSoloNightListeners(container, sessionId = 'aarav') {
     if (itinerary) itinerary.scrollTop = scrollTop;
     replacement?.querySelector(`[data-customise-slot="${slot}"]`)?.focus({ preventScroll: true });
   });
-  container.querySelector('#miloSoloBringIn')?.addEventListener('click', () => store.updateSession(sessionId, { planningMode: 'together', screen: 's4_invite' }));
-  const back = () => store.setSessionScreen(sessionId, 's6');
-  container.querySelector('#miloSoloBack')?.addEventListener('click', back);
-  container.querySelector('#miloSoloOther')?.addEventListener('click', back);
-  container.querySelector('#miloSoloSave')?.addEventListener('click', () => {
+  container.querySelector('#miloSoloBack')?.addEventListener('click', () => store.setSessionScreen(sessionId, 's6'));
+  // Book this night: the same next step as saving the draft (date and time, then booking).
+  const book = () => {
     const state = store.getState();
     const nights = computePlanningOutput(state, sessionId).selectedNights;
     const item = nights.find(item => item.night.id === state.sessionA.activeNightId) || nights[0];
     store.updateSession(sessionId, { savedSoloNightId: item.night.id, soloTimingStep: item.night.id });
+  };
+  container.querySelector('#miloSoloSave')?.addEventListener('click', () => {
+    // Someone was invited from the three nights and their picks aren't in yet: ask first.
+    const state = store.getState();
+    if (state.sessionA.bringIn?.prepared && hasServerSeat() && !currentPlanResult(state)) {
+      openBookFirstSheet(sessionId, { triggerId: 'miloSoloSave', onBook: book });
+      return;
+    }
+    book();
   });
 }

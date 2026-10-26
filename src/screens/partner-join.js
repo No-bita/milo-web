@@ -33,8 +33,13 @@ export async function showPartnerJoin(container, token) {
       <div class="milo-partner-invitation">
         <h1 id="miloJoinTitle">${escapeHtml(inviter)} wants to plan<br>a night with you.</h1>
         <p class="milo-partner-task">${occasion && OCCASIONS[occasion] ? `${escapeHtml(OCCASIONS[occasion])}${day ? ` &middot; ${escapeHtml(dayLabel(day))}` : ''}. ` : ''}Pick a mood. Tell us what feels like you.</p>
+        <ol class="milo-partner-steps" aria-label="How this works">
+          <li>Pick the mood.</li>
+          <li>Swipe a few ideas.</li>
+          <li>Milo finds what fits you both.</li>
+        </ol>
+        <p class="milo-partner-privacy">Your picks stay private. Nothing is booked.</p>
         <label class="milo-name-field"><span>Your name</span><input id="miloJoinName" type="text" maxlength="40" autocomplete="given-name" placeholder="First name"></label>
-        <p class="milo-partner-privacy">Nothing is booked. Your picks aren't shown to ${escapeHtml(inviter)} in the plan, just the shared picture.</p>
         <p class="milo-invite-error-note" id="miloJoinNote" role="status"></p>
       </div>
     </div>

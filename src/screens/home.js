@@ -75,6 +75,8 @@ export function attachHomeListeners(container, sessionId = 'aarav') {
     if (summary.action === 'open-waiting') store.setSessionScreen(sessionId, 's4_waiting');
     else if (summary.action === 'open-booked') store.setSessionScreen(sessionId, 'booked');
     else if (summary.action === 'open-together') store.setSessionScreen(sessionId, 's5');
+    // Their picks are in for a solo plan with an invite out: open the shared plan.
+    else if (summary.kind === 'together' && store.getState().sessionA.planningMode === 'solo') store.updateSession(sessionId, { planningMode: 'together', screen: 's7', activeNightId: summary.nightId });
     else store.updateSession(sessionId, { screen: 's7', activeNightId: summary.nightId });
   });
 }

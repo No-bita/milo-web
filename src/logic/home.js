@@ -34,13 +34,14 @@ export function homeSummary(state) {
   }
   // A server invite link exists once it is shared OR copied; copying alone never
   // sets inviteSent, so without this the creator saw 'Resume' back into the deck.
-  if (shared.inviteSent || shared.serverInviteUrl) {
+  // A solo plan with an invite out stays the planner's own until their picks are in.
+  if ((shared.inviteSent || shared.serverInviteUrl) && a.planningMode !== 'solo') {
     return { kind: 'waiting', nightId: null, planName: 'Your night with ' + partner, partner, planStatus: `Waiting for ${partner}`, partnerStatus: `Invite sent. Waiting for ${partner}`, action: 'open-waiting' };
   }
   const ratedCount = (a.reactions || []).length;
   const started = ratedCount > 0 || (a.intents || []).length > 0 || !!a.planningMode;
   if (started) {
-    return { kind: 'in-progress', invited, nightId: null, planName: 'Your night', partner, planStatus: 'Picks saved on this phone', partnerStatus: null, ratedCount, resumeStep: a.pausedScreen || (ratedCount > 0 ? 's2' : 's1'), action: 'resume' };
+    return { kind: 'in-progress', invited, nightId: null, planName: 'Your night', partner, planStatus: 'Picks saved on this phone', partnerStatus: null, ratedCount, resumeStep: a.pausedScreen || (a.bringIn?.prepared ? 's6' : ratedCount > 0 ? 's2' : 's1'), action: 'resume' };
   }
   return { kind: 'fresh', invited, nightId: null, planName: null, partner, planStatus: null, partnerStatus: null, action: null };
 }
