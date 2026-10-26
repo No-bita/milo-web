@@ -1,6 +1,6 @@
 -- Milo concierge + PMF measurement V1. Apply AFTER server/schema.sql and
--- server/gifts.sql. Everything cascades with its plan, so the daily cleanup
--- removes contacts, notes, check-ins and events after 30 days.
+-- server/gifts.sql. Nothing is deleted automatically; rows are kept. ON DELETE
+-- CASCADE remains, so a manual plan deletion would still remove them.
 -- Seats never read another seat's check-in, contact, notes or events; those are
 -- for the owner's ops page and CSV export only.
 BEGIN;

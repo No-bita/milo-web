@@ -230,7 +230,7 @@ export async function exportCsv(db) {
       time_set: Boolean(plan.timing), night_date: plan.timing?.date,
       booking_status: booking?.status, budget_band: booking?.budget_band, window_hours: booking?.window_hours, ops_minutes: booking?.ops_minutes,
       requests_given: booking ? Boolean(booking.requests) : null, surprise: booking?.requests ? booking.surprise : null,
-      physical_gifts: physical.length, digital_gifts: pg.filter(g => ['sealed_note', 'teaser'].includes(g.kind)).length,
+      physical_gifts: physical.length, digital_gifts: pg.filter(g => g.status !== 'cancelled' && ['sealed_note', 'teaser'].includes(g.kind)).length,
       gift_statuses: physical.map(g => g.status).join('|'),
       checkins: checkins.filter(c => c.plan_id === plan.id).length,
       rating_initiator: a.rating, rating_partner: b.rating, differently_initiator: a.differently, differently_partner: b.differently,

@@ -1,6 +1,6 @@
 -- Milo gifting V1. Apply AFTER server/schema.sql (it references plans and
--- participants). Gifts cascade-delete with their plan, so the daily cleanup
--- removes them (and any delivery address) with the plan after 30 days.
+-- participants). Gifts are never deleted by the app: removal sets status
+-- 'cancelled'. ON DELETE CASCADE remains for a manual plan deletion.
 -- Gift details are returned only to the giver and to the owner's ops list;
 -- see docs/phase1-server.md "Gifting" for the reveal rules.
 BEGIN;

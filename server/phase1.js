@@ -136,7 +136,7 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       const opsPath = path.match(/^\/api\/ops\/(gifts|bookings|export\.csv)(?:\/([^/]+))?$/);
       const cleanup = path === '/api/cleanup' && method === 'GET';
       // Launch gate: product routes stay off until enabled. Authenticated
-      // cleanup always runs so stored plans are still deleted while paused.
+      // The cleanup route stays reachable while paused; it deletes nothing.
       if (env.MILO_PHASE1_ENABLED !== 'true' && !cleanup) return response(503, { error:'unavailable' });
       const publicScope = create || soloCreate ? 'create' : (invite && !invite[2] && method === 'GET') || shared ? 'preview' : invite?.[2] && method === 'POST' ? 'join' : null;
       if (!publicScope && !planPath && !cleanup && !opsPath) return response(404, { error:'not_found' });
@@ -150,6 +150,9 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         const actual = Buffer.from(request.headers.get('authorization') || '');
         const expected = Buffer.from(`Bearer ${env.CRON_SECRET}`);
         if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) fail(401, 'unauthorized');
+        // Retention policy: nothing is deleted. Authenticated no-op, answered before any
+        // database connection so it stays 200 even if the database is unreachable.
+        return response(200, { deleted:0 });
       }
       if (opsPath) {
         // Owner-only fulfilment list for physical gifts. Fails closed without OPS_SECRET.
@@ -173,10 +176,6 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
           VALUES($1,$2,date_trunc('minute',now()),1)
           ON CONFLICT(scope,ip_hash,window_start) DO UPDATE SET hits=rate_limits.hits+1 RETURNING hits`, [publicScope,ipHash]);
         if (count.rows[0].hits > (publicScope === 'preview' ? 60 : 20)) fail(429, 'rate_limited');
-      }
-      if (cleanup) {
-        const removed = await db.query("DELETE FROM plans WHERE created_at < now()-interval '30 days' RETURNING id");
-        return response(200, { deleted:removed.rows.length });
       }
       if (soloCreate) {
         const result = await createSolo({ db, body: await jsonBody(request), origin: origin.origin, helpers: { name, timing, picks } });
