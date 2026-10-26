@@ -3,6 +3,8 @@ import { homeSummary } from '../logic/home.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
 import { renderTabBar, attachTabBar } from '../components/tab-bar.js';
 import { renderOccasionGrid, attachOccasionGrid } from '../components/occasion-grid.js';
+import { currentGifts } from '../domain/gifts.js';
+import { NIGHTS_POOL } from '../data/mockData.js';
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -30,7 +32,22 @@ function planCard(summary, state) {
       <span>${escape(summary.planStatus)}</span>
       <button class="milo-home-link" type="button" id="miloHomeOpen">${summary.action === 'open-waiting' ? 'See invite' : 'Open plan'} <span aria-hidden="true">›</span></button>
     </div>
+    ${surpriseOpen(summary) ? `<button class="milo-home-link milo-home-surprise" type="button" id="miloHomeSurprise">Add a surprise <span aria-hidden="true">›</span></button>` : ''}
   </section>`;
+}
+
+// "Add a surprise" on the plan card: only for an agreed Together night or a booked
+// solo night, and only once the server says gifts can be added (time set).
+function surpriseOpen(summary) {
+  return ['confirmed', 'booked'].includes(summary.kind) && Boolean(summary.nightId) && Boolean(currentGifts()?.can_add);
+}
+
+function surpriseNight(summary, state) {
+  const solo = summary.kind === 'booked';
+  const night = NIGHTS_POOL.find(n => n.id === summary.nightId);
+  if (!night) return null;
+  const overrides = solo ? state.sessionA.soloItineraryOverrides?.[night.id] || {} : {};
+  return { solo, night: { ...night, beats: night.beats.map((beat, i) => overrides[i] || beat) }, timing: timingForNight(night.id, { solo }) };
 }
 
 export function renderHome(sessionId = 'aarav') {
@@ -70,6 +87,10 @@ export function attachHomeListeners(container, sessionId = 'aarav') {
   const summary = homeSummary(store.getState());
   container.querySelector('#miloHomeResume')?.addEventListener('click', () => {
     store.setSessionScreen(sessionId, summary.resumeStep || 's2');
+  });
+  container.querySelector('#miloHomeSurprise')?.addEventListener('click', () => {
+    const pick = surpriseNight(summary, store.getState());
+    if (pick) import('../components/gifts-panel.js').then(m => m.openGiftSheet(pick.night, pick.timing, { solo: pick.solo }));
   });
   container.querySelector('#miloHomeOpen')?.addEventListener('click', () => {
     if (summary.action === 'open-waiting') store.setSessionScreen(sessionId, 's4_waiting');

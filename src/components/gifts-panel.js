@@ -1,4 +1,5 @@
-// Gifting V1 panel on the agreed screen (both seats, Phase 1 together mode).
+// Gifting V1 panel: the agreed Together screen (both seats) and, for solo plans,
+// a list of what the planner added (physical gifts only).
 // Renders only what the server's gifts view holds for THIS phone:
 //   - "For you": the hint, the teaser, a sealed note (once open), the memory card.
 //   - "From you": this phone's own gifts and their status.
@@ -87,23 +88,26 @@ function fromYou(view, night) {
   }).join('')}</ul>`;
 }
 
-export function renderGiftsPanel(night, sessionId) {
+// solo: physical gifts only, no reveals for a second seat. listOnly: show what was
+// added (and its status) without the add entry, for screens that offer it elsewhere.
+export function renderGiftsPanel(night, sessionId, { solo = false, listOnly = false } = {}) {
   const view = currentGifts(store.getState());
-  if (!view) return `<section class="milo-gifts" aria-label="Gifts" data-loading><div class="milo-section-label">GIFTS</div></section>`;
+  if (!view) return listOnly ? '' : `<section class="milo-gifts" aria-label="Gifts" data-loading><div class="milo-section-label">GIFTS</div></section>`;
   const mine = fromYou(view, night);
+  if (listOnly && !mine) return '';
   return `<section class="milo-gifts" aria-labelledby="miloGiftsTitle-${sessionId}">
     <div class="milo-section-label" id="miloGiftsTitle-${sessionId}">GIFTS</div>
-    ${forYou(view, night)}
+    ${solo ? '' : forYou(view, night)}
     ${mine}
-    ${view.can_add
-      ? `<button type="button" class="milo-pill-btn-secondary milo-gift-add" id="miloGiftAdd-${sessionId}">${view.mine.length ? 'Add another gift' : 'Add a gift'}</button>
+    ${listOnly ? '' : view.can_add
+      ? `<button type="button" class="milo-pill-btn-secondary milo-gift-add" id="miloGiftAdd-${sessionId}">Add a surprise</button>
          ${view.mine.length ? '' : '<p class="milo-gift-sub">Something waiting at the table, at their door, or a note for later. Only you see what you pick.</p>'}`
-      : '<p class="milo-gift-sub">Set the time first, then you can add a gift.</p>'}
+      : '<p class="milo-gift-sub">Set a time first, then you can add a surprise.</p>'}
     <p class="milo-gift-error" id="miloGiftNote-${sessionId}" role="alert" hidden></p>
   </section>`;
 }
 
-export function attachGiftsPanel(container, night, sessionId, { timing } = {}) {
+export function attachGiftsPanel(container, night, sessionId, { timing, solo = false } = {}) {
   const panel = container.querySelector('.milo-gifts');
   if (!panel) return;
   const note = (text) => { const el = panel.querySelector(`#miloGiftNote-${sessionId}`); if (el) { el.textContent = text; el.hidden = !text; } };
@@ -126,15 +130,16 @@ export function attachGiftsPanel(container, night, sessionId, { timing } = {}) {
     const result = await addGift({ kind: 'memory', note: field.value.trim() });
     if (!result.ok) { error.textContent = errorText(result); error.hidden = false; memory.querySelector('button').disabled = false; }
   });
-  panel.querySelector(`#miloGiftAdd-${sessionId}`)?.addEventListener('click', () => openGiftSheet(night, timing));
+  panel.querySelector(`#miloGiftAdd-${sessionId}`)?.addEventListener('click', () => openGiftSheet(night, timing, { solo }));
 }
 
 // ---------- Add-a-gift sheet ----------
 
-function kindStep() {
-  return `<h2>Add a gift</h2>
+function kindStep(solo) {
+  const kinds = Object.entries(GIFT_KINDS).filter(([, kind]) => !solo || kind.physical);
+  return `<h2>Add a surprise</h2>
     <p>Only you see what you pick.</p>
-    <div class="milo-gift-kinds">${Object.entries(GIFT_KINDS).map(([id, kind]) => `
+    <div class="milo-gift-kinds">${kinds.map(([id, kind]) => `
       <button type="button" class="milo-gift-kind" data-kind="${id}">
         <span class="milo-gift-title">${kind.label}</span><span class="milo-gift-sub">${kind.line}</span>
       </button>`).join('')}</div>
@@ -145,7 +150,7 @@ function stopOptions(night, { optional = false } = {}) {
   return `${optional ? '<option value="">Any time</option>' : ''}${(night.beats || []).map((beat, i) => `<option value="${i}">${escapeHtml(beat.name)}</option>`).join('')}`;
 }
 
-function formStep(kind, night, timing) {
+function formStep(kind, night, timing, solo) {
   const days = daysUntil(timing?.date);
   const items = itemsFor(kind).map(item => {
     const tooSoon = days < item.leadDays;
@@ -173,7 +178,7 @@ function formStep(kind, night, timing) {
       ${fields}
       ${physical ? `<label>Card message (optional)<input name="note" maxlength="200" autocomplete="off"></label>
         <label>Your WhatsApp number<input name="contact" type="tel" inputmode="tel" maxlength="20" placeholder="+91 98765 43210" autocomplete="tel"></label>
-        <label class="milo-gift-check"><input type="checkbox" name="show_hint"> Let them know something's coming</label>
+        ${solo ? '' : `<label class="milo-gift-check"><input type="checkbox" name="show_hint"> Let them know something's coming</label>`}
         <p class="milo-gift-sub">No payment now. Milo confirms the price with you on WhatsApp before anything is ordered.</p>` : ''}
       <p class="milo-gift-error" role="alert" hidden></p>
       <button type="submit" class="milo-pill-btn-primary">Add gift</button>
@@ -186,7 +191,7 @@ function bodyFor(form, kind) {
   const value = (name) => f[name]?.value?.trim() ?? '';
   if (kind === 'teaser') return { kind, note: value('note') };
   if (kind === 'sealed_note') return { kind, note: value('note'), ...(value('stop_index') !== '' ? { stop_index: Number(value('stop_index')) } : {}) };
-  const body = { kind, item_id: form.querySelector('input[name=item_id]:checked')?.value, contact: value('contact'), show_hint: f.show_hint.checked };
+  const body = { kind, item_id: form.querySelector('input[name=item_id]:checked')?.value, contact: value('contact'), show_hint: Boolean(f.show_hint?.checked) };
   if (value('note')) body.note = value('note');
   if (kind === 'moment_drop') Object.assign(body, { stop_index: Number(value('stop_index')), venue: value('venue') });
   if (kind === 'home_delivery') Object.assign(body, { address: value('address'), deliver_window: value('deliver_window') });
@@ -203,17 +208,17 @@ function localCheck(body) {
   return '';
 }
 
-export function openGiftSheet(night, timing) {
+export function openGiftSheet(night, timing, { solo = false } = {}) {
   document.querySelector('.milo-gift-sheet')?.remove();
   const dialog = document.createElement('dialog');
   dialog.className = 'milo-invite-feedback milo-gift-sheet';
-  dialog.setAttribute('aria-label', 'Add a gift');
+  dialog.setAttribute('aria-label', 'Add a surprise');
   const show = (html) => { dialog.innerHTML = `<div class="milo-gift-sheet-body">${html}</div>`; wire(); };
   function wire() {
     dialog.querySelector('[data-close]')?.addEventListener('click', () => dialog.close());
-    dialog.querySelector('[data-back]')?.addEventListener('click', () => show(kindStep()));
+    dialog.querySelector('[data-back]')?.addEventListener('click', () => show(kindStep(solo)));
     dialog.querySelectorAll('[data-kind]').forEach(button => {
-      if (button.tagName === 'BUTTON') button.addEventListener('click', () => show(formStep(button.dataset.kind, night, timing)));
+      if (button.tagName === 'BUTTON') button.addEventListener('click', () => show(formStep(button.dataset.kind, night, timing, solo)));
     });
     const form = dialog.querySelector('.milo-gift-form');
     form?.addEventListener('submit', async (event) => {
@@ -232,6 +237,6 @@ export function openGiftSheet(night, timing) {
   }
   document.body.append(dialog);
   dialog.addEventListener('close', () => dialog.remove(), { once: true });
-  show(kindStep());
+  show(kindStep(solo));
   dialog.showModal();
 }
