@@ -181,3 +181,18 @@ invite and export queries read the new `mode` column).
   `requests` is null when the planner kept them a surprise. Never returns contact, budget, notes, picks or check-ins.
 - Ops: booking rows carry `mode`, `requests`, `surprise`; solo plans show SOLO and the surprise flag. The CSV gains
   `mode`, `requests_given` and `surprise`; for solo plans `confirmed_rank` is the night's position (1-3) in the planner's list.
+
+## Data model v2 (retention, contacts, requests, city)
+
+Apply `server/data-v2a.sql` AFTER `solo.sql` and BEFORE deploying the v2 code (additive only, the old code keeps working). Apply `server/data-v2b.sql` AFTER the v2 code is deployed (drops the old columns). Together they keep every row except the dropped contact numbers.
+- **Retention: no plan data is deleted.** `GET /api/cleanup` stays an authenticated no-op that returns `{deleted:0}`
+  before any database connection. Phone numbers, delivery addresses, names and free text are kept indefinitely.
+  Rate-limit rows are not pruned.
+- **One phone number per person:** `participants.contact` (starts empty). `bookings.contact` and `gifts.contact`
+  were dropped without copying, so earlier numbers are gone. Ops reads the person's number.
+- **One free-text field:** `bookings.notes` was merged into `bookings.requests` (<=1000) and dropped. The Together
+  booking sheet now sends `requests`.
+- **City is recorded, not defaulted:** POST /api/plans and /api/plans/solo require `city` from `src/data/cities.js`
+  (Bengaluru only; a CHECK enforces the list). The app sends it explicitly; there is no place picker yet.
+- **CSV:** adds `city`, `minutes_to_agree` (plan created -> night confirmed, Together only) and
+  `nights_browsed_initiator/partner` (distinct nights moved to with "See the other two").
