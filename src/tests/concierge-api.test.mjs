@@ -14,7 +14,7 @@ const BASE = Date.parse('2026-11-01T06:30:00Z');
 let db, api, clock = BASE;
 before(async () => {
   db = new PGlite();
-  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
   let tail = Promise.resolve();
   const acquire = async () => { const previous = tail; let release; tail = new Promise(r => { release = r; }); await previous; return { query: (q, a) => db.query(q, a), release }; };
   api = createApi({ acquire, clientIp: () => '127.0.0.1', now: () => clock,
@@ -33,7 +33,7 @@ async function call(method, path, { body, key } = {}) {
 }
 const TIMING = { date: '2026-11-07', time: '19:30', time_zone: 'Asia/Kolkata' };
 async function plan({ confirm = true, timing = TIMING, pickRank = 0 } = {}) {
-  const created = await call('POST', '/api/plans', { body: { name: 'Asha', occasion: 'anniversary' } });
+  const created = await call('POST', '/api/plans', { body: { name: 'Asha', city: 'bengaluru', occasion: 'anniversary' } });
   const a = created.data.seat_key, id = created.data.plan_id;
   const token = new URL(created.data.invite_url).searchParams.get('invite');
   const b = (await call('POST', `/api/invites/${token}/join`, { body: { name: 'Ravi' } })).data.seat_key;
@@ -51,7 +51,7 @@ async function plan({ confirm = true, timing = TIMING, pickRank = 0 } = {}) {
 }
 const view = (p, key) => call('GET', `/api/plans/${p.id}/booking`, { key });
 const request = (p, key, body) => call('POST', `/api/plans/${p.id}/booking`, { key, body });
-const REQ = { budget_band: '2k_4k', window_hours: 4, contact: '+91 98765 43210', notes: 'Indiranagar side, no alcohol for me' };
+const REQ = { budget_band: '2k_4k', window_hours: 4, contact: '+91 98765 43210', requests: 'Indiranagar side, no alcohol for me' };
 const CHECKIN = { differently: 'no', wouldnt_have: 'The walk between stops.', rating: 5, use_again: 'yes', recommend: 'yes', would_pay: '200_500' };
 
 test('booking opens only for a confirmed night with a time', async () => {
@@ -68,7 +68,7 @@ test('either person requests once; the other sees only the status; requester can
   const p = await plan();
   const mine = await request(p, p.b, REQ);
   assert.equal(mine.status, 200);
-  assert.deepEqual(mine.data.booking, { status: 'requested', requested_by_me: true, venues: [], budget_band: '2k_4k', window_hours: 4, notes: REQ.notes, requests: null, surprise: true });
+  assert.deepEqual(mine.data.booking, { status: 'requested', requested_by_me: true, venues: [], budget_band: '2k_4k', window_hours: 4, requests: REQ.requests, surprise: true });
   const theirs = await view(p, p.a);
   assert.deepEqual(theirs.data.booking, { status: 'requested', requested_by_me: false, venues: [] });
   assert.equal(theirs.data.can_request, false);
@@ -78,12 +78,12 @@ test('either person requests once; the other sees only the status; requester can
   assert.equal((await call('DELETE', `/api/plans/${p.id}/booking`, { key: p.a })).status, 404, 'only the requester cancels');
   assert.equal((await call('DELETE', `/api/plans/${p.id}/booking`, { key: p.b })).status, 200);
   assert.equal((await view(p, p.a)).data.can_request, true);
-  assert.equal((await request(p, p.a, { ...REQ, window_hours: 3, notes: '' })).status, 200, 'a cancelled request can be made again');
+  assert.equal((await request(p, p.a, { ...REQ, window_hours: 3, requests: '' })).status, 200, 'a cancelled request can be made again');
 });
 
 test('validation: bands, window, contact, notes', async () => {
   const p = await plan();
-  for (const bad of [{ ...REQ, budget_band: 'cheap' }, { ...REQ, window_hours: 6 }, { ...REQ, contact: '12345' }, { ...REQ, notes: '<b>' }, { ...REQ, extra: 1 }, { budget_band: '2k_4k', window_hours: 4 }]) {
+  for (const bad of [{ ...REQ, budget_band: 'cheap' }, { ...REQ, window_hours: 6 }, { ...REQ, contact: '12345' }, { ...REQ, requests: '<b>' }, { ...REQ, extra: 1 }, { budget_band: '2k_4k', window_hours: 4 }]) {
     assert.equal((await request(p, p.a, bad)).status, 400, JSON.stringify(bad));
   }
 });
@@ -93,7 +93,7 @@ test('ops sees the request, books it with venues, and both phones see the venues
   await request(p, p.a, REQ);
   assert.equal((await call('GET', '/api/ops/bookings')).status, 401);
   const list = await call('GET', '/api/ops/bookings', { key: OPS });
-  const row = list.data.bookings.find(x => x.notes === REQ.notes);
+  const row = list.data.bookings.find(x => x.requests === REQ.requests);
   assert.equal(row.contact, '+919876543210');
   assert.equal(row.requester_name, 'Asha'); assert.equal(row.partner_name, 'Ravi');
   assert.equal(row.timing.time, '19:30'); assert.ok(row.stops.length >= 2); assert.equal(row.budget_band, '2k_4k');
