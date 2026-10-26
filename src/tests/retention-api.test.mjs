@@ -17,7 +17,7 @@ const DAY = 86400000;
 
 before(async () => {
   db = new PGlite();
-  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql']) await db.exec(await readFile(new URL(`../../server/${file}`, import.meta.url), 'utf8'));
   let tail = Promise.resolve();
   const acquire = async () => { const previous = tail; let release; tail = new Promise(r => { release = r; }); await previous; return { query: (q, a) => db.query(q, a), release }; };
   api = createApi({ acquire, clientIp: () => '127.0.0.1', now: () => clock,
@@ -36,7 +36,7 @@ async function call(method, path, { body, key } = {}) {
 
 // A confirmed plan with a time set: 7:30 PM IST on Sat 7 Nov 2026.
 async function confirmedPlan({ timing = { date: '2026-11-07', time: '19:30', time_zone: 'Asia/Kolkata' } } = {}) {
-  const created = await call('POST', '/api/plans', { body: { name: 'Asha' } });
+  const created = await call('POST', '/api/plans', { body: { name: 'Asha', city: 'bengaluru' } });
   const a = created.data.seat_key, id = created.data.plan_id;
   const token = new URL(created.data.invite_url).searchParams.get('invite');
   const b = (await call('POST', `/api/invites/${token}/join`, { body: { name: 'Ravi' } })).data.seat_key;
@@ -88,7 +88,7 @@ test('removing a gift keeps the row as cancelled and hides it from both seats', 
   const mine = (await gifts(p, p.a)).data.mine;
   for (const g of mine) assert.equal((await call('DELETE', `/api/plans/${p.id}/gifts/${g.id}`, { key: p.a })).status, 200);
   assert.equal(await count('gifts'), total, 'no row is deleted');
-  const { rows } = await db.query('SELECT status, note, contact FROM gifts WHERE plan_id=$1',[p.id]);
+  const { rows } = await db.query('SELECT g.status, g.note, pa.contact FROM gifts g JOIN participants pa ON pa.id=g.giver_id WHERE g.plan_id=$1',[p.id]);
   assert.ok(rows.length === planGifts && rows.every(r => r.status === 'cancelled'));
   assert.ok(rows.some(r => r.contact) && rows.some(r => r.note), 'giver data is retained');
   assert.deepEqual((await gifts(p, p.a)).data.mine, []);
