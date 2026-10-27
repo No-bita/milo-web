@@ -5,6 +5,7 @@ import { store } from '../domain/store.js';
 import { currentConcierge, requestBooking, cancelBooking, sendCheckin } from '../domain/concierge.js';
 import { escapeHtml, partnerLabel } from '../logic/partner.js';
 import { timingLabel } from './night-timing.js';
+import { renderLimits, readLimits, limitsOn } from './booking-limits.js';
 import { openGiftSheet } from './gifts-panel.js';
 import '../styles/concierge.css';
 
@@ -112,6 +113,7 @@ export function openBookingSheet(timing, { night } = {}) {
     <p>We book every stop for ${escapeHtml(from)} and confirm on WhatsApp. Nothing is charged in the app.</p>
     ${radios('budget_band', BUDGETS, 'Budget for two')}
     ${radios('window_hours', { 3: '3 hours', 4: '4 hours' }, 'How long is the night?')}
+    ${limitsOn() ? renderLimits() : ''}
     <label>Your WhatsApp number<input name="contact" type="tel" inputmode="tel" maxlength="20" placeholder="+91 98765 43210" autocomplete="tel"></label>
     <label>Anything we should know? (optional)<textarea name="requests" maxlength="1000" rows="3" placeholder="Area, diet, no alcohol, a place you love"></textarea></label>
     ${night ? `<label class="milo-gift-check"><input type="checkbox" name="add_surprise"> Add a surprise</label>
@@ -119,6 +121,7 @@ export function openBookingSheet(timing, { night } = {}) {
   async (form, busy) => {
     const body = { budget_band: picked(form, 'budget_band'), window_hours: Number(picked(form, 'window_hours')), contact: form.elements.contact.value.trim() };
     const requests = form.elements.requests.value.trim(); if (requests) body.requests = requests;
+    const limits = readLimits(form); if (limits) body.constraints = limits;
     if (!body.budget_band) return 'Pick a budget.';
     if (!body.window_hours) return 'Pick how long the night is.';
     if ((body.contact.match(/\d/g) || []).length < 10) return 'Add a WhatsApp number we can reach you on.';

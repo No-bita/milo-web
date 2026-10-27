@@ -39,9 +39,9 @@ export async function createSolo({ db, body, origin, helpers }) {
   helpers.timing(body.timing);
   const stops = stopList(body.stops);
   const picks = helpers.picks({ intents: body.intents ?? [], reactions: body.reactions ?? [], finished: (body.reactions ?? []).length === 8 });
-  keys(body.booking, ['budget_band', 'window_hours', 'contact', 'requests', 'surprise']);
+  keys(body.booking, ['budget_band', 'window_hours', 'contact', 'requests', 'surprise', 'constraints']);
   const contact = validBooking(body.booking);
-  const { requests, surprise } = bookingExtras(body.booking);
+  const { requests, surprise, constraints } = bookingExtras(body.booking);
   const id = randomUUID(), seatKey = secret(), shareToken = secret(), seatId = randomUUID();
   await db.query('BEGIN');
   // invite_token is required by the schema but never accepted for solo plans.
@@ -51,7 +51,7 @@ export async function createSolo({ db, body, origin, helpers }) {
   await db.query(`INSERT INTO participants(id,plan_id,role,display_name,seat_key_hash,intents,reactions,finished_at,contact)
     VALUES($1,$2,'initiator',$3,$4,$5::jsonb,$6::jsonb,${picks.finished ? 'now()' : 'NULL'},$7)`,
     [seatId, id, displayName, hash(seatKey), JSON.stringify(picks.intents), JSON.stringify(picks.reactions), contact]);
-  await insertBooking(db, { planId: id, requesterId: seatId, budget: body.booking.budget_band, hours: body.booking.window_hours, requests, surprise });
+  await insertBooking(db, { planId: id, requesterId: seatId, budget: body.booking.budget_band, hours: body.booking.window_hours, requests, surprise, constraints });
   await db.query('COMMIT');
   return { plan_id: id, seat_key: seatKey, share_url: `${origin}/app/?shared=${shareToken}` };
 }
