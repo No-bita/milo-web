@@ -61,6 +61,8 @@ export function attachScreen00Listeners(container, sessionId = 'sneha') {
   if (btn) {
     btn.addEventListener('click', () => {
       // Advance Sneha to S1 with context line "Aarav's done. Your turn."
+      // Same-device demo: the partner takes the same quiz version as the creator.
+      if (store.getState().sessionA.quizVersion === 'v3.1') store.updateSession('sneha', { quizVersion: 'v3.1' });
       store.setSessionScreen('sneha', 's1');
       const heading = document.querySelector('#viewport-sneha .milo-headline');
       if (heading) {

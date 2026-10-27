@@ -15,6 +15,7 @@ import { isPhase1Enabled, attachNetworkSync } from './domain/network-adapter.js'
 import { showPartnerJoin } from './screens/partner-join.js';
 import { renderScreen00, attachScreen00Listeners } from './screens/s0-invitation.js';
 import { renderScreen01, attachScreen01Listeners, patchScreen01 } from './screens/s1-intent.js';
+import { renderScreen01b, attachScreen01bListeners, patchScreen01b } from './screens/s1b-tonight.js';
 import { renderThreshold, attachThresholdListeners } from './screens/threshold.js';
 import { renderScreen02, attachScreen02Listeners } from './screens/s2-deck.js';
 import { renderScreen03, attachScreen03Listeners } from './screens/s3-synthesis.js';
@@ -47,7 +48,8 @@ function showSealedWaiting() {
 // Screens that can update in place when only state (not the screen) changes.
 // Screens without a patcher fall back to a full re-render, as before.
 const SCREEN_PATCHERS = {
-  s1: patchScreen01
+  s1: patchScreen01,
+  s1b: patchScreen01b
 };
 
 function focusHeading(viewport) {
@@ -78,6 +80,8 @@ function renderSessionContent(sessionId) {
       return renderScreen00(sessionId);
     case 'planning_path_review':
       return renderPlanningPath(sessionId);
+    case 's1b':
+      return renderScreen01b(sessionId);
     case 'threshold':
       return renderThreshold(sessionId);
     case 's2':
@@ -130,6 +134,9 @@ function attachSessionListeners(container, sessionId) {
       break;
     case 'planning_path_review':
       attachPlanningPathListeners(container, sessionId);
+      break;
+    case 's1b':
+      attachScreen01bListeners(container, sessionId);
       break;
     case 'threshold':
       attachThresholdListeners(container, sessionId);
@@ -350,7 +357,7 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   // step in pausedScreen so Home's Resume card returns to the exact saved step.
   if (!screenParam && isGolden !== '1' && asParam !== 'sneha' && inviteStatus !== 'valid' && shouldShowHome(store.getState())) {
     const sessA = store.getState().sessionA;
-    if (['s1', 'threshold', 's2', 's3', 's4_invite'].includes(sessA.screen) && ((sessA.intents || []).length > 0 || (sessA.reactions || []).length > 0 || sessA.planningMode)) {
+    if (['s1', 's1b', 'threshold', 's2', 's3', 's4_invite'].includes(sessA.screen) && ((sessA.intents || []).length > 0 || (sessA.reactions || []).length > 0 || sessA.planningMode)) {
       store.updateSession('aarav', { pausedScreen: sessA.screen });
     }
     store.setSessionScreen('aarav', 'home');

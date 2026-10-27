@@ -6,6 +6,7 @@
 
 import { hasThreeMoods, moodCtaLabel } from '../logic/mood-selection.js';
 import { INTENTS } from '../data/mockData.js';
+import { isV31, moodTiles } from '../logic/intent-quiz.js';
 import { store } from '../domain/store.js';
 import { partnerLabel, hasPartnerName, sentenceName } from '../logic/partner.js';
 
@@ -25,7 +26,9 @@ export function renderScreen01(sessionId = 'aarav') {
     `
     : '';
 
-  const tilesHtml = INTENTS.map((intent, index) => {
+  // Intent model v3.1 plans show the model's own eight moods; others keep today's.
+  const tiles = isV31(sessionData) ? moodTiles() : INTENTS;
+  const tilesHtml = tiles.map((intent, index) => {
     const isSelected = selectedIntents.includes(intent.id);
     const safeFallback = intent.fallback || intent.image;
     return `

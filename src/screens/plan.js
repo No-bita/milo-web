@@ -1,5 +1,6 @@
 import { store } from '../domain/store.js';
 import { occasionOf } from '../components/occasion-grid.js';
+import { flagOn, V31 } from '../logic/intent-quiz.js';
 import { renderTabBar, attachTabBar } from '../components/tab-bar.js';
 import { OCCASIONS } from '../data/occasions.js';
 import '../styles/plan.css';
@@ -17,7 +18,7 @@ ${renderTabBar('plan')}
 export function attachPlanListeners(container, sessionId = 'aarav') {
   attachTabBar(container, sessionId);
   container.querySelectorAll('.milo-plan-card').forEach(card => {
-    card.addEventListener('click', () => store.startFreshPlan(sessionId, { occasion: occasionOf(card) }));
+    card.addEventListener('click', () => store.startFreshPlan(sessionId, { occasion: occasionOf(card), quizVersion: flagOn() ? V31 : null }));
   });
   const trigger = container.querySelector('#miloPlanCity');
   const dropdown = container.querySelector('#miloPlanCities');

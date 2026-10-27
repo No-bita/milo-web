@@ -2,6 +2,8 @@ import { isIP } from 'node:net';
 import { randomBytes, randomUUID, createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { INTENTS, EXPERIENCE_POOL, NIGHTS_POOL } from '../src/data/mockData.js';
 import { computeSharedResult } from '../src/logic/shared-result.js';
+import { MOOD_IDS, CARD_IDS, MODE_IDS, PAIR_ANSWERS, pairsDone, v31Output } from '../src/logic/intent-quiz.js';
+import { ACTIVE_PAIRS } from '../src/logic/intent/codebook.js';
 import { SafeError, fail, valid, object, keys } from './errors.js';
 import { handleGifts, handleOps, checkOpsSecret } from './gifts.js';
 import { handleConcierge, handleOpsBookings, exportCsv, recordEvent } from './concierge.js';
@@ -44,17 +46,36 @@ function name(value) {
   valid([...result].length > 0 && [...result].length <= 40 && !/[\p{C}<>@]/u.test(result));
   return result;
 }
-function picks(body) {
-  keys(body, ['intents','reactions','finished']);
-  valid(Array.isArray(body.intents) && body.intents.length <= 3 && new Set(body.intents).size === body.intents.length && body.intents.every(x => moods.has(x)));
+// model: the plan's intent model. A v3.1 plan takes the model's own moods and cards plus
+// { v31: { modes, pairs } }; a v3 plan takes today's ids and no v31 field.
+function picks(body, model = 'v3') {
+  const v31 = model === 'v3.1';
+  keys(body, v31 ? ['intents','reactions','finished','v31'] : ['intents','reactions','finished']);
+  const moodSet = v31 ? MOOD_IDS : moods, cardSet = v31 ? CARD_IDS : cards;
+  valid(Array.isArray(body.intents) && body.intents.length <= 3 && new Set(body.intents).size === body.intents.length && body.intents.every(x => moodSet.has(x)));
   valid(Array.isArray(body.reactions) && body.reactions.length <= 8);
   valid(new Set(body.reactions.map(x => x?.cardId)).size === body.reactions.length);
   for (const reaction of body.reactions) {
     keys(reaction, ['cardId','reaction']);
-    valid(cards.has(reaction.cardId) && ['into_it','maybe','not_tonight'].includes(reaction.reaction));
+    valid(cardSet.has(reaction.cardId) && ['into_it','maybe','not_tonight'].includes(reaction.reaction));
   }
-  valid(typeof body.finished === 'boolean' && (!body.finished || body.reactions.length === 8));
+  if (v31) {
+    const extras = body.v31 ?? { modes: [], pairs: {} };
+    keys(extras, ['modes','pairs']);
+    valid(Array.isArray(extras.modes) && extras.modes.length <= 2 && new Set(extras.modes).size === extras.modes.length && extras.modes.every(x => MODE_IDS.has(x)));
+    valid(extras.pairs && typeof extras.pairs === 'object' && !Array.isArray(extras.pairs));
+    keys(extras.pairs, ACTIVE_PAIRS);
+    valid(Object.values(extras.pairs).every(x => PAIR_ANSWERS.includes(x)));
+    body.v31 = { modes: extras.modes, pairs: extras.pairs };
+  }
+  valid(typeof body.finished === 'boolean' && (!body.finished || (body.reactions.length === 8 && (!v31 || pairsDone(body.v31)))));
   return body;
+}
+const intentModel = value => { valid(value === undefined || value === 'v3' || value === 'v3.1'); return value || 'v3'; };
+// The shared result: v3.1 plans use the intent model on both halves, others today's logic.
+export function sharedFor(plan, a, b) {
+  if (plan.intent_model === 'v3.1') return v31Output([a, b].map(p => ({ intents: p.intents, reactions: p.reactions, v31: p.v31 || {} })), plan.occasion);
+  return computeSharedResult(a, b, { model: 'v3' });
 }
 function timing(value) {
   keys(value, ['date','time','time_zone']);
@@ -89,7 +110,8 @@ function planView(plan, people, me) {
   const other = people.find(x => x.id !== me.id);
   return {
     id: plan.id, occasion: plan.occasion, city: plan.city, status: plan.status,
-    me: { role: me.role, display_name: me.display_name, intents: me.intents, reactions: me.reactions, finished: !!me.finished_at },
+    intent_model: plan.intent_model || 'v3',
+    me: { role: me.role, display_name: me.display_name, intents: me.intents, reactions: me.reactions, finished: !!me.finished_at, ...(plan.intent_model === 'v3.1' ? { v31: me.v31 || { modes: [], pairs: {} } } : {}) },
     partner: other ? { display_name: other.display_name, finished: !!other.finished_at } : null,
     shared_result: plan.shared_result, suggestion: plan.suggestion,
     confirmed_night_id: plan.confirmed_night_id, timing: plan.timing
@@ -184,13 +206,14 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       }
       if (shared) return response(200, await sharedView({ db, token: shared[1] }));
       if (create) {
-        const body = await jsonBody(request); keys(body, ['name','partnerName','occasion','city']);
+        const body = await jsonBody(request); keys(body, ['name','partnerName','occasion','city','intent_model']);
         valid(Object.hasOwn(CITIES, body.city));
         const displayName = name(body.name); if (body.partnerName !== undefined) name(body.partnerName);
         valid(body.occasion === undefined || occasions.includes(body.occasion));
+        const model = intentModel(body.intent_model);
         const id = randomUUID(), token = secret(), seatKey = secret();
         await db.query('BEGIN');
-        await db.query('INSERT INTO plans(id,invite_token,occasion,city) VALUES($1,$2,$3,$4)', [id,token,body.occasion || null,body.city]);
+        await db.query('INSERT INTO plans(id,invite_token,occasion,city,intent_model) VALUES($1,$2,$3,$4,$5)', [id,token,body.occasion || null,body.city,model]);
         await db.query("INSERT INTO participants(id,plan_id,role,display_name,seat_key_hash) VALUES($1,$2,'initiator',$3,$4)", [randomUUID(),id,displayName,hash(seatKey)]);
         await db.query('COMMIT');
         return response(201, { plan_id:id, invite_url:`${origin.origin}/app/?invite=${token}`, seat_key:seatKey });
@@ -209,7 +232,7 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         if (publicScope === 'preview') {
           await db.query('COMMIT');
           // A consumed/expired bearer link should not keep disclosing names.
-          return response(200, status === 'valid' ? { status, initiator_name:people.find(x => x.role === 'initiator').display_name, occasion:plan.occasion, ...(plan.timing?.date ? { day:plan.timing.date } : {}) } : { status });
+          return response(200, status === 'valid' ? { status, initiator_name:people.find(x => x.role === 'initiator').display_name, occasion:plan.occasion, intent_model:plan.intent_model || 'v3', ...(plan.timing?.date ? { day:plan.timing.date } : {}) } : { status });
         }
         if (plan.expired) fail(410, 'expired'); if (taken) fail(409, 'taken');
         const seatKey = secret();
@@ -243,15 +266,15 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         await db.query('COMMIT'); return response(200, result);
       }
       if (action === 'me') {
-        const body = picks(await jsonBody(request));
-        const { rows:[updated] } = await db.query(`UPDATE participants SET intents=$1::jsonb,reactions=$2::jsonb,
-          finished_at=CASE WHEN $3 THEN coalesce(finished_at,now()) ELSE NULL END,updated_at=now() WHERE id=$4 RETURNING *`, [JSON.stringify(body.intents),JSON.stringify(body.reactions),body.finished,me.id]);
+        const body = picks(await jsonBody(request), plan.intent_model);
+        const { rows:[updated] } = await db.query(`UPDATE participants SET intents=$1::jsonb,reactions=$2::jsonb,v31=$5::jsonb,
+          finished_at=CASE WHEN $3 THEN coalesce(finished_at,now()) ELSE NULL END,updated_at=now() WHERE id=$4 RETURNING *`, [JSON.stringify(body.intents),JSON.stringify(body.reactions),body.finished,me.id,body.v31 ? JSON.stringify(body.v31) : null]);
         people[people.findIndex(x => x.id === me.id)] = updated;
         // v2 computes once. Editing later can make the result stale: parked.
         if (!plan.shared_result && people.length === 2 && people.every(x => x.finished_at)) {
           const a = people.find(x => x.role === 'initiator'), b = people.find(x => x.role === 'partner');
-          // MILO_INTENT_MODEL=v3.1 only takes effect once seats store v3.1 quiz answers (phase D).
-          const shared = projectShared(computeSharedResult(a,b,{ model: env.MILO_INTENT_MODEL === 'v3.1' ? 'v3.1' : 'v3' }));
+          // The plan's own model, recorded at creation from the creator's quiz.
+          const shared = projectShared(sharedFor(plan, a, b));
           await db.query("UPDATE plans SET shared_result=$1::jsonb,status='both_done' WHERE id=$2", [JSON.stringify(shared),plan.id]);
         }
         await db.query('COMMIT'); return response(200, { ok:true });

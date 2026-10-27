@@ -2,11 +2,10 @@
 // on both booking forms (solo and Together). All optional. No stylesheet import,
 // so screens that unit tests load in Node can use it; it reuses the booking pills.
 import { DIET_OPTIONS, HOME_BY_OPTIONS } from '../data/constraints.js';
+import { flagOn } from '../logic/intent-quiz.js';
 
-// Shown only with the v3.1 switch (VITE_MILO_INTENT_MODEL=v3.1), so deploying this code changes nothing until it is on.
-export const limitsOn = () => {
-  try { return import.meta.env?.VITE_MILO_INTENT_MODEL === 'v3.1'; } catch { return false; }
-};
+// Shown with the intent model v3.1 switch, so deploying this code changes nothing until it is on.
+export const limitsOn = () => flagOn();
 
 export function renderLimits() {
   return `<fieldset class="milo-choice milo-limits"><legend>Food and drink (optional)</legend>

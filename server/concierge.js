@@ -9,7 +9,8 @@ import { randomUUID } from 'node:crypto';
 import { fail, valid, keys } from './errors.js';
 import { zonedToUtc } from './gifts.js';
 import { NIGHTS_POOL } from '../src/data/mockData.js';
-import { DIET_OPTIONS, HOME_BY_OPTIONS, limitsBrief } from '../src/data/constraints.js';
+import { DIET_OPTIONS, HOME_BY_OPTIONS } from '../src/data/constraints.js';
+import { bookingBrief } from '../src/logic/intent-quiz.js';
 
 export const BUDGET_BANDS = ['under_2k', '2k_4k', '4k_7k', '7k_plus'];
 export const CHECKIN = {
@@ -165,7 +166,9 @@ export async function handleOpsBookings({ db, method, id, readBody }) {
   if (method === 'GET' && !id) {
     const { rows } = await db.query(`SELECT b.*, p.timing, p.confirmed_night_id, p.occasion, p.mode, p.city, p.stops AS custom_stops, r.display_name AS requester_name, r.contact,
         (SELECT o.display_name FROM participants o WHERE o.plan_id=b.plan_id AND o.id<>b.requester_id) AS partner_name,
-        (SELECT count(*)::int FROM gifts g WHERE g.plan_id=b.plan_id AND g.kind IN ('moment_drop','home_delivery') AND g.status<>'cancelled') AS physical_gifts
+        (SELECT count(*)::int FROM gifts g WHERE g.plan_id=b.plan_id AND g.kind IN ('moment_drop','home_delivery') AND g.status<>'cancelled') AS physical_gifts,
+        p.intent_model,
+        (SELECT json_agg(json_build_object('intents', q.intents, 'reactions', q.reactions, 'v31', q.v31)) FROM participants q WHERE q.plan_id=b.plan_id) AS halves
       FROM bookings b JOIN plans p ON p.id=b.plan_id JOIN participants r ON r.id=b.requester_id
       ORDER BY b.created_at DESC LIMIT 200`);
     return {
@@ -177,8 +180,8 @@ export async function handleOpsBookings({ db, method, id, readBody }) {
           venues: b.venues, ops_minutes: b.ops_minutes, requester_name: b.requester_name, partner_name: b.partner_name,
           occasion: b.occasion, night_name: night?.name ?? null, stops: stopNames(b.custom_stops, night), timing: b.timing,
           physical_gifts: b.physical_gifts, created_at: b.created_at, constraints: b.constraints ?? null,
-          // Plain-words limits for whoever books the night.
-          brief: limitsBrief(b.constraints)
+          // The intent model's read of what they want, for v3.1 plans; limits for every plan.
+          brief: bookingBrief(b.intent_model === 'v3.1' ? (b.halves || []) : [], b.occasion, b.constraints)
         };
       })
     };
@@ -202,7 +205,7 @@ export async function handleOpsBookings({ db, method, id, readBody }) {
 
 // One row per plan for the PMF scorecard (Master Doc, Part E). CSV-safe.
 export const EXPORT_COLUMNS = [
-  'plan_id', 'created_at', 'mode', 'city', 'occasion', 'status', 'partner_joined', 'both_finished', 'confirmed_night', 'confirmed_rank',
+  'plan_id', 'created_at', 'mode', 'city', 'occasion', 'intent_model', 'status', 'partner_joined', 'both_finished', 'confirmed_night', 'confirmed_rank',
   'accepted_first_plan', 'suggestions', 'minutes_to_agree', 'see_other_initiator', 'see_other_partner',
   'nights_browsed_initiator', 'nights_browsed_partner', 'time_set', 'night_date',
   'booking_status', 'budget_band', 'window_hours', 'ops_minutes', 'requests_given', 'surprise', 'physical_gifts', 'digital_gifts', 'gift_statuses',
@@ -243,7 +246,7 @@ export async function exportCsv(db) {
     const answers = role => checkins.find(c => c.plan_id === plan.id && roleOf(c.participant_id) === role)?.answers || {};
     const a = answers('initiator'), b = answers('partner');
     const row = {
-      plan_id: plan.id.slice(0, 8), created_at: new Date(plan.created_at).toISOString(), mode: plan.mode, city: plan.city, occasion: plan.occasion, status: plan.status,
+      plan_id: plan.id.slice(0, 8), created_at: new Date(plan.created_at).toISOString(), mode: plan.mode, city: plan.city, occasion: plan.occasion, intent_model: plan.intent_model || 'v3', status: plan.status,
       partner_joined: seats.some(s => s.role === 'partner'), both_finished: seats.length === 2 && seats.every(s => s.finished_at),
       confirmed_night: plan.confirmed_night_id, confirmed_rank: rank, accepted_first_plan: plan.confirmed_night_id ? rank === 1 : null,
       suggestions: ev.filter(e => e.type === 'suggest').length, minutes_to_agree: minutesToAgree,

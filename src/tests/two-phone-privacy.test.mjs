@@ -54,7 +54,7 @@ test('two isolated phones never receive the other seat picks or derived leanings
     assert.ok(invite && /^[A-Za-z0-9_-]+$/.test(invite));
     const preview = await call(pages[1],`/api/invites/${invite}`);
     assert.equal(preview.status,200);
-    assert.deepEqual(preview.data,{ status:'valid', initiator_name:'PrivateAlpha', occasion:'date_night' });
+    assert.deepEqual(preview.data,{ status:'valid', initiator_name:'PrivateAlpha', occasion:'date_night', intent_model:'v3' });
     const joined = await call(pages[1],`/api/invites/${invite}/join`,'POST',{ name:'PrivateBeta' });
     assert.equal(joined.status,201);
     await pages[1].evaluate(key => localStorage.setItem('seat',key),joined.data.seat_key);
@@ -64,7 +64,7 @@ test('two isolated phones never receive the other seat picks or derived leanings
     ];
     const exactKeys = (object,expected) => assert.deepEqual(Object.keys(object).sort(),[...expected].sort());
     function inspect(view,index) {
-      exactKeys(view,['id','occasion','city','status','me','partner','shared_result','suggestion','confirmed_night_id','timing']);
+      exactKeys(view,['id','intent_model','occasion','city','status','me','partner','shared_result','suggestion','confirmed_night_id','timing']);
       exactKeys(view.me,['role','display_name','intents','reactions','finished']);
       assert.deepEqual(view.me.intents,own[index].intents); assert.deepEqual(view.me.reactions,own[index].reactions);
       exactKeys(view.partner,['display_name','finished']);

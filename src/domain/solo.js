@@ -5,6 +5,7 @@ import { store } from './store.js';
 import { api, isPhase1Enabled, cleanName, serverOccasion } from './network-adapter.js';
 import { computePlanningOutput } from '../logic/planning.js';
 import { DEFAULT_CITY } from '../data/cities.js';
+import { cleanExtras } from '../logic/intent-quiz.js';
 
 const SOLO_SEAT = 'milo_solo_seat_v1';
 
@@ -54,6 +55,7 @@ export function soloPayload(state, booking) {
     ...(stops?.length ? { stops } : {}),
     intents: a.intents || [],
     reactions: (a.reactions || []).map(({ cardId, reaction }) => ({ cardId, reaction })),
+    ...(a.quizVersion === 'v3.1' ? { intent_model: 'v3.1', v31: cleanExtras(a.v31) } : {}),
     booking
   };
 }
