@@ -186,7 +186,9 @@ class DomainStore {
   }
 
   // Explicit new-plan entry resets this journey only; Resume never calls this.
-  startFreshPlan(sessionId) {
+  // occasion: the Home tile tapped (app id, e.g. 'date-night').
+  startFreshPlan(sessionId, { occasion } = {}) {
+    if (occasion !== undefined) this.state = { ...this.state, shared: { ...this.state.shared, occasion } };
     this.updateSession(sessionId, {
       intents: [], reactions: [], currentCardIndex: 0,
       pausedScreen: null, activeNightId: null, savedSoloNightId: null,
