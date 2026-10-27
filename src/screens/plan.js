@@ -1,9 +1,10 @@
 import { store } from '../domain/store.js';
+import { occasionOf } from '../components/occasion-grid.js';
 import { renderTabBar, attachTabBar } from '../components/tab-bar.js';
 import { OCCASIONS } from '../data/occasions.js';
 import '../styles/plan.css';
 
-// Plan v14. Occasion taps open moods; planning mode and occasion carry-forward stay unchanged.
+// Plan v14. Occasion taps save the occasion and open moods; planning mode has no default.
 export function renderPlan() {
   return `
 <div class="milo-home milo-tabscreen milo-plan">
@@ -16,7 +17,7 @@ ${renderTabBar('plan')}
 export function attachPlanListeners(container, sessionId = 'aarav') {
   attachTabBar(container, sessionId);
   container.querySelectorAll('.milo-plan-card').forEach(card => {
-    card.addEventListener('click', () => store.startFreshPlan(sessionId));
+    card.addEventListener('click', () => store.startFreshPlan(sessionId, { occasion: occasionOf(card) }));
   });
   const trigger = container.querySelector('#miloPlanCity');
   const dropdown = container.querySelector('#miloPlanCities');
@@ -46,5 +47,5 @@ export function attachPlanListeners(container, sessionId = 'aarav') {
     if (!event.relatedTarget?.closest('.milo-home-place')) setOpen(false);
   });
   // Bengaluru is the only selectable city. No plan filtering or backend changes.
-  // Occasion taps carry no occasion and assign no solo/together default.
+  // Occasion taps save the occasion on the plan; no solo/together default.
 }

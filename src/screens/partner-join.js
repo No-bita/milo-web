@@ -61,7 +61,8 @@ export async function showPartnerJoin(container, token) {
     // This phone is the partner's seat: their own name, the inviter's name, straight to moods.
     store.reset();
     store.setNames(inviter, cleanName(input.value));
-    store.updateShared({ inviteSent: true });
+    // The partner answers for the same occasion the plan was made with.
+    store.updateShared({ inviteSent: true, ...(occasion ? { occasion: String(occasion).replaceAll('_', '-') } : {}) });
     store.setSessionScreen('sneha', 's1');
     window.location.replace('/app/?as=sneha');
   });

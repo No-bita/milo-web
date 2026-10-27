@@ -1,5 +1,11 @@
 import { store } from '../domain/store.js';
 
+// Home's occasion tiles, in their on-screen order (milo-plan-card-1 ... -6).
+export const OCCASION_IDS = ['date-night', 'anniversary', 'proposal', 'birthday', 'quality-time', 'just-because'];
+
+// The tapped tile's occasion, by its position class (milo-plan-card-1 ... -6).
+export const occasionOf = (card) => OCCASION_IDS.at(Number(card.className.match(/milo-plan-card-(\d)/)?.[1]) - 1) ?? null;
+
 export function renderOccasionGrid() {
   return `<ul class="milo-plan-card-grid milo-home-occ-grid" aria-label="Occasions">
     <li style="display:contents"><button type="button" class="milo-plan-card milo-home-occ milo-plan-card-1 milo-home-occ-1" style="font:inherit"><svg class="milo-plan-card-art milo-home-occ-art" viewBox="0 0 80 64" aria-hidden="true"><path d="M14 24h26v18a10 10 0 0 1-10 10h-6a10 10 0 0 1-10-10z" fill="#F2CBC3" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 29h5a6 6 0 0 1 0 12h-5" fill="none" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 36q2 2 4 0M30 36q2 2 4 0" fill="none" stroke="#6E2228" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 18q-3-5 0-9M31 18q-3-5 0-9" fill="none" stroke="#C39A92" stroke-width="2" stroke-linecap="round"/><path d="M60 12l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#E2BE8E"/></svg><span class="milo-plan-title milo-home-occ-name">Date night</span><span class="milo-plan-copy milo-home-occ-sub">Beyond the usual dinner reservation</span></button></li>
@@ -15,7 +21,7 @@ export function attachOccasionGrid(container, sessionId = 'aarav') {
   container.querySelectorAll('.milo-plan-card, .milo-home-occ').forEach(card => {
     card.addEventListener('click', () => {
       if (typeof store.startFreshPlan === 'function') {
-        store.startFreshPlan(sessionId);
+        store.startFreshPlan(sessionId, { occasion: occasionOf(card) });
       } else {
         store.setSessionScreen(sessionId, 's1');
       }
