@@ -52,6 +52,7 @@ function bookingRow(b) {
     <p><strong>${esc(b.requester_name)}</strong> ${b.mode === 'solo' ? 'is planning for their partner (partner is not on Milo)' : `asked, with <strong>${esc(b.partner_name || '?')}</strong>`}${b.occasion ? ` &middot; ${esc(b.occasion.replace(/_/g, ' '))}` : ''}</p>
     <p>${esc((b.city || '').replace(/^./, c => c.toUpperCase()))} &middot; Night: ${esc(when(b.timing))} &middot; ${esc(b.window_hours)} hours &middot; ${esc(BUDGETS[b.budget_band] || b.budget_band)} for two</p>
     ${b.requests ? `<div class="ops-requests"><p class="${b.mode === 'solo' ? (b.surprise ? 'ops-surprise' : 'ops-open') : 'ops-open'}">${b.mode !== 'solo' ? 'Requests' : b.surprise ? "SURPRISE: don't mention these to the partner" : 'Not a secret: the partner can see these'}</p><p>${esc(b.requests).replace(/\n/g, '<br>')}</p></div>` : ''}
+    ${(b.brief || []).length ? `<div class="ops-brief"><p class="ops-open">Brief (from their picks)</p><ul>${b.brief.map(line => `<li>${esc(line)}</li>`).join('')}</ul></div>` : ''}
     <p>WhatsApp: <a href="https://wa.me/${esc(String(b.contact || '').replace(/\D/g, ''))}" target="_blank" rel="noopener">${esc(b.contact)}</a>${b.physical_gifts ? ` &middot; ${esc(b.physical_gifts)} physical gift(s) on this plan` : ''}</p>
     <fieldset class="ops-venues"><legend>Venues (both phones see these once booked)</legend>
       ${(b.stops || []).map((stop, i) => `<div class="ops-venue" data-stop="${i}"><span>${esc(stop)}</span>

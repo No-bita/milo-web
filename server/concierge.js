@@ -9,6 +9,7 @@ import { randomUUID } from 'node:crypto';
 import { fail, valid, keys } from './errors.js';
 import { zonedToUtc } from './gifts.js';
 import { NIGHTS_POOL } from '../src/data/mockData.js';
+import { DIET_OPTIONS, HOME_BY_OPTIONS, limitsBrief } from '../src/data/constraints.js';
 
 export const BUDGET_BANDS = ['under_2k', '2k_4k', '4k_7k', '7k_plus'];
 export const CHECKIN = {
@@ -70,13 +71,13 @@ export async function handleConcierge({ db, plan, me, action, method, readBody, 
   if (action === 'booking' && method === 'GET') return conciergeView(db, plan, me, now);
   if (action === 'booking' && method === 'POST') {
     const body = await readBody();
-    keys(body, ['budget_band', 'window_hours', 'contact', 'requests', 'surprise']);
+    keys(body, ['budget_band', 'window_hours', 'contact', 'requests', 'surprise', 'constraints']);
     if (plan.status !== 'confirmed' || !plan.timing) fail(409, 'not_ready');
     const contact = validBooking(body);
-    const { requests, surprise } = bookingExtras(body);
+    const { requests, surprise, constraints } = bookingExtras(body);
     if (await activeBooking(db, plan.id)) fail(409, 'exists');
     await saveContact(db, me.id, contact);
-    await insertBooking(db, { planId: plan.id, requesterId: me.id, budget: body.budget_band, hours: body.window_hours, requests, surprise });
+    await insertBooking(db, { planId: plan.id, requesterId: me.id, budget: body.budget_band, hours: body.window_hours, requests, surprise, constraints });
     return conciergeView(db, plan, me, now);
   }
   if (action === 'booking' && method === 'DELETE') {
@@ -117,15 +118,25 @@ export function bookingExtras(body) {
   valid(body.surprise === undefined || typeof body.surprise === 'boolean');
   return {
     requests: body.requests === undefined || body.requests === '' ? null : text(body.requests, 1, 1000),
-    surprise: body.surprise !== false
+    surprise: body.surprise !== false,
+    constraints: limits(body.constraints)
   };
+}
+// Booking-step hard limits: { diet: [ids], alcohol: bool, home_by?: 'HH:MM' }. Optional.
+function limits(value) {
+  if (value === undefined) return null;
+  keys(value, ['diet', 'alcohol', 'home_by']);
+  valid(Array.isArray(value.diet) && value.diet.length <= 6 && new Set(value.diet).size === value.diet.length && value.diet.every(d => Object.hasOwn(DIET_OPTIONS, d)));
+  valid(typeof value.alcohol === 'boolean');
+  valid(value.home_by === undefined || (Object.hasOwn(HOME_BY_OPTIONS, value.home_by) && value.home_by !== ''));
+  return { diet: value.diet, alcohol: value.alcohol, ...(value.home_by ? { home_by: value.home_by } : {}) };
 }
 export function validBooking(body) {
   valid(BUDGET_BANDS.includes(body.budget_band) && [3, 4].includes(body.window_hours));
   return phone(body.contact);
 }
-export const insertBooking = (db, b) => db.query(`INSERT INTO bookings(id,plan_id,requester_id,budget_band,window_hours,requests,surprise,status)
-  VALUES($1,$2,$3,$4,$5,$6,$7,'requested')`, [randomUUID(), b.planId, b.requesterId, b.budget, b.hours, b.requests, b.surprise]);
+export const insertBooking = (db, b) => db.query(`INSERT INTO bookings(id,plan_id,requester_id,budget_band,window_hours,requests,surprise,status,constraints)
+  VALUES($1,$2,$3,$4,$5,$6,$7,'requested',$8::jsonb)`, [randomUUID(), b.planId, b.requesterId, b.budget, b.hours, b.requests, b.surprise, b.constraints ? JSON.stringify(b.constraints) : null]);
 // One phone number per person; the latest one they gave wins.
 export const saveContact = (db, participantId, contact) =>
   db.query('UPDATE participants SET contact=$1 WHERE id=$2', [contact, participantId]);
@@ -165,7 +176,9 @@ export async function handleOpsBookings({ db, method, id, readBody }) {
           requests: b.requests, surprise: b.surprise,
           venues: b.venues, ops_minutes: b.ops_minutes, requester_name: b.requester_name, partner_name: b.partner_name,
           occasion: b.occasion, night_name: night?.name ?? null, stops: stopNames(b.custom_stops, night), timing: b.timing,
-          physical_gifts: b.physical_gifts, created_at: b.created_at
+          physical_gifts: b.physical_gifts, created_at: b.created_at, constraints: b.constraints ?? null,
+          // Plain-words limits for whoever books the night.
+          brief: limitsBrief(b.constraints)
         };
       })
     };
@@ -210,7 +223,7 @@ export async function exportCsv(db) {
   const { rows: people } = await db.query('SELECT id, plan_id, role, finished_at FROM participants');
   const { rows: events } = await db.query('SELECT plan_id, participant_id, type, night_id, created_at FROM plan_events');
   const { rows: gifts } = await db.query('SELECT plan_id, kind, status FROM gifts');
-  const { rows: bookings } = await db.query("SELECT DISTINCT ON (plan_id) plan_id, status, budget_band, window_hours, ops_minutes, requests, surprise FROM bookings ORDER BY plan_id, (status<>'cancelled') DESC, created_at DESC");
+  const { rows: bookings } = await db.query("SELECT DISTINCT ON (plan_id) plan_id, status, budget_band, window_hours, ops_minutes, requests, surprise, constraints FROM bookings ORDER BY plan_id, (status<>'cancelled') DESC, created_at DESC");
   const { rows: checkins } = await db.query('SELECT plan_id, participant_id, answers FROM checkins');
   const lines = [EXPORT_COLUMNS.join(',')];
   for (const plan of plans) {

@@ -27,6 +27,7 @@ before(async () => {
   await db.query("INSERT INTO rate_limits(scope,ip_hash,window_start,hits) VALUES('create','old',now()-interval '3 days',5),('create','new',date_trunc('minute',now()),1)");
   await db.exec(await sql('data-v2a.sql'));
   await db.exec(await sql('data-v2b.sql'));
+  await db.exec(await sql('intent-v31.sql'));
   let tail = Promise.resolve();
   const acquire = async () => { const previous = tail; let release; tail = new Promise(r => { release = r; }); await previous; return { query: (q, args) => db.query(q, args), release }; };
   api = createApi({ acquire, clientIp: () => '127.0.0.1',

@@ -30,3 +30,4 @@ a { color: var(--oxblood); }
 .ops-requests { border-left: 3px solid var(--oxblood); padding-left: 10px; }
 .ops-surprise { color: var(--oxblood); font-weight: 600; font-size: 12px; letter-spacing: .04em; }
 .ops-open { color: var(--muted); font-weight: 600; font-size: 12px; }
+.ops-brief { border-left: 3px solid var(--oxblood); padding-left: 10px; } .ops-brief ul { margin: 4px 0 0; padding-left: 18px; }
