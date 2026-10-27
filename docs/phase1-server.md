@@ -211,3 +211,11 @@ Apply `server/data-v2a.sql` AFTER `solo.sql` and BEFORE deploying the v2 code (a
   (Bengaluru only; a CHECK enforces the list). The app sends it explicitly; there is no place picker yet.
 - **CSV:** adds `city`, `minutes_to_agree` (plan created -> night confirmed, Together only) and
   `nights_browsed_initiator/partner` (distinct nights moved to with "See the other two").
+
+## Booking limits
+
+Solo and Together booking take optional `constraints: { diet: [ids], alcohol, home_by }` (ids in
+`src/data/constraints.js`; only listed food choices are accepted). `/api/ops/bookings` adds
+`constraints` and `brief` (plain-words lines for whoever books the night). The booking forms show
+the limits only when the app is built with `VITE_MILO_INTENT_MODEL=v3.1`. Migration: apply
+`server/intent-v31.sql` (adds columns only) before deploying this code.
