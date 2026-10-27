@@ -1,7 +1,6 @@
 import { store } from '../domain/store.js';
-
-// Home's occasion tiles, in their on-screen order (milo-plan-card-1 ... -6).
-export const OCCASION_IDS = ['date-night', 'anniversary', 'proposal', 'birthday', 'quality-time', 'just-because'];
+import { OCCASION_IDS } from '../data/intent-v31.js';
+import { flagOn, V31 } from '../logic/intent-quiz.js';
 
 // The tapped tile's occasion, by its position class (milo-plan-card-1 ... -6).
 export const occasionOf = (card) => OCCASION_IDS.at(Number(card.className.match(/milo-plan-card-(\d)/)?.[1]) - 1) ?? null;
@@ -21,7 +20,7 @@ export function attachOccasionGrid(container, sessionId = 'aarav') {
   container.querySelectorAll('.milo-plan-card, .milo-home-occ').forEach(card => {
     card.addEventListener('click', () => {
       if (typeof store.startFreshPlan === 'function') {
-        store.startFreshPlan(sessionId, { occasion: occasionOf(card) });
+        store.startFreshPlan(sessionId, { occasion: occasionOf(card), quizVersion: flagOn() ? V31 : null });
       } else {
         store.setSessionScreen(sessionId, 's1');
       }

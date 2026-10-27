@@ -1,5 +1,6 @@
 // Personal learning checkpoint, shown only to the initiator.
 import { computePersonalSynthesis } from '../logic/synthesis.js';
+import { isV31, personalReveal } from '../logic/intent-quiz.js';
 import { renderImageHtml } from '../assets/manifest.js';
 import { store } from '../domain/store.js';
 import '../styles/s3-motion.css';
@@ -10,7 +11,7 @@ function escapeText(text) {
 
 export function renderScreen03(sessionId = 'aarav', readyObservations) {
   const session = store.getState()[sessionId === 'sneha' ? 'sessionB' : 'sessionA'];
-  const observations = readyObservations ?? computePersonalSynthesis(session.intents || [], session.reactions || []);
+  const observations = readyObservations ?? (isV31(session) ? personalReveal(session, store.getState().shared.occasion) : computePersonalSynthesis(session.intents || [], session.reactions || []));
   const rows = observations.map((obs, i) => `
     <li class="milo-obs-row" style="--i:${i}">
       <p class="milo-obs-text">${escapeText(obs)}</p>

@@ -131,13 +131,28 @@ linked, is noindex, and keeps the key in sessionStorage for that tab only. There
 Prices are placeholders ("Price on confirmation"); there is no payment, no notification and no vendor integration in V1.
 Tests: src/tests/gifts-api.test.mjs (contract, secrecy, clocked reveals, ops) and src/tests/two-phone-gifting.test.mjs (UI journey).
 
-## Intent model v3.1 switch (phases A + B)
+## Intent model v3.1 (phases A to D)
 
-The shared result goes through `src/logic/shared-result.js`. Optional server env var
-`MILO_INTENT_MODEL=v3.1` (and `VITE_MILO_INTENT_MODEL=v3.1` for the app build) selects the
-intent model in `src/logic/intent/`, but only when both seats carry v3.1 quiz answers. No seat
-stores those until the new quiz screens (phase C) and server fields (phase D) ship, so today it
-has no effect. Python reference and parity data: `docs/intent-model/`.
+**One switch:** the app build flag `VITE_MILO_INTENT_MODEL=v3.1`. With it on, every plan
+started from a Home occasion tile takes the v3.1 quiz (`session.quizVersion = 'v3.1'`): the
+model's 8 moods, "Tonight is mostly about…" (`s1b`: up to 2 activity tiles + the 3 pairs) and
+the model's adaptive 8-card deck. The creator's model is sent when the plan is created
+(`intent_model`, stored on `plans`), the partner's invite preview carries it, so both people
+always answer the same quiz. The server computes the shared result with the plan's own model
+(`sharedFor` in `server/phase1.js`); the old `MILO_INTENT_MODEL` server env var is no longer
+read. Plans created before the switch stay `v3` and finish on today's logic.
+
+- `PUT /me` on a v3.1 plan: `intents` are model mood ids, `reactions` use model card ids,
+  plus `v31: { modes: [<=2], pairs: { P6, P3, P2 } }`; finishing needs 8 reactions and all
+  three pairs. A v3 plan keeps today's ids and refuses `v31`.
+- Solo: `POST /api/plans/solo` takes `intent_model` and `v31` the same way.
+- Booking (solo and Together) takes optional `constraints: { diet: [ids], alcohol, home_by }`
+  (ids in `src/data/constraints.js`). `/api/ops/bookings` adds `constraints` and `brief`
+  (plain-words lines from the model for v3.1 plans, plus the limits). The CSV adds `intent_model`.
+- Migration: apply `server/intent-v31.sql` after `data-v2b.sql` and before deploying this code
+  (adds columns only). Mapping of screens to model answers: `src/logic/intent-quiz.js`.
+
+Python reference and parity data: `docs/intent-model/`.
 
 ## Concierge and PMF (V1)
 

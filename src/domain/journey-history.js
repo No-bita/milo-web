@@ -1,6 +1,6 @@
 // Browser history records navigation only. Preferences, drafts and consent stay live.
 const SESSION_KEYS = { aarav: 'sessionA', sneha: 'sessionB' };
-const SCREENS = new Set(['home', 'plan', 'nights', 'you', 'group', 'requests', 'booked', 's0', 's1', 'planning_path', 'planning_path_review', 's2', 's3', 's4_invite', 's4_waiting', 's5', 's6', 's7', 'login']);
+const SCREENS = new Set(['home', 'plan', 'nights', 'you', 'group', 'requests', 'booked', 's0', 's1', 's1b', 'planning_path', 'planning_path_review', 's2', 's3', 's4_invite', 's4_waiting', 's5', 's6', 's7', 'login']);
 
 export function journeyRoute(state, sessionId) {
   const session = state[SESSION_KEYS[sessionId]];
@@ -114,7 +114,7 @@ export function attachJourneyHistory(store, { sessionId, root, confirmPartnerBac
     }
     if (!moving && current?.kind === 'route' && entry.index < index
       && sessionId === 'sneha' && state.sessionB.screen === 's5'
-      && ['s0', 's1', 's2', 's3'].includes(entry.route.screen)) {
+      && ['s0', 's1', 's1b', 's2', 's3'].includes(entry.route.screen)) {
       // Browser Back keeps the same review-before-restarting guard as the arrow.
       bouncing = true;
       history.go(index - entry.index);

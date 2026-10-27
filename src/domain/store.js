@@ -111,11 +111,13 @@ class DomainStore {
 
   advanceFromS1(sessionId) {
     const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
+    // Intent model v3.1 asks "Tonight is mostly about…" and three pairs before the deck.
+    const next = this.state[sessionKey].quizVersion === 'v3.1' ? 's1b' : 'threshold';
     this.state = {
       ...this.state,
       [sessionKey]: {
         ...this.state[sessionKey],
-        screen: 'threshold'
+        screen: next
       }
     };
     this._emit();
@@ -186,13 +188,14 @@ class DomainStore {
   }
 
   // Explicit new-plan entry resets this journey only; Resume never calls this.
-  // occasion: the Home tile tapped (app id, e.g. 'date-night').
-  startFreshPlan(sessionId, { occasion } = {}) {
+  // occasion: the Home tile tapped (app id, e.g. 'date-night'); quizVersion: the
+  // intent model this plan's quiz uses, fixed when the plan starts.
+  startFreshPlan(sessionId, { occasion, quizVersion = null } = {}) {
     if (occasion !== undefined) this.state = { ...this.state, shared: { ...this.state.shared, occasion } };
     this.updateSession(sessionId, {
       intents: [], reactions: [], currentCardIndex: 0,
       pausedScreen: null, activeNightId: null, savedSoloNightId: null,
-      soloTimingStep: null, planningMode: 'solo', localOnlyPlan: true, bringIn: null, screen: 's1'
+      soloTimingStep: null, planningMode: 'solo', localOnlyPlan: true, bringIn: null, quizVersion, v31: null, screen: 's1'
     });
   }
 

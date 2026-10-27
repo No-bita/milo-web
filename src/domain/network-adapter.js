@@ -1,6 +1,7 @@
 // Two-phone Phase 1 network adapter. Off unless the build sets VITE_MILO_PHASE1=true (a public,
 // non-secret flag). With it off, nothing here runs and the prototype behaves as before.
 // Contract: docs/phase1-server.md in the API PR (#67). Frontend only; no secrets live here.
+import { cleanExtras } from '../logic/intent-quiz.js';
 import { DEFAULT_CITY } from '../data/cities.js';
 const SEAT_KEY = 'milo_phase1_seat_v1';
 
@@ -48,7 +49,9 @@ export async function ensureServerInvite(store) {
   if (!me) return { ok: false, reason: 'invalid' };
   const other = cleanName(partnerName);
   const result = await api('POST', '/api/plans', { body: {
-    name: me, city: DEFAULT_CITY, ...(other ? { partnerName: other } : {}), ...(shared.occasion ? { occasion: serverOccasion(shared.occasion) } : {})
+    name: me, city: DEFAULT_CITY, ...(other ? { partnerName: other } : {}), ...(shared.occasion ? { occasion: serverOccasion(shared.occasion) } : {}),
+    // The plan's model follows the creator's quiz, so the partner gets the same screens.
+    ...(store.getState().sessionA.quizVersion === 'v3.1' ? { intent_model: 'v3.1' } : {})
   } });
   if (!result.ok) return result;
   saveSeat({ planId: result.data.plan_id, seatKey: result.data.seat_key, role: 'initiator' });
@@ -86,8 +89,9 @@ export function attachNetworkSync(store) {
   };
   const payloadFor = (half) => {
     const reactions = (half.reactions || []).map(({ cardId, reaction }) => ({ cardId, reaction }));
-    const finished = reactions.length === 8 && !['s1', 'threshold', 's2'].includes(half.screen);
-    return { intents: half.intents || [], reactions, finished };
+    const finished = reactions.length === 8 && !['s1', 's1b', 'threshold', 's2'].includes(half.screen);
+    // Intent model v3.1 halves also carry the activity tiles and the three pairs.
+    return { intents: half.intents || [], reactions, finished, ...(half.quizVersion === 'v3.1' ? { v31: cleanExtras(half.v31) } : {}) };
   };
   const send = async () => {
     const seat = readSeat();
@@ -99,7 +103,7 @@ export function attachNetworkSync(store) {
       const current = await api('GET', `/api/plans/${seat.planId}`, { seatKey: seat.seatKey });
       if (!current.ok) { if (current.reason === 'unreachable') retry(); return; }
       const mine = current.data?.me || {};
-      const saved = { intents: mine.intents || [], reactions: (mine.reactions || []).map(({ cardId, reaction }) => ({ cardId, reaction })), finished: !!mine.finished };
+      const saved = { intents: mine.intents || [], reactions: (mine.reactions || []).map(({ cardId, reaction }) => ({ cardId, reaction })), finished: !!mine.finished, ...(half.quizVersion === 'v3.1' ? { v31: cleanExtras(mine.v31) } : {}) };
       hydratedFor = seat.seatKey;
       lastSent = JSON.stringify(saved);
       const localEmpty = !payload.intents.length && !payload.reactions.length;

@@ -1,6 +1,7 @@
 import { store } from '../domain/store.js';
 import { partnerLabel } from '../logic/partner.js';
 import { NIGHTS_POOL, INTENTS } from '../data/mockData.js';
+import { V31_MOODS } from '../data/intent-v31.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
 import { copyInvite } from '../components/invite-feedback.js';
 import { soloSeatFor } from '../domain/solo.js';
@@ -19,7 +20,7 @@ export function renderSealedWaiting(sessionId = 'aarav') {
   const partner = partnerLabel(store.getState());
   const night = NIGHTS_POOL.find((n) => n.id === (a.savedSoloNightId || a.activeNightId)) || NIGHTS_POOL[0];
   const when = whenLine(timingForNight(night.id, { solo: true }));
-  const moods = (a.intents || []).map((id) => INTENTS.find((i) => i.id === id)?.label).filter(Boolean);
+  const moods = (a.intents || []).map((id) => (INTENTS.find((i) => i.id === id) || V31_MOODS.find((i) => i.id === id))?.label).filter(Boolean);
   const chips = moods.map((m) => `<li>${escape(m)}</li>`).join('');
   const beats = night.beats.map((beat) => `<li>${escape(beat.name)}</li>`).join('');
   return `<div class="milo-booked" data-session-id="${sessionId}">

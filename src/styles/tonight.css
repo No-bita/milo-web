@@ -1,0 +1,27 @@
+/* Intent model v3.1: "Tonight is mostly about…" + three lean-one-way pairs. */
+.milo-tonight { display: flex; flex-direction: column; min-height: 100%; overflow-y: auto; }
+.milo-tonight-body { flex: 1 0 auto; display: flex; flex-direction: column; gap: 12px; padding: 4px 0 20px; }
+.milo-tonight-body .milo-headline, .milo-tonight-body .milo-subline { margin: 0; }
+.milo-tonight-chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 4px 0 8px; }
+.milo-tonight-chip { min-height: 48px; padding: 10px 12px; border: 1.5px solid var(--color-taupe); border-radius: 14px; background: #fff; color: var(--color-ink); font: 500 15px/1.3 var(--font-sans); text-align: left; cursor: pointer; }
+.milo-tonight-chip[aria-pressed="true"] { border-color: var(--color-oxblood); background: var(--color-oxblood-wash); color: var(--color-oxblood); font-weight: 600; }
+.milo-tonight-chip:focus-visible, .milo-tonight-dot:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 2px; }
+.milo-tonight-h2 { margin: 12px 0 0; font: 400 22px/1.2 var(--font-serif); color: var(--color-ink); }
+.milo-tonight-pair { margin: 0; padding: 14px 0 4px; border: 0; border-top: 1px solid var(--color-taupe); }
+.milo-tonight-vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.milo-tonight-ends { display: flex; justify-content: space-between; gap: 16px; font: 500 14px/1.3 var(--font-sans); color: var(--color-ink); }
+.milo-tonight-ends span:last-child { text-align: right; }
+.milo-tonight-scale { display: grid; grid-template-columns: repeat(4, 1fr); align-items: center; justify-items: center; margin-top: 6px; }
+.milo-tonight-dot { width: 48px; height: 48px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+.milo-tonight-dot span { display: block; border-radius: 50%; border: 2px solid var(--color-oxblood); background: #fff; }
+.milo-tonight-dot.is-def_left span, .milo-tonight-dot.is-def_right span { width: 30px; height: 30px; }
+.milo-tonight-dot.is-lean_left span, .milo-tonight-dot.is-lean_right span { width: 20px; height: 20px; }
+.milo-tonight-dot[aria-pressed="true"] span { background: var(--color-oxblood); }
+.milo-tonight > .milo-cta-button { position: sticky; bottom: max(12px, env(safe-area-inset-bottom)); flex: none; }
+@media (prefers-reduced-motion: reduce) { .milo-tonight-chip.milo-tile-shake { animation: none; } }
+
+/* Deck text cards: v3.1 cards with no matching photo. Same card, words carry it. */
+.milo-deck-card.is-text { background: var(--color-oxblood); }
+.milo-deck-card.is-text .milo-card-scrim { background: none; }
+.milo-deck-card.is-text .milo-card-body { top: 0; display: flex; flex-direction: column; justify-content: center; }
+.milo-deck-card.is-text .milo-card-title { font-size: clamp(28px, 8vw, 36px); line-height: 1.12; }

@@ -61,8 +61,9 @@ export async function showPartnerJoin(container, token) {
     // This phone is the partner's seat: their own name, the inviter's name, straight to moods.
     store.reset();
     store.setNames(inviter, cleanName(input.value));
-    // The partner answers for the same occasion the plan was made with.
+    // The partner answers the same quiz the plan was made with, for the same occasion.
     store.updateShared({ inviteSent: true, ...(occasion ? { occasion: String(occasion).replaceAll('_', '-') } : {}) });
+    if (preview.data.intent_model === 'v3.1') store.updateSession('sneha', { quizVersion: 'v3.1' });
     store.setSessionScreen('sneha', 's1');
     window.location.replace('/app/?as=sneha');
   });

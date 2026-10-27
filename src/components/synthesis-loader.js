@@ -1,9 +1,13 @@
 import { computePersonalSynthesis } from '../logic/synthesis.js';
+import { isV31, personalReveal } from '../logic/intent-quiz.js';
+import { store } from '../domain/store.js';
 
 // Replace this adapter with an async fetch. Resolve only after the actual
 // observations are ready; forward signal to fetch so leaving aborts the work.
 export async function loadPersonalSynthesis(session, { signal } = {}) {
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+  // Intent model v3.1 plans: the model's own reveal (top moods with the feel, the night it points to).
+  if (isV31(session)) return personalReveal(session, store.getState().shared.occasion);
   return computePersonalSynthesis(session.intents || [], session.reactions || []);
 }
 

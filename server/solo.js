@@ -10,6 +10,7 @@ import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { fail, valid, keys } from './errors.js';
 import { bookingExtras, validBooking, insertBooking, stopNames } from './concierge.js';
 import { CITIES } from '../src/data/cities.js';
+import { pairsDone } from '../src/logic/intent-quiz.js';
 import { NIGHTS_POOL } from '../src/data/mockData.js';
 
 const secret = () => randomBytes(16).toString('base64url');
@@ -30,7 +31,9 @@ function stopList(value) {
 
 // helpers: { name, timing, picks } are the handler's own validators, reused as-is.
 export async function createSolo({ db, body, origin, helpers }) {
-  keys(body, ['name', 'occasion', 'city', 'night_id', 'night_rank', 'timing', 'stops', 'intents', 'reactions', 'booking']);
+  keys(body, ['name', 'occasion', 'city', 'night_id', 'night_rank', 'timing', 'stops', 'intents', 'reactions', 'booking', 'intent_model', 'v31']);
+  valid(body.intent_model === undefined || ['v3', 'v3.1'].includes(body.intent_model));
+  const model = body.intent_model || 'v3';
   valid(Object.hasOwn(CITIES, body.city));
   const displayName = helpers.name(body.name);
   valid(body.occasion === undefined || occasions.includes(body.occasion));
@@ -38,19 +41,21 @@ export async function createSolo({ db, body, origin, helpers }) {
   valid(body.night_rank === undefined || [1, 2, 3].includes(body.night_rank));
   helpers.timing(body.timing);
   const stops = stopList(body.stops);
-  const picks = helpers.picks({ intents: body.intents ?? [], reactions: body.reactions ?? [], finished: (body.reactions ?? []).length === 8 });
+  const raw = { intents: body.intents ?? [], reactions: body.reactions ?? [], ...(model === 'v3.1' ? { v31: body.v31 ?? { modes: [], pairs: {} } } : {}) };
+  const done = raw.reactions.length === 8 && (model !== 'v3.1' || pairsDone(raw.v31));
+  const picks = helpers.picks({ ...raw, finished: done }, model);
   keys(body.booking, ['budget_band', 'window_hours', 'contact', 'requests', 'surprise', 'constraints']);
   const contact = validBooking(body.booking);
   const { requests, surprise, constraints } = bookingExtras(body.booking);
   const id = randomUUID(), seatKey = secret(), shareToken = secret(), seatId = randomUUID();
   await db.query('BEGIN');
   // invite_token is required by the schema but never accepted for solo plans.
-  await db.query(`INSERT INTO plans(id,invite_token,occasion,city,status,confirmed_night_id,timing,mode,share_token,stops,solo_rank)
-    VALUES($1,$2,$3,$4,'confirmed',$5,$6::jsonb,'solo',$7,$8::jsonb,$9)`,
-    [id, secret(), body.occasion || null, body.city, body.night_id, JSON.stringify(body.timing), shareToken, stops ? JSON.stringify(stops) : null, body.night_rank ?? null]);
-  await db.query(`INSERT INTO participants(id,plan_id,role,display_name,seat_key_hash,intents,reactions,finished_at,contact)
-    VALUES($1,$2,'initiator',$3,$4,$5::jsonb,$6::jsonb,${picks.finished ? 'now()' : 'NULL'},$7)`,
-    [seatId, id, displayName, hash(seatKey), JSON.stringify(picks.intents), JSON.stringify(picks.reactions), contact]);
+  await db.query(`INSERT INTO plans(id,invite_token,occasion,city,status,confirmed_night_id,timing,mode,share_token,stops,solo_rank,intent_model)
+    VALUES($1,$2,$3,$4,'confirmed',$5,$6::jsonb,'solo',$7,$8::jsonb,$9,$10)`,
+    [id, secret(), body.occasion || null, body.city, body.night_id, JSON.stringify(body.timing), shareToken, stops ? JSON.stringify(stops) : null, body.night_rank ?? null, model]);
+  await db.query(`INSERT INTO participants(id,plan_id,role,display_name,seat_key_hash,intents,reactions,finished_at,contact,v31)
+    VALUES($1,$2,'initiator',$3,$4,$5::jsonb,$6::jsonb,${picks.finished ? 'now()' : 'NULL'},$7,$8::jsonb)`,
+    [seatId, id, displayName, hash(seatKey), JSON.stringify(picks.intents), JSON.stringify(picks.reactions), contact, picks.v31 ? JSON.stringify(picks.v31) : null]);
   await insertBooking(db, { planId: id, requesterId: seatId, budget: body.booking.budget_band, hours: body.booking.window_hours, requests, surprise, constraints });
   await db.query('COMMIT');
   return { plan_id: id, seat_key: seatKey, share_url: `${origin}/app/?shared=${shareToken}` };

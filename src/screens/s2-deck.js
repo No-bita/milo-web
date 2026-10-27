@@ -5,6 +5,16 @@
 // ==========================================================
 
 import { buildDeck } from '../logic/deck.js';
+import { isV31, buildDeckV31 } from '../logic/intent-quiz.js';
+
+// The deck for this person: intent model v3.1 picks its own 8 cards; others keep today's.
+// A text card (intent model v3.1 cards with no matching photo) has no image at all.
+function cardImage(card, alt) {
+  if (!card.image) return '';
+  const fallback = card.fallback || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80';
+  return `<img src="${card.image}" alt="${alt}" class="milo-card-img" onerror="if(this.src!=='${fallback}'){this.src='${fallback}'}"/>`;
+}
+const deckFor = (session) => (isV31(session) ? buildDeckV31(session, store.getState().shared.occasion) : buildDeck(session.intents || []));
 import { store } from '../domain/store.js';
 import { createDeckInteraction } from '../logic/deck-interaction.js';
 import '../styles/s2-motion.css';
@@ -19,7 +29,7 @@ export function renderScreen02(sessionId = 'aarav') {
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
   const sessionData = state[sessionKey];
   const cardIndex = sessionData.currentCardIndex || 0;
-  const deck = buildDeck(sessionData.intents || []);
+  const deck = deckFor(sessionData);
   const activeCard = deck[cardIndex] || deck[0];
   const nextCard = deck[cardIndex + 1] || null;
 
@@ -58,13 +68,8 @@ export function renderScreen02(sessionId = 'aarav') {
       <!-- Card Stage -->
       <div class="milo-deck-stage" id="miloDeckStage-${sessionId}">
         ${nextCard ? `
-          <div class="milo-deck-card milo-card-peeking" aria-hidden="true">
-            <img 
-              src="${nextCard.image}" 
-              alt="" 
-              class="milo-card-img" 
-              onerror="if(this.src!=='${nextCard.fallback || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80'}'){this.src='${nextCard.fallback || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80'}'}"
-            />
+          <div class="milo-deck-card milo-card-peeking${nextCard.image ? '' : ' is-text'}" aria-hidden="true">
+            ${cardImage(nextCard, '')}
             <div class="milo-card-scrim"></div>
             <div class="milo-card-body">
               <h2 class="milo-card-title">${nextCard.title}</h2>
@@ -76,13 +81,8 @@ export function renderScreen02(sessionId = 'aarav') {
           </div>
         ` : ''}
 
-        <div class="milo-deck-card milo-card-active" id="miloActiveCard-${sessionId}">
-          <img 
-            src="${activeCard.image}" 
-            alt="${activeCard.title}" 
-            class="milo-card-img" 
-            onerror="if(this.src!=='${activeCard.fallback || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80'}'){this.src='${activeCard.fallback || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80'}'}"
-          />
+        <div class="milo-deck-card milo-card-active${activeCard.image ? '' : ' is-text'}" id="miloActiveCard-${sessionId}">
+          ${cardImage(activeCard, activeCard.title)}
           <div class="milo-card-scrim"></div>
 
           <!-- Drag Edge Labels -->
@@ -152,7 +152,7 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
   const state = store.getState();
   const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
   const sessionData = state[sessionKey];
-  const deck = buildDeck(sessionData.intents || []);
+  const deck = deckFor(sessionData);
   const activeCard = deck[sessionData.currentCardIndex || 0];
   const mountedIndex = sessionData.currentCardIndex || 0;
   const interaction = createDeckInteraction({
@@ -160,7 +160,7 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
       const current = store.getState()[sessionKey];
       return card?.isConnected && current.screen === 's2'
         && (current.currentCardIndex || 0) === mountedIndex
-        && buildDeck(current.intents || [])[mountedIndex]?.id === activeCard?.id;
+        && deckFor(current)[mountedIndex]?.id === activeCard?.id;
     },
     record: reaction => store.recordReaction(sessionId, { cardId: activeCard.id, reaction }),
     onLock: () => {
@@ -257,7 +257,7 @@ export function attachScreen02Listeners(container, sessionId = 'aarav') {
       cleanup();
       const currentIdx = sessionData.currentCardIndex || 0;
       if (currentIdx === 0) {
-        store.setSessionScreen(sessionId, 's1');
+        store.setSessionScreen(sessionId, isV31(sessionData) ? 's1b' : 's1');
       } else {
         const last = (sessionData.reactions || [])[(sessionData.reactions || []).length - 1];
         pendingUndoSide = last && last.reaction === 'not_tonight' ? 'left' : last && last.reaction === 'maybe' ? 'below' : 'right';
