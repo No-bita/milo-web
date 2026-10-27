@@ -10,12 +10,12 @@ const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp
 
 function resumeCard(summary) {
   return `<section class="milo-home-card" aria-label="Your plan in progress">
-    <p class="milo-home-label">IN PROGRESS</p>
+    <p class="milo-home-label" hidden>IN PROGRESS</p>
     <h2 class="milo-home-plan">Your night</h2>
     ${summary.ratedCount > 0 ? `<p class="milo-home-when">${summary.ratedCount} of 8 ideas rated</p>` : ''}
-    <div class="milo-home-card-foot">
-      <span>Picks saved on this phone</span>
-      <button class="milo-home-link" type="button" id="miloHomeResume">Resume <span aria-hidden="true">&#8250;</span></button>
+    <p class="milo-home-status">Picks saved on this phone</p>
+    <div class="milo-home-actions">
+      <button class="milo-home-link milo-home-primary" type="button" id="miloHomeResume">Resume</button>
     </div>
   </section>`;
 }
@@ -25,14 +25,14 @@ function planCard(summary, state) {
   const when = timing ? timingLabel(timing) : 'Time not set yet';
   const label = summary.kind === 'draft' ? 'YOUR DRAFT' : summary.kind === 'booked' ? 'YOUR NIGHT' : 'THIS WEEK';
   return `<section class="milo-home-card" aria-label="Your plan">
-    <p class="milo-home-label">${label}</p>
+    <p class="milo-home-label" hidden>${label}</p>
     <h2 class="milo-home-plan">${escape(summary.planName)}</h2>
     <p class="milo-home-when">${escape(when)}</p>
-    <div class="milo-home-card-foot">
-      <span>${escape(summary.planStatus)}</span>
-      <button class="milo-home-link" type="button" id="miloHomeOpen">${summary.action === 'open-waiting' ? 'See invite' : 'Open plan'} <span aria-hidden="true">›</span></button>
+    <p class="milo-home-status">${summary.kind === 'booked' && !['booked', 'failed'].includes(state.sessionA.soloBooking?.booking?.status) ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>' : ''}<span>${escape(summary.planStatus)}</span></p>
+    <div class="milo-home-actions">
+      <button class="milo-home-link milo-home-primary" type="button" id="miloHomeOpen">${summary.action === 'open-waiting' ? 'See invite' : 'Open plan'}</button>
+      ${surpriseOpen(summary) ? `<button class="milo-home-link milo-home-surprise" type="button" id="miloHomeSurprise">Add a surprise</button>` : ''}
     </div>
-    ${surpriseOpen(summary) ? `<button class="milo-home-link milo-home-surprise" type="button" id="miloHomeSurprise">Add a surprise <span aria-hidden="true">›</span></button>` : ''}
   </section>`;
 }
 
