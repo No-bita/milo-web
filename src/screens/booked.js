@@ -1,6 +1,7 @@
 import { store } from '../domain/store.js';
 import { partnerLabel, isInvited } from '../logic/partner.js';
 import { NIGHTS_POOL } from '../data/mockData.js';
+import { withSoloChoices } from '../logic/planning.js';
 import { timingForNight, timingLabel } from '../components/night-timing.js';
 import { soloSeatFor, currentSoloBooking, sendSoloCheckin } from '../domain/solo.js';
 import { currentGifts, refreshGifts } from '../domain/gifts.js';
@@ -33,7 +34,7 @@ function stopsHtml(night, stops, venues) {
 export function renderBooked(sessionId = 'aarav') {
   const state = store.getState();
   const nightId = state.sessionA.savedSoloNightId || state.shared.confirmedNightId || state.sessionA.activeNightId || NIGHTS_POOL[0].id;
-  const night = NIGHTS_POOL.find((n) => n.id === nightId) || NIGHTS_POOL[0];
+  const night = withSoloChoices(state, NIGHTS_POOL.find((n) => n.id === nightId) || NIGHTS_POOL[0]);
   const partner = partnerLabel(state, sessionId);
   const me = sessionId === 'sneha' ? state.sessionB : state.sessionA;
   const seat = sessionId === 'sneha' ? null : soloSeatFor(night.id);
@@ -80,7 +81,7 @@ export function renderBooked(sessionId = 'aarav') {
 
 function nightFromState(state) {
   const nightId = state.sessionA.savedSoloNightId || state.shared.confirmedNightId || state.sessionA.activeNightId || NIGHTS_POOL[0].id;
-  const night = NIGHTS_POOL.find((n) => n.id === nightId) || NIGHTS_POOL[0];
+  const night = withSoloChoices(state, NIGHTS_POOL.find((n) => n.id === nightId) || NIGHTS_POOL[0]);
   return { night, timing: timingForNight(night.id) || timingForNight(night.id, { solo: true }) };
 }
 

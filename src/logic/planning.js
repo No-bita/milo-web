@@ -35,3 +35,10 @@ export function computePlanningOutput(state, sessionId = 'aarav') {
     }))
   };
 }
+
+// The saved solo draft keeps the stops the user swapped in. Shared nights keep their own stops.
+export function withSoloChoices(state, night) {
+  const overrides = state.sessionA.soloItineraryOverrides?.[night.id];
+  if (!overrides || state.shared?.confirmedNightId || state.sessionA.savedSoloNightId !== night.id) return night;
+  return { ...night, beats: night.beats.map((beat, i) => overrides[i] || beat) };
+}
