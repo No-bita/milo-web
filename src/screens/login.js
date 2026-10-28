@@ -5,10 +5,13 @@
 // ==========================================================
 
 import { store } from '../domain/store.js';
+import { accountsEnabled } from '../domain/account-api.js';
+import { renderAccountLogin, attachAccountLoginListeners } from './login-accounts.js';
 
 const escape = (value) => String(value || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 export function renderLogin(sessionId = 'aarav') {
+  if (accountsEnabled()) return renderAccountLogin(sessionId);
   const session = store.getState()[sessionId === 'sneha' ? 'sessionB' : 'sessionA'] || {};
   const existingEmail = session.user?.email || '';
   const isSynthesis = session.loginReason === 'synthesis';
@@ -149,6 +152,7 @@ export function renderLogin(sessionId = 'aarav') {
 }
 
 export function attachLoginListeners(container, sessionId = 'aarav') {
+  if (accountsEnabled()) { attachAccountLoginListeners(container, sessionId); return; }
   const backBtn = container.querySelector(`#miloLoginBack-${sessionId}`);
   const form = container.querySelector(`#miloLoginForm-${sessionId}`);
   const emailInput = container.querySelector(`#miloEmailInput-${sessionId}`);

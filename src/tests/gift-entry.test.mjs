@@ -63,7 +63,6 @@ test('solo: "Add a surprise" in the booking step opens the sheet right after boo
     const p = a.page;
     await soloToBookingStep(p);
     await p.locator('.milo-choice-pill', { hasText: '₹4,000 - 7,000' }).click();
-    await p.locator('.milo-choice-pill', { hasText: '4 hours' }).click();
     await p.locator('input[name=contact]').fill('+91 98765 43210');
     assert.equal(await p.locator('#miloReqSurpriseGift').isChecked(), false, 'off unless chosen');
     await p.locator('label', { has: p.locator('#miloReqSurpriseGift') }).click();
@@ -79,8 +78,9 @@ test('solo: "Add a surprise" in the booking step opens the sheet right after boo
     await p.locator('.milo-gift-kind', { hasText: 'Waiting at the table' }).click();
     assert.equal(await p.locator('input[name=show_hint]').count(), 0, 'no hint for someone who has no Milo screen');
     await p.locator('label.milo-gift-item', { hasText: 'Hand-tied bouquet' }).click();
-    await p.locator('input[name=venue]').fill('Clay Station, Indiranagar');
-    await p.locator('.milo-gift-form input[name=contact]').fill('+91 98765 43210');
+    // No venue question, and no second WhatsApp: the booking just saved the number.
+    assert.equal(await p.locator('input[name=venue]').count(), 0);
+    assert.equal(await p.locator('.milo-gift-contact').isVisible(), false);
     await p.locator('.milo-gift-form [type=submit]').click();
     await sheet.waitFor({ state: 'detached' });
     // Listed on the booked screen with its status; the sheet does not reopen on its own.
@@ -108,7 +108,6 @@ test('solo: without the box ticked, booking opens no sheet', async () => {
     const p = a.page;
     await soloToBookingStep(p);
     await p.locator('.milo-choice-pill', { hasText: '₹2,000 - 4,000' }).click();
-    await p.locator('.milo-choice-pill', { hasText: '3 hours' }).click();
     await p.locator('input[name=contact]').fill('+91 98765 43210');
     await p.locator('#miloReqBook').click();
     await p.waitForFunction(() => document.querySelector('.milo-booked-title')?.textContent === 'Sealed.');
@@ -131,7 +130,6 @@ test('Together: surprises sit above the itinerary, the booking sheet offers one,
     const booking = p.locator('dialog.milo-concierge-sheet');
     await booking.waitFor();
     await booking.locator('.milo-choice-pill', { hasText: '₹2,000 - 4,000' }).click();
-    await booking.locator('.milo-choice-pill', { hasText: '3 hours' }).click();
     await booking.locator('input[name=contact]').fill('+91 98765 43210');
     await booking.locator('label', { has: p.locator('input[name=add_surprise]') }).click();
     await booking.locator('[type=submit]').click();

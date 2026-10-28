@@ -9,6 +9,7 @@ import { handleGifts, handleOps, checkOpsSecret } from './gifts.js';
 import { handleConcierge, handleOpsBookings, exportCsv, recordEvent } from './concierge.js';
 import { createSolo, sharedView } from './solo.js';
 import { CITIES } from '../src/data/cities.js';
+import { accountsOn, isAccountsPath, handleAccounts, currentAccount, claimSeat, resendMailer, googleVerifier } from './accounts.js';
 
 const occasions = ['date_night','anniversary','proposal','birthday','quality_time','just_because'];
 const moods = new Set(INTENTS.map(x => x.id));
@@ -137,7 +138,16 @@ function response(status, body, extra = {}) {
 // acquire() returns a single connected SQL client plus release(). Every plan
 // mutation locks the plan BEFORE its seats, serializing finish/join/actions.
 // `now` is injectable so tests can move the clock for gift reveal times.
-export function createApi({ acquire, env = process.env, clientIp, now = Date.now }) {
+// mailer / verifyGoogle: injectable so tests never reach Resend or Google.
+export function createApi({ acquire, env = process.env, clientIp, now = Date.now, mailer = resendMailer(env), verifyGoogle = googleVerifier(env) }) {
+  // Accounts on: booking needs a signed-in account, and the seat is linked to it.
+  async function requireAccount(db, request, origin, plan, me) {
+    const account = await currentAccount(db, request, now(), origin);
+    if (!account) fail(401, 'sign_in_required');
+    if (me.account_id && me.account_id !== account.id) fail(403, 'forbidden');
+    if (!me.account_id) await claimSeat(db, account.id, me.id, plan.id);
+    return account;
+  }
   return async request => {
     let db;
     try {
@@ -158,11 +168,12 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
       const planPath = path.match(/^\/api\/plans\/([^/]+)(\/(me|actions|gifts|booking|checkin|events)(?:\/([^/]+))?)?$/);
       const opsPath = path.match(/^\/api\/ops\/(gifts|bookings|export\.csv)(?:\/([^/]+))?$/);
       const cleanup = path === '/api/cleanup' && method === 'GET';
+      const accountsPath = isAccountsPath(path);
       // Launch gate: product routes stay off until enabled. Authenticated
       // The cleanup route stays reachable while paused; it deletes nothing.
       if (env.MILO_PHASE1_ENABLED !== 'true' && !cleanup) return response(503, { error:'unavailable' });
       const publicScope = create || soloCreate ? 'create' : (invite && !invite[2] && method === 'GET') || shared ? 'preview' : invite?.[2] && method === 'POST' ? 'join' : null;
-      if (!publicScope && !planPath && !cleanup && !opsPath) return response(404, { error:'not_found' });
+      if (!publicScope && !planPath && !cleanup && !opsPath && !accountsPath) return response(404, { error:'not_found' });
       if (path === '/api/plans/solo' && !soloCreate) return response(405, { error:'method_not_allowed' });
       // No forwarded-host construction: only owner-configured canonical origin.
       valid(typeof env.MILO_PUBLIC_ORIGIN === 'string');
@@ -190,6 +201,21 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         if (!result) return response(405, { error:'method_not_allowed' });
         return response(200, result);
       }
+      if (accountsPath) {
+        if (!accountsOn(env)) fail(404, 'not_found');
+        if (!env.RATE_LIMIT_SECRET || !clientIp) fail(503, 'unavailable');
+        db = await acquire();
+        const limit = async (scope, max) => {
+          const ip = normalizedIp(clientIp(request)); if (!ip) fail(503, 'unavailable');
+          const ipHash = createHmac('sha256', env.RATE_LIMIT_SECRET).update(ip).digest('hex');
+          const { rows:[row] } = await db.query(`INSERT INTO account_rate_limits(scope,ip_hash,window_start,hits)
+            VALUES($1,$2,date_trunc('minute',now()),1)
+            ON CONFLICT(scope,ip_hash,window_start) DO UPDATE SET hits=account_rate_limits.hits+1 RETURNING hits`, [scope,ipHash]);
+          if (row.hits > max) fail(429, 'rate_limited');
+        };
+        const result = await handleAccounts({ db, request, path, method, env, origin, now: now(), limit, readBody: () => jsonBody(request), mailer, verifyGoogle, helpers: { name } });
+        return response(result.status, result.body, result.headers);
+      }
       if (publicScope && (!env.RATE_LIMIT_SECRET || !clientIp)) fail(503, 'unavailable');
       db = await acquire();
       if (publicScope) {
@@ -201,7 +227,10 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         if (count.rows[0].hits > (publicScope === 'preview' ? 60 : 20)) fail(429, 'rate_limited');
       }
       if (soloCreate) {
+        const account = accountsOn(env) ? await currentAccount(db, request, now(), origin) : null;
+        if (accountsOn(env) && !account) fail(401, 'sign_in_required');
         const result = await createSolo({ db, body: await jsonBody(request), origin: origin.origin, helpers: { name, timing, picks } });
+        if (account) await db.query('UPDATE participants SET account_id=$1 WHERE plan_id=$2 AND account_id IS NULL', [account.id, result.plan_id]);
         return response(201, result);
       }
       if (shared) return response(200, await sharedView({ db, token: shared[1] }));
@@ -262,6 +291,7 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
         await db.query('COMMIT'); return response(200, result);
       }
       if (conciergeRoute) {
+        if (accountsOn(env) && action === 'booking' && method === 'POST') await requireAccount(db, request, origin, plan, me);
         const result = await handleConcierge({ db, plan, me, action, method, readBody: () => jsonBody(request), now: now() });
         await db.query('COMMIT'); return response(200, result);
       }

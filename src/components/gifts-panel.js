@@ -21,6 +21,7 @@ const ERRORS = {
   not_ready: 'Set the time first.',
   locked: 'Too late to take this one back.',
   invalid: 'Check the details and try again.',
+  needs_contact: 'Add a WhatsApp number so Milo can confirm the price with you.',
   unreachable: "Couldn't reach Milo. Try again."
 };
 const errorText = (result) => ERRORS[result.code] || ERRORS[result.reason] || ERRORS.unreachable;
@@ -163,8 +164,7 @@ function formStep(kind, night, timing, solo) {
   }).join('');
   const physical = GIFT_KINDS[kind].physical;
   const fields = {
-    moment_drop: `<label>Which stop?<select name="stop_index">${stopOptions(night)}</select></label>
-      <label>Where's that stop? <input name="venue" maxlength="120" placeholder="Venue name and area" autocomplete="off"></label>`,
+    moment_drop: `<label>Which stop?<select name="stop_index">${stopOptions(night)}</select></label>`,
     home_delivery: `<label>Their address<textarea name="address" maxlength="300" rows="3" autocomplete="street-address"></textarea></label>
       <label>When should it arrive?<select name="deliver_window">${Object.entries(DELIVERY_WINDOWS).map(([id, label]) => `<option value="${id}">${label}</option>`).join('')}</select></label>`,
     sealed_note: `<label>Your note<textarea name="note" maxlength="500" rows="5" placeholder="Say the thing."></textarea></label>
@@ -177,7 +177,7 @@ function formStep(kind, night, timing, solo) {
       ${physical ? `<fieldset class="milo-gift-items"><legend>Pick one</legend>${items}</fieldset>` : ''}
       ${fields}
       ${physical ? `<label>Card message (optional)<input name="note" maxlength="200" autocomplete="off"></label>
-        <label>Your WhatsApp number<input name="contact" type="tel" inputmode="tel" maxlength="20" placeholder="+91 98765 43210" autocomplete="tel"></label>
+        <label class="milo-gift-contact" hidden>Your WhatsApp number<input name="contact" type="tel" inputmode="tel" maxlength="20" placeholder="+91 98765 43210" autocomplete="tel"></label>
         ${solo ? '' : `<label class="milo-gift-check"><input type="checkbox" name="show_hint"> Let them know something's coming</label>`}
         <p class="milo-gift-sub">No payment now. Milo confirms the price with you on WhatsApp before anything is ordered.</p>` : ''}
       <p class="milo-gift-error" role="alert" hidden></p>
@@ -191,9 +191,11 @@ function bodyFor(form, kind) {
   const value = (name) => f[name]?.value?.trim() ?? '';
   if (kind === 'teaser') return { kind, note: value('note') };
   if (kind === 'sealed_note') return { kind, note: value('note'), ...(value('stop_index') !== '' ? { stop_index: Number(value('stop_index')) } : {}) };
-  const body = { kind, item_id: form.querySelector('input[name=item_id]:checked')?.value, contact: value('contact'), show_hint: Boolean(f.show_hint?.checked) };
+  // WhatsApp only when the field was shown (the server had no number for this person).
+  const body = { kind, item_id: form.querySelector('input[name=item_id]:checked')?.value, show_hint: Boolean(f.show_hint?.checked) };
+  if (value('contact')) body.contact = value('contact');
   if (value('note')) body.note = value('note');
-  if (kind === 'moment_drop') Object.assign(body, { stop_index: Number(value('stop_index')), venue: value('venue') });
+  if (kind === 'moment_drop') Object.assign(body, { stop_index: Number(value('stop_index')) });
   if (kind === 'home_delivery') Object.assign(body, { address: value('address'), deliver_window: value('deliver_window') });
   return body;
 }
@@ -201,9 +203,8 @@ function bodyFor(form, kind) {
 function localCheck(body) {
   if (GIFT_KINDS[body.kind].physical) {
     if (!body.item_id) return 'Pick a gift first.';
-    if (body.kind === 'moment_drop' && body.venue.length < 2) return 'Add the venue for that stop.';
     if (body.kind === 'home_delivery' && body.address.length < 10) return 'Add their full address.';
-    if ((body.contact.match(/\d/g) || []).length < 10) return 'Add a WhatsApp number we can reach you on.';
+    if (body.contact !== undefined && (body.contact.match(/\d/g) || []).length < 10) return 'Add a WhatsApp number we can reach you on.';
   } else if (!body.note) return body.kind === 'teaser' ? 'Write the teaser first.' : 'Write the note first.';
   return '';
 }
@@ -225,12 +226,18 @@ export function openGiftSheet(night, timing, { solo = false } = {}) {
       event.preventDefault();
       const error = form.querySelector('.milo-gift-error');
       const body = bodyFor(form, form.dataset.kind);
+      const contactField = form.querySelector('.milo-gift-contact');
+      if (contactField && !contactField.hidden && body.contact === undefined) body.contact = '';
       const problem = localCheck(body);
       if (problem) { error.textContent = problem; error.hidden = false; return; }
       const submit = form.querySelector('[type=submit]');
       submit.disabled = true;
       const result = await addGift(body);
       if (result.ok) { dialog.close(); return; }
+      if (result.code === 'needs_contact' && contactField) {
+        contactField.hidden = false;
+        contactField.querySelector('input').focus();
+      }
       error.textContent = errorText(result); error.hidden = false; submit.disabled = false;
     });
     dialog.querySelector('button, input, textarea, select')?.focus();

@@ -10,9 +10,10 @@ import { createApi } from '../../../server/phase1.js';
 
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.json': 'application/json', '.woff2': 'font/woff2', '.txt': 'text/plain', '.md': 'text/markdown' };
 
-export async function startPhase1LocalServer({ distDir, opsSecret = 'local-ops-secret-for-tests' }) {
+// accounts: true turns on accounts v1 with a fake mailer; sent codes are in `mail`.
+export async function startPhase1LocalServer({ distDir, opsSecret = 'local-ops-secret-for-tests', accounts = false }) {
   const db = new PGlite();
-  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql', 'intent-v31.sql']) await db.exec(await readFile(new URL(`../../../server/${file}`, import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql', 'intent-v31.sql', 'accounts.sql', 'booking-length.sql']) await db.exec(await readFile(new URL(`../../../server/${file}`, import.meta.url), 'utf8'));
   // PGlite has one connection: serialize requests like a single pooled client.
   let tail = Promise.resolve();
   const acquire = async () => {
@@ -23,7 +24,10 @@ export async function startPhase1LocalServer({ distDir, opsSecret = 'local-ops-s
   const env = { NODE_ENV: 'test', MILO_PHASE1_ENABLED: 'true', MILO_PUBLIC_ORIGIN: 'http://127.0.0.1', RATE_LIMIT_SECRET: 'local-test-only', OPS_SECRET: opsSecret };
   // The server clock can be moved forward to test gift reveal times.
   let clockOffset = 0;
-  const api = createApi({ acquire, env, clientIp: () => '127.0.0.1', now: () => Date.now() + clockOffset });
+  const mail = [];
+  if (accounts) Object.assign(env, { MILO_ACCOUNTS_ENABLED: 'true', AUTH_SECRET: 'local-auth-secret-for-tests' });
+  const api = createApi({ acquire, env, clientIp: () => '127.0.0.1', now: () => Date.now() + clockOffset,
+    mailer: async ({ to, code }) => { mail.push({ to, code }); }, verifyGoogle: async () => { throw Object.assign(new Error('no google in tests'), { status: 503 }); } });
 
   const serveFile = async (pathname, res) => {
     let file = normalize(join(distDir, decodeURIComponent(pathname)));
@@ -49,5 +53,5 @@ export async function startPhase1LocalServer({ distDir, opsSecret = 'local-ops-s
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const site = `http://127.0.0.1:${server.address().port}`;
   env.MILO_PUBLIC_ORIGIN = site; // invite links must point back at this server
-  return { site, db, opsSecret, setClock: (ms) => { clockOffset = ms - Date.now(); }, close: async () => { await new Promise(resolve => server.close(resolve)); await db.close(); } };
+  return { site, db, opsSecret, mail, setClock: (ms) => { clockOffset = ms - Date.now(); }, close: async () => { await new Promise(resolve => server.close(resolve)); await db.close(); } };
 }

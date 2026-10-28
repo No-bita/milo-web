@@ -133,11 +133,12 @@ function limits(value) {
   return { diet: value.diet, alcohol: value.alcohol, ...(value.home_by ? { home_by: value.home_by } : {}) };
 }
 export function validBooking(body) {
-  valid(BUDGET_BANDS.includes(body.budget_band) && [3, 4].includes(body.window_hours));
+  // Length is optional: the app stopped asking (booking-length.sql). Older apps may still send 3 or 4.
+  valid(BUDGET_BANDS.includes(body.budget_band) && (body.window_hours === undefined || [3, 4].includes(body.window_hours)));
   return phone(body.contact);
 }
 export const insertBooking = (db, b) => db.query(`INSERT INTO bookings(id,plan_id,requester_id,budget_band,window_hours,requests,surprise,status,constraints)
-  VALUES($1,$2,$3,$4,$5,$6,$7,'requested',$8::jsonb)`, [randomUUID(), b.planId, b.requesterId, b.budget, b.hours, b.requests, b.surprise, b.constraints ? JSON.stringify(b.constraints) : null]);
+  VALUES($1,$2,$3,$4,$5,$6,$7,'requested',$8::jsonb)`, [randomUUID(), b.planId, b.requesterId, b.budget, b.hours ?? null, b.requests, b.surprise, b.constraints ? JSON.stringify(b.constraints) : null]);
 // One phone number per person; the latest one they gave wins.
 export const saveContact = (db, participantId, contact) =>
   db.query('UPDATE participants SET contact=$1 WHERE id=$2', [contact, participantId]);

@@ -83,7 +83,7 @@ test('Email login screen renders editorial branding, accessible form, and placeh
     // Should redirect to 'you' tab with account details updated
     await p.locator('.milo-tabscreen').waitFor();
     assert.equal(await p.locator('h1.milo-home-headline').textContent(), 'You');
-    assert.match(await p.locator('.milo-home-row b').first().textContent(), /aarav@example\.com/);
+    assert.match(await p.locator('.milo-you-account h2').textContent(), /aarav@example\.com/);
 
     assert.deepEqual(errors, []);
   } finally {

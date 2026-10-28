@@ -88,7 +88,6 @@ test('solo: pick a time for real, hand it to Milo, ops books it, partner sees th
     await p.locator('#miloReqBook').click();
     assert.match(await p.locator('#miloReqError').textContent(), /budget/);
     await p.locator('.milo-choice-pill', { hasText: '₹4,000 - 7,000' }).click();
-    await p.locator('.milo-choice-pill', { hasText: '4 hours' }).click();
     await p.locator('input[name=contact]').fill('+91 98765 43210');
     await p.locator('#miloReqBook').click();
 

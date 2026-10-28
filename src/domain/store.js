@@ -223,6 +223,12 @@ class DomainStore {
     this._emit();
   }
 
+  // Accounts API copy (people, dated nights) for You and Nights. See domain/account-api.js.
+  setAccount(account) {
+    this.state = { ...this.state, account };
+    this._emit();
+  }
+
   setSessionUser(sessionId, user) {
     const sessionKey = sessionId === 'sneha' ? 'sessionB' : 'sessionA';
     this.state = {

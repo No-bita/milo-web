@@ -1,6 +1,7 @@
 // Concierge handover + next-morning check-in on the agreed screen (both seats,
 // Phase 1 together mode). Forms open in sheets appended to <body>, so store
 // re-renders of the screen never wipe what someone is typing.
+import { sendToSignInForBooking } from '../domain/auth.js';
 import { store } from '../domain/store.js';
 import { currentConcierge, requestBooking, cancelBooking, sendCheckin } from '../domain/concierge.js';
 import { escapeHtml, partnerLabel } from '../logic/partner.js';
@@ -15,7 +16,7 @@ export { BUDGETS };
 const PAY = { nothing: 'Nothing', under_200: 'Under ₹200', '200_500': '₹200 - 500', '500_1000': '₹500 - 1,000', '1000_plus': '₹1,000+' };
 const ERRORS = {
   exists: 'Someone already asked Milo to book this one.', locked: "It's already booked, so it can't be cancelled here.",
-  not_ready: 'Set the time first.', invalid: 'Check the details and try again.', unreachable: "Couldn't reach Milo. Try again."
+  not_ready: 'Set the time first.', sign_in_required: 'Sign in to book.', invalid: 'Check the details and try again.', unreachable: "Couldn't reach Milo. Try again."
 };
 const errorText = r => ERRORS[r.code] || ERRORS[r.reason] || ERRORS.unreachable;
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -67,7 +68,10 @@ export function renderConciergePanel(night, sessionId) {
 
 export function attachConciergePanel(container, night, sessionId, { timing } = {}) {
   const note = text => { const el = container.querySelector(`#miloConciergeNote-${sessionId}`); if (el) { el.textContent = text; el.hidden = !text; } };
-  container.querySelector(`#miloBookingOpen-${sessionId}`)?.addEventListener('click', () => openBookingSheet(timing, { night }));
+  container.querySelector(`#miloBookingOpen-${sessionId}`)?.addEventListener('click', () => {
+    if (sendToSignInForBooking(sessionId)) return;
+    openBookingSheet(timing, { night });
+  });
   container.querySelector(`#miloCheckinOpen-${sessionId}`)?.addEventListener('click', () => openCheckinSheet());
   const cancel = container.querySelector(`#miloBookingCancel-${sessionId}`);
   cancel?.addEventListener('click', async () => {
@@ -112,18 +116,16 @@ export function openBookingSheet(timing, { night } = {}) {
   sheet('Let Milo book it', `<h2>Let Milo book it</h2>
     <p>We book every stop for ${escapeHtml(from)} and confirm on WhatsApp. Nothing is charged in the app.</p>
     ${radios('budget_band', BUDGETS, 'Budget for two')}
-    ${radios('window_hours', { 3: '3 hours', 4: '4 hours' }, 'How long is the night?')}
     ${limitsOn() ? renderLimits() : ''}
     <label>Your WhatsApp number<input name="contact" type="tel" inputmode="tel" maxlength="20" placeholder="+91 98765 43210" autocomplete="tel"></label>
-    <label>Anything we should know? (optional)<textarea name="requests" maxlength="1000" rows="3" placeholder="Area, diet, no alcohol, a place you love"></textarea></label>
+    <label>Anything we should know? (optional)<textarea name="requests" maxlength="1000" rows="3" placeholder="A place you love, anything to avoid"></textarea></label>
     ${night ? `<label class="milo-gift-check"><input type="checkbox" name="add_surprise"> Add a surprise</label>
     <p class="milo-gift-sub">Something waiting at the table, at their door, or a note for later. Only you see what you pick.</p>` : ''}`,
   async (form, busy) => {
-    const body = { budget_band: picked(form, 'budget_band'), window_hours: Number(picked(form, 'window_hours')), contact: form.elements.contact.value.trim() };
+    const body = { budget_band: picked(form, 'budget_band'), contact: form.elements.contact.value.trim() };
     const requests = form.elements.requests.value.trim(); if (requests) body.requests = requests;
     const limits = readLimits(form); if (limits) body.constraints = limits;
     if (!body.budget_band) return 'Pick a budget.';
-    if (!body.window_hours) return 'Pick how long the night is.';
     if ((body.contact.match(/\d/g) || []).length < 10) return 'Add a WhatsApp number we can reach you on.';
     busy();
     const r = await requestBooking(body);

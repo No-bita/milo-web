@@ -111,8 +111,9 @@ Seat-authenticated (Bearer seat_key, same plan only):
 
 - GET /api/plans/:id/gifts -> {can_add, mine, for_me, sealed_waiting, hint, memory:{open,mine,theirs}, from}
 - POST /api/plans/:id/gifts {kind, ...} -> same view. Needs status confirmed AND a time set (409 not_ready).
-  - moment_drop {item_id, stop_index 0-2, venue, contact, note?, show_hint?}
-  - home_delivery {item_id, address, deliver_window morning|afternoon|evening, contact, note?, show_hint?}
+  - moment_drop {item_id, stop_index 0-2, venue?, contact?, note?, show_hint?}
+  - home_delivery {item_id, address, deliver_window morning|afternoon|evening, contact?, note?, show_hint?}
+  - `contact` may be left out when this person already saved a number (booking or an earlier gift); with none saved the answer is `400 needs_contact`. The app shows the WhatsApp field only then. `venue` is no longer asked by the app: ops takes it from the booking or asks on WhatsApp.
   - sealed_note {note <=500, stop_index?} · teaser {note <=140} · memory {note <=200, only after start}
   - item_id must be in src/data/gifts.js and allow that kind; 409 too_soon if the night is closer than the item's leadDays.
   - Limits per giver: 3 physical, 1 sealed note, 1 teaser, 1 memory line (409 limit).
@@ -163,7 +164,8 @@ Nothing is deleted automatically: contacts, notes, check-ins and events are kept
 Seat-authenticated:
 - GET /api/plans/:id/booking -> {can_request, booking:{status, requested_by_me, venues, budget_band?, window_hours?, notes?}|null, checkin:{open, done}}
   Budget/window/notes only for the requester. Venues only once ops marks it `booked`. No contact numbers.
-- POST /api/plans/:id/booking {budget_band under_2k|2k_4k|4k_7k|7k_plus, window_hours 3|4, contact, notes?}
+- POST /api/plans/:id/booking {budget_band under_2k|2k_4k|4k_7k|7k_plus, window_hours? 3|4, contact, notes?}
+  `window_hours` is optional after `server/booking-length.sql` (the app no longer asks; ops plans the length). Apply that migration before deploying this code.
   Needs a confirmed night with a time (409 not_ready); one active booking per plan (409 exists).
 - DELETE /api/plans/:id/booking -> requester only, while `requested` (409 locked after).
 - POST /api/plans/:id/checkin {differently yes|partly|no, wouldnt_have?, rating 1-5, use_again, recommend yes|maybe|no,
@@ -188,7 +190,7 @@ Apply `server/solo.sql` AFTER `schema.sql`, `gifts.sql` and `concierge.sql` (req
 invite and export queries read the new `mode` column).
 
 - POST /api/plans/solo (public, per-IP `create` limit) {name, occasion?, night_id, night_rank?, timing, stops?, intents, reactions,
-  booking:{budget_band, window_hours, contact, requests? (<=1000), surprise (default true)}} -> 201 {plan_id, seat_key, share_url}.
+  booking:{budget_band, window_hours?, contact, requests? (<=1000), surprise (default true)}} -> 201 {plan_id, seat_key, share_url}.
   Creates a confirmed one-seat plan (mode `solo`) and its booking request in one transaction. Its invite token is never accepted.
 - The solo seat then uses the normal seat routes: GET/POST/DELETE /booking (requester view now includes `requests` and `surprise`)
   and POST /checkin. The app keeps the solo seat in `milo_solo_seat_v1`, separate from the Together seat.
