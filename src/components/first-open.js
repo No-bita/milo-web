@@ -1,12 +1,15 @@
 // A single brand moment before the planner's existing journey.
 // The dot of the "i" bounces, arcs to the period, merges and pulses, then a ripple opens the app.
 // Plays on every open of the site; invitation and explicit screen links skip it.
+import { QA_MODE } from '../domain/qa-mode.js';
+
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function showFirstOpen(container, onContinue) {
   const params = new URLSearchParams(window.location.search);
   // Invitation and explicit screen links must keep their original destination.
-  if (params.get('as') === 'sneha' || params.has('invite') || params.has('screen') || params.get('golden') === '1') {
+  // ?as/?invite are real flows; ?screen/?golden are QA-only, so in production they no longer skip the intro.
+  if (params.get('as') === 'sneha' || params.has('invite') || (QA_MODE && (params.has('screen') || params.get('golden') === '1'))) {
     onContinue();
     return;
   }
