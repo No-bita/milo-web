@@ -15,13 +15,13 @@ export function prepareEmailLink() {
   // Remove the bearer token before any providers or app renders can see the URL.
   window.history.replaceState(null, '', window.location.pathname + window.location.search);
   linkToken = /^[A-Za-z0-9_-]{43}$/.test(token) ? token : null;
-  flow = { step: linkToken ? 'link' : 'email', email: '', busy: false, error: linkToken ? '' : 'That link looks incomplete. Send yourself a fresh one.' };
+  flow = { step: linkToken ? 'link' : 'email', email: '', busy: false, error: linkToken ? '' : 'That link looks incomplete. Send yourself a fresh one.', showEmail: false };
   return true;
 }
 
-let flow = { step: 'email', email: '', error: '', busy: false };
+let flow = { step: 'email', email: '', error: '', busy: false, showEmail: false };
 const set = (patch, sessionId) => { flow = { ...flow, ...patch }; store.updateSession(sessionId, { loginTick: Date.now() }); };
-export const resetLoginFlow = () => { flow = { step: 'email', email: '', error: '', busy: false }; };
+export const resetLoginFlow = () => { flow = { step: 'email', email: '', error: '', busy: false, showEmail: false }; };
 
 const ERRORS = {
   email_verification_required: 'Use email sign-in for this address so we can check it is yours.',
@@ -39,7 +39,7 @@ function intro(sessionId) {
   if (flow.step === 'code') return ['Check your email', `We sent a sign-in link and 6-digit code to ${escape(flow.email)}. Use either within 10 minutes.`];
   if (flow.step === 'name') return ['What should Milo call you?', 'Your person sees this name on your plans.'];
   if (session(sessionId).loginReason === 'booking') return ['Sign in to book.', 'Milo needs to know who to confirm with. Your plan stays as it is.'];
-  return ['Welcome to Milo.', 'Your little corner of Milo starts here.'];
+  return ['Make yourself at home.', 'Your plans, ready when you are.<br>Pick up on any phone.'];
 }
 
 function body(sessionId) {
@@ -70,32 +70,30 @@ function body(sessionId) {
         <button type="submit" class="milo-cta-button milo-login-cta" id="miloNameSubmit-${sessionId}"${flow.busy ? ' disabled' : ''}>Continue</button>
       </form>`;
   }
-  const google = googleClientId() ? '<div class="milo-google-slot" id="miloGoogleSlot"></div>' : '';
-  return `<form class="milo-login-form" id="miloEmailForm-${sessionId}" novalidate aria-label="Sign in with email">
+  const hasGoogle = Boolean(googleClientId());
+  const emailOpen = flow.showEmail || !hasGoogle;
+  return `<div class="milo-account-methods">
+      ${hasGoogle ? '<div class="milo-google-slot" id="miloGoogleSlot"></div>' : ''}
+      ${hasGoogle ? `<button type="button" class="milo-email-reveal" id="miloEmailReveal-${sessionId}" aria-expanded="${emailOpen}" aria-controls="miloEmailForm-${sessionId}">Use email instead <span aria-hidden="true">${emailOpen ? '−' : '›'}</span></button>` : ''}
+      ${err}
+      <form class="milo-login-form" id="miloEmailForm-${sessionId}" novalidate aria-label="Sign in with email"${emailOpen ? '' : ' hidden'}>
         <div class="milo-form-group">
           <label for="miloEmailInput-${sessionId}" class="milo-form-label">Email address</label>
           <input type="email" id="miloEmailInput-${sessionId}" name="email" class="milo-input" value="${escape(flow.email || session(sessionId).user?.email || '')}" required autocomplete="email" placeholder="you@example.com">
         </div>
-        ${err}
-        <button type="submit" class="milo-cta-button milo-login-cta" id="miloEmailSubmit-${sessionId}"${flow.busy ? ' disabled' : ''}>Email me a link and code</button>
+        <button type="submit" class="milo-email-submit" id="miloEmailSubmit-${sessionId}"${flow.busy ? ' disabled' : ''}>Send me a code <span aria-hidden="true">→</span></button>
       </form>
-      <div class="milo-login-divider" role="separator"><span>or</span></div>
-      <div class="milo-social-group">
-        ${google}
-        <button type="button" class="milo-social-btn" id="miloPhoneBtn-${sessionId}" disabled aria-label="Continue with Phone (coming soon)">
-          <span>Continue with Phone</span><span class="milo-social-badge">Soon</span>
-        </button>
-      </div>`;
+    </div>`;
 }
 
 export function renderAccountLogin(sessionId = 'aarav') {
   const [headline, subline] = intro(sessionId);
-  return `<div class="milo-login-container" data-session-id="${sessionId}">
+  return `<div class="milo-login-container ${flow.step === 'email' ? 'milo-account-login is-method-step' : ''}" data-session-id="${sessionId}">
       <header class="milo-header milo-login-header">
         <button class="milo-header-back" id="miloLoginBack-${sessionId}" aria-label="Back">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
-        <span class="milo-wordmark">milo.</span>
+        ${flow.step === 'email' ? '<span></span>' : '<span class="milo-wordmark">milo.</span>'}
         <div class="milo-header-space"></div>
       </header>
       <div class="milo-login-body">
@@ -132,6 +130,19 @@ export function attachAccountLoginListeners(container, sessionId = 'aarav') {
     resetLoginFlow();
     store.updateSession(sessionId, { returnScreen: null, originScreen: null, loginReason: null, screen: back });
   });
+
+  container.querySelector(`#miloEmailReveal-${sessionId}`)?.addEventListener('click', () => {
+    const input = container.querySelector(`#miloEmailInput-${sessionId}`);
+    // Preserve a typed address when the app re-renders to toggle the form.
+    set({ showEmail: !flow.showEmail, email: input?.value || flow.email }, sessionId);
+  });
+  if (flow.step === 'email' && flow.showEmail) {
+    // The renderer attaches this container after listeners are wired.
+    queueMicrotask(() => {
+      const input = container.querySelector(`#miloEmailInput-${sessionId}`);
+      if (input?.isConnected) input.focus();
+    });
+  }
 
   container.querySelector(`#miloEmailForm-${sessionId}`)?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -182,7 +193,7 @@ export function attachAccountLoginListeners(container, sessionId = 'aarav') {
         set({ busy: true, error: '' }, sessionId);
         await signedIn(sessionId, await googleSignIn(sessionId, credential));
       } });
-      google.accounts.id.renderButton(slot, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', width: Math.min(slot.clientWidth || 320, 400) });
+      google.accounts.id.renderButton(slot, { theme: 'filled_black', size: 'large', shape: 'pill', text: 'continue_with', width: Math.min(slot.clientWidth || 320, 400) });
     });
   }
 }
