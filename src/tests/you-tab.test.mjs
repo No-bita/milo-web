@@ -27,7 +27,7 @@ async function preview(outDir, port) {
 }
 
 before(async () => {
-  const built = spawnSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--outDir', 'dist-accounts', '--emptyOutDir', '--logLevel', 'error'], {
+  const built = spawnSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--mode', 'qa', '--outDir', 'dist-accounts', '--emptyOutDir', '--logLevel', 'error'], {
     cwd: root, env: { ...process.env, VITE_MILO_ACCOUNTS: 'true' }, encoding: 'utf8'
   });
   assert.equal(built.status, 0, built.stderr);
