@@ -12,6 +12,7 @@ const set = (patch, sessionId) => { flow = { ...flow, ...patch }; store.updateSe
 export const resetLoginFlow = () => { flow = { step: 'email', email: '', error: '', busy: false }; };
 
 const ERRORS = {
+  email_verification_required: 'Use email sign-in for this address so we can check it is yours.',
   invalid_code: "That code didn't work. Check it, or send a new one.",
   invalid_request: 'Check your email address and try again.',
   rate_limited: 'Too many tries. Wait a few minutes, then try again.',
