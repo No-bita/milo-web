@@ -328,3 +328,67 @@
 .milo-auth-links .milo-text-link { min-height: 44px; }
 .milo-code-input { letter-spacing: .3em; font-size: 20px; text-align: center; }
 .milo-google-slot { display: flex; justify-content: center; min-height: 44px; }
+
+/* Google-first account sign-in. Legacy accounts-off form stays unchanged. */
+.milo-account-login .milo-login-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 30px;
+}
+.milo-account-login .milo-login-body { padding-top: 18px; }
+.milo-account-login .milo-login-monogram {
+  width: 64px;
+  height: 64px;
+  font-size: 30px;
+  margin-bottom: 24px;
+}
+.milo-viewport .milo-account-login.is-method-step .milo-login-headline {
+  font-size: 31px;
+  line-height: 36px;
+  max-width: 340px;
+  margin-bottom: 12px;
+}
+.milo-account-login .milo-login-subline { font-size: 14px; line-height: 22px; }
+.milo-account-methods { display: flex; flex-direction: column; }
+.milo-account-login .milo-google-slot { width: 100%; min-height: 44px; }
+.milo-email-reveal {
+  align-self: center;
+  background: none;
+  border: 0;
+  color: var(--color-ink-muted);
+  font: 400 13px var(--font-sans);
+  min-height: 44px;
+  padding: 8px 12px;
+  margin-top: 12px;
+  cursor: pointer;
+}
+.milo-email-reveal span { margin-left: 4px; }
+.milo-account-methods .milo-login-form { gap: 14px; margin-top: 16px; }
+.milo-account-methods .milo-login-form[hidden] { display: none; }
+.milo-email-submit {
+  align-self: center;
+  background: none;
+  border: 0;
+  color: var(--color-oxblood);
+  font: 500 13px var(--font-sans);
+  min-height: 44px;
+  padding: 8px 12px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.milo-email-submit:disabled { opacity: .5; cursor: not-allowed; }
+.milo-email-reveal:focus-visible, .milo-email-submit:focus-visible {
+  outline: 2px solid var(--color-oxblood);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.milo-account-login .milo-login-privacy {
+  margin-top: 36px;
+  font-size: 11px;
+  line-height: 18px;
+  max-width: 325px;
+  align-self: center;
+}
