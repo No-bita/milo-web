@@ -28,7 +28,7 @@ npm run preview
 - `src/data/mockData.js`: prototype moods, cards and night concepts
 - `src/styles/`: layered current styling
 
-Explicit `?screen=s7&golden=1` links open a controlled demo state. `?as=sneha` selects the partner preview; these query parameters are not access control.
+Explicit `?screen=s7&golden=1` links open a controlled demo state and `?as=sneha` selects the partner preview, but only in local development (`npm run dev`) and explicit local QA builds (`npm run build:qa`, used by the regression suite). Every deployed build - Vercel Preview included - strips all pure-QA hooks (`?golden`, `?reset`, `?screen`, `?demo`, `?vp` and unsigned demo invites); `?as` and server invite links keep working because the real partner flow uses them. These query parameters are not access control in any build.
 
 Removed legacy controllers, data and showcase helpers were unreachable from `src/main.js` and referenced screens no longer in the repository. Their removal does not reduce the production bundle. CSS consolidation is intentionally excluded to avoid changing the current design.
 

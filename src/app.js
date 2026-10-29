@@ -10,6 +10,7 @@ import { loadPersonalSynthesis, mountSynthesisLoader } from './components/synthe
 import { store } from './domain/store.js';
 import { attachJourneyHistory } from './domain/journey-history.js';
 import { inviteFromParams, renderInviteError } from './domain/invite.js';
+import { QA_MODE } from './domain/qa-mode.js';
 import { attachStorageAdapter } from './domain/storage-adapter.js';
 import { isPhase1Enabled, attachNetworkSync } from './domain/network-adapter.js';
 import { accountsEnabled } from './domain/account-api.js';
@@ -205,11 +206,11 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   // Check URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const asParam = urlParams.get('as'); // 'aarav' or 'sneha'
-  const isReset = urlParams.get('reset');
-  const isGolden = urlParams.get('golden');
-  const vpParam = urlParams.get('vp');
+  const isReset = QA_MODE ? urlParams.get('reset') : null;
+  const isGolden = QA_MODE ? urlParams.get('golden') : null;
+  const vpParam = QA_MODE ? urlParams.get('vp') : null;
   const emailLink = accountsEnabled() && prepareEmailLink();
-  const screenParam = emailLink ? 'login' : urlParams.get('screen');
+  const screenParam = emailLink ? 'login' : (QA_MODE ? urlParams.get('screen') : null);
 
   // Server invite (/app/?invite=<token>, no ?as): the partner joins a real plan. Only with the launch flag.
   // Shared solo plan (/app/?shared=<token>): read-only, for the planner's partner.
@@ -245,7 +246,7 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
     }
   });
 
-  const inviteStatus = inviteFromParams(urlParams);
+  const inviteStatus = QA_MODE ? inviteFromParams(urlParams) : null;
   if (inviteStatus === 'invalid' || inviteStatus === 'expired') {
     container.innerHTML = `<div class="milo-stage"><div class="milo-viewport">${renderInviteError(inviteStatus)}</div></div>`;
     return;
@@ -327,7 +328,7 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
       store.setSessionScreen('sneha', 's0');
     } else if (screenParam === 's4_waiting') {
       store.updateShared({ invitePrepared: true });
-      if (new URLSearchParams(location.search).has('demo')) store.updateSession('aarav', { intents: ['intimate', 'fun'], savedSoloNightId: 'middle-ground', soloTimings: { 'middle-ground': { nightId: 'middle-ground', date: '2026-10-17', time: '19:30', timeZone: 'Asia/Calcutta' } } });
+      if (QA_MODE && new URLSearchParams(location.search).has('demo')) store.updateSession('aarav', { intents: ['intimate', 'fun'], savedSoloNightId: 'middle-ground', soloTimings: { 'middle-ground': { nightId: 'middle-ground', date: '2026-10-17', time: '19:30', timeZone: 'Asia/Calcutta' } } });
       store.setSessionScreen('aarav', 's4_waiting');
       store.setSessionScreen('sneha', 's0');
     } else if (screenParam === 's5') {

@@ -91,7 +91,7 @@ function accountSection(session, state) {
         <div><h2 id="miloYouAccountTitle">${escape(name || user.email)}</h2><p>${name ? `${escape(user.email)} · ` : ''}Signed in</p></div>
         ${real ? '<button type="button" class="milo-you-text" id="miloYouAccountManage" aria-expanded="false" aria-controls="miloYouSignOut">Manage</button>' : '<button type="button" class="milo-you-text" id="miloYouLoginBtn">Manage</button>'}
       </article>
-      ${real ? '<button type="button" class="milo-you-outline" id="miloYouSignOut" hidden>Sign out</button>' : ''}
+      ${real ? '<button type="button" class="milo-you-outline" id="miloYouSignOut" hidden>Sign out</button><p id="miloSignOutError" class="milo-field-error" role="alert" hidden></p>' : ''}
     </section>`;
 }
 
@@ -127,7 +127,14 @@ export function attachYouListeners(container, sessionId = 'aarav') {
   });
   signOutBtn?.addEventListener('click', async () => {
     signOutBtn.disabled = true;
-    await signOut(sessionId);
+    const result = await signOut(sessionId);
+    if (!result.ok && signOutBtn.isConnected) {
+      signOutBtn.disabled = false;
+      const error = container.querySelector('#miloSignOutError');
+      error.hidden = false;
+      error.classList.add('is-visible');
+      error.textContent = "Sign-out took a wrong turn. You're still signed in. Try again.";
+    }
   });
 
   const manage = container.querySelector('#miloYouManagePerson');

@@ -24,8 +24,10 @@ function planText(night, partnerName) {
   return `Our night${!hasPartnerName(partnerName) ? '' : ` with ${partnerName}`}: ${night.name}. ${steps}.${timing ? ` ${timingLabel(timing)}.` : ''}`;
 }
 
+import { QA_MODE } from '../domain/qa-mode.js';
+
 // "Start over" is demo scaffolding: only shown with ?demo
-const isDemo = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo');
+const isDemo = () => QA_MODE && typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo');
 
 export function renderScreen07(sessionId = 'aarav') {
   if (isSoloPlanning(store.getState(), sessionId)) return renderSoloNight(sessionId);
