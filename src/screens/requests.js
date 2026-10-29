@@ -1,3 +1,4 @@
+import { sendToSignInForBooking } from '../domain/auth.js';
 import { renderLimits, readLimits, limitsOn } from '../components/booking-limits.js';
 import { store } from '../domain/store.js';
 import { partnerLabel } from '../logic/partner.js';
@@ -52,7 +53,6 @@ export function renderRequests(sessionId = 'aarav') {
         <span><b>Keep these a surprise</b><small id="miloReqSurpriseLine">${escape(surpriseLine(surprise, partner))}</small></span>
       </label>
       ${live ? `${pills('budget_band', BUDGETS, 'Budget for two')}
-        ${pills('window_hours', { 3: '3 hours', 4: '4 hours' }, 'How long is the night?')}
         ${limitsOn() ? renderLimits() : ''}
         <label>Your WhatsApp number<input name="contact" type="tel" inputmode="tel" maxlength="20" placeholder="+91 98765 43210" autocomplete="tel"></label>
         <label class="milo-gift-check"><input type="checkbox" name="add_surprise" id="miloReqSurpriseGift"> Add a surprise</label>
@@ -100,11 +100,11 @@ export function attachRequestsListeners(container, sessionId = 'aarav') {
     const live = isPhase1Enabled() && sessionId !== 'sneha';
     if (!live) { done(text); return; }                       // preview: stays on this phone
     if (soloSeatFor(store.getState().sessionA.savedSoloNightId)) { done(text); return; } // already booked this night
+    if (sendToSignInForBooking(sessionId)) return;           // accounts on: sign in first, then back here
     const picked = (name) => form.querySelector(`input[name="${name}"]:checked`)?.value;
     const limits = readLimits(form);
-    const booking = { budget_band: picked('budget_band'), window_hours: Number(picked('window_hours')), contact: form.elements.contact.value.trim(), surprise: surprise.checked, ...(text ? { requests: text } : {}), ...(limits ? { constraints: limits } : {}) };
+    const booking = { budget_band: picked('budget_band'), contact: form.elements.contact.value.trim(), surprise: surprise.checked, ...(text ? { requests: text } : {}), ...(limits ? { constraints: limits } : {}) };
     if (!booking.budget_band) return fail('Pick a budget.');
-    if (!booking.window_hours) return fail('Pick how long the night is.');
     if ((booking.contact.match(/\d/g) || []).length < 10) return fail('Add a WhatsApp number we can reach you on.');
     fail('');
     const button = container.querySelector('#miloReqBook');

@@ -13,6 +13,8 @@ import { inviteFromParams, renderInviteError } from './domain/invite.js';
 import { QA_MODE } from './domain/qa-mode.js';
 import { attachStorageAdapter } from './domain/storage-adapter.js';
 import { isPhase1Enabled, attachNetworkSync } from './domain/network-adapter.js';
+import { accountsEnabled } from './domain/account-api.js';
+import { syncAccount } from './domain/auth.js';
 import { showPartnerJoin } from './screens/partner-join.js';
 import { renderScreen00, attachScreen00Listeners } from './screens/s0-invitation.js';
 import { renderScreen01, attachScreen01Listeners, patchScreen01 } from './screens/s1-intent.js';
@@ -231,6 +233,11 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
     refreshAll();
     document.addEventListener('visibilitychange', onVisibilityRefresh);
     window.addEventListener('focus', onFocusRefresh);
+  }
+  // Accounts API (people, dated nights): on open and on return to the tab, like plans.
+  if (accountsEnabled()) {
+    syncAccount();
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncAccount(); });
   }
   // After sharing, the creator stays on their plan screen instead of the waiting screen.
   store.subscribe(() => {

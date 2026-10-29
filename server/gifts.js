@@ -86,12 +86,14 @@ function validateGift(body, plan, now) {
     gift.note = body.note === undefined || body.note === '' ? null : text(body.note, 1, 200);
     valid(body.show_hint === undefined || typeof body.show_hint === 'boolean');
     gift.show_hint = body.show_hint === true;
-    gift.contact = phone(body.contact);
+    // Optional: without it the giver's saved number is used (handleGifts), else needs_contact.
+    gift.contact = body.contact === undefined || body.contact === '' ? null : phone(body.contact);
   }
   if (kind === 'moment_drop') {
     valid(Number.isInteger(body.stop_index) && body.stop_index >= 0 && body.stop_index <= 2);
     gift.stop_index = body.stop_index;
-    gift.venue = text(body.venue, 2, 120);
+    // The app no longer asks for the venue; ops reads it from the booking or asks on WhatsApp.
+    gift.venue = body.venue === undefined || body.venue === '' ? null : text(body.venue, 2, 120);
   }
   if (kind === 'home_delivery') {
     gift.address = text(body.address, 10, 300);
@@ -162,6 +164,9 @@ export async function handleGifts({ db, plan, people, me, method, giftId, readBo
     const count = existing.filter(g => physical ? GIFT_KINDS[g.kind]?.physical && g.status !== 'cancelled' : g.kind === gift.kind && g.status !== 'cancelled').length;
     if (count >= (physical ? GIFT_LIMITS.physical : GIFT_LIMITS[gift.kind])) fail(409, 'limit');
     if (gift.contact) await saveContact(db, me.id, gift.contact);
+    // A physical gift needs a number to confirm the price on WhatsApp: the one just given,
+    // or the one this person already saved (booking or an earlier gift). Never sent back.
+    else if (physical && !me.contact) fail(400, 'needs_contact');
     await db.query(`INSERT INTO gifts(id,plan_id,giver_id,kind,item_id,stop_index,venue,address,deliver_window,note,show_hint,status)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
       [randomUUID(), plan.id, me.id, gift.kind, gift.item_id, gift.stop_index, gift.venue, gift.address, gift.deliver_window, gift.note, gift.show_hint, physical ? 'requested' : 'sent']);

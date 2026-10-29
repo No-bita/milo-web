@@ -124,7 +124,6 @@ test('solo on v3.1: the model\'s moods, the new screen, its deck and reveal, the
     // Booking step: the limits sit next to budget; all optional.
     await p.locator('.milo-limits').first().waitFor();
     await p.locator('.milo-choice-pill', { hasText: '₹4,000 - 7,000' }).click();
-    await p.locator('.milo-choice-pill', { hasText: '4 hours' }).click();
     await p.locator('.milo-choice-pill', { hasText: 'Vegetarian' }).click();
     await p.locator('.milo-choice-pill', { hasText: 'No alcohol' }).click();
     await p.locator('.milo-choice-pill', { hasText: 'By 11 PM' }).click();

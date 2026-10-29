@@ -1,4 +1,5 @@
 // Personal learning checkpoint, shown only to the initiator.
+import { accountsEnabled } from '../domain/account-api.js';
 import { computePersonalSynthesis } from '../logic/synthesis.js';
 import { isV31, personalReveal } from '../logic/intent-quiz.js';
 import { renderImageHtml } from '../assets/manifest.js';
@@ -75,7 +76,8 @@ export function attachScreen03Listeners(container, sessionId = 'aarav') {
       : (mode === 'solo' ? 's6' : mode === 'together' ? 's4_invite' : 'planning_path_review');
 
     // If user is not signed in yet, prompt them to sign up right after this screen
-    if (!session.user?.loggedIn) {
+    // With real accounts, planning stays open: sign-in is asked for at booking instead.
+    if (!accountsEnabled() && !session.user?.loggedIn) {
       store.updateSession(sessionId, {
         returnScreen: nextDestination,
         originScreen: 's3',

@@ -40,7 +40,7 @@ test('hand the night to Milo, get it booked, check in the next morning, export t
     await sheet.locator('button[type=submit]').click();
     assert.match(await sheet.locator('.milo-gift-error').textContent(), /budget/);
     await sheet.locator('.milo-choice-pill', { hasText: '₹2,000 - 4,000' }).click();
-    await sheet.locator('.milo-choice-pill', { hasText: '4 hours' }).click();
+    assert.equal(await sheet.locator('.milo-choice-pill', { hasText: 'hours' }).count(), 0, 'length is no longer asked');
     await sheet.locator('input[name=contact]').fill('+91 98765 43210');
     await sheet.locator('textarea[name=requests]').fill('Indiranagar please');
     await sheet.locator('button[type=submit]').click();
@@ -60,7 +60,7 @@ test('hand the night to Milo, get it booked, check in the next morning, export t
     await ops.page.locator('#opsLogin button').click();
     const card = ops.page.locator('.ops-booking');
     await card.waitFor();
-    for (const detail of ['Asha', 'Ravi', '4 hours', '₹2,000 - 4,000', 'Indiranagar please', '+919876543210']) assert.ok((await card.textContent()).includes(detail), `ops card missing ${detail}`);
+    for (const detail of ['Asha', 'Ravi', 'Length: Milo decides', '₹2,000 - 4,000', 'Indiranagar please', '+919876543210']) assert.ok((await card.textContent()).includes(detail), `ops card missing ${detail}`);
     await card.locator('.ops-venue').first().locator('[data-f=venue]').fill('Toit');
     await card.locator('.ops-venue').first().locator('[data-f=area]').fill('Indiranagar');
     await card.locator('.ops-venue').first().locator('[data-f=time]').fill('19:30');
@@ -103,7 +103,7 @@ test('hand the night to Milo, get it booked, check in the next morning, export t
     const r = Object.fromEntries(row.split(',').map((v, i) => [EXPORT_COLUMNS[i], v]));
     assert.equal(r.status, 'confirmed'); assert.equal(r.accepted_first_plan, 'true'); assert.equal(r.suggestions, '1');
     assert.equal(r.see_other_partner, '3'); assert.equal(r.see_other_initiator, '0');
-    assert.equal(r.booking_status, 'booked'); assert.equal(r.ops_minutes, '20'); assert.equal(r.window_hours, '4');
+    assert.equal(r.booking_status, 'booked'); assert.equal(r.ops_minutes, '20'); assert.equal(r.window_hours, '');
     assert.equal(r.checkins, '2'); assert.equal(r.rating_initiator, '5'); assert.equal(r.rating_partner, '4');
     assert.equal(r.would_pay_partner, '200_500');
   } finally {

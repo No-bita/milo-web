@@ -29,7 +29,7 @@ function signIn(message = '') {
 const when = (t) => (t ? `${t.date} ${t.time} (${t.time_zone})` : 'No time set');
 
 function row(g) {
-  const where = g.kind === 'moment_drop' ? `At ${esc(g.stop || 'a stop')}: ${esc(g.venue)}` : `Deliver to: ${esc(g.address)}<br>${esc(DELIVERY_WINDOWS[g.deliver_window] || g.deliver_window)}`;
+  const where = g.kind === 'moment_drop' ? `At ${esc(g.stop || 'a stop')}: ${g.venue ? esc(g.venue) : 'venue from the booking, or ask on WhatsApp'}` : `Deliver to: ${esc(g.address)}<br>${esc(DELIVERY_WINDOWS[g.deliver_window] || g.deliver_window)}`;
   return `<article class="ops-gift" data-id="${esc(g.id)}">
     <header><h2>${esc(g.item_name)}</h2><span class="ops-status" data-status="${esc(g.status)}">${esc(g.status)}</span></header>
     <p><strong>${esc(g.giver_name)}</strong> for <strong>${esc(g.recipient_name || '?')}</strong> &middot; ${esc(g.night_name || '')}</p>
@@ -50,7 +50,7 @@ function bookingRow(b) {
   return `<article class="ops-gift ops-booking" data-booking-id="${esc(b.id)}">
     <header><h2>${b.mode === 'solo' ? '<span class="ops-mode">SOLO</span> ' : ''}${esc(b.night_name || 'Night')}</h2><span class="ops-status" data-status="${esc(b.status)}">${esc(b.status)}</span></header>
     <p><strong>${esc(b.requester_name)}</strong> ${b.mode === 'solo' ? 'is planning for their partner (partner is not on Milo)' : `asked, with <strong>${esc(b.partner_name || '?')}</strong>`}${b.occasion ? ` &middot; ${esc(b.occasion.replace(/_/g, ' '))}` : ''}</p>
-    <p>${esc((b.city || '').replace(/^./, c => c.toUpperCase()))} &middot; Night: ${esc(when(b.timing))} &middot; ${esc(b.window_hours)} hours &middot; ${esc(BUDGETS[b.budget_band] || b.budget_band)} for two</p>
+    <p>${esc((b.city || '').replace(/^./, c => c.toUpperCase()))} &middot; Night: ${esc(when(b.timing))} &middot; ${b.window_hours ? `${esc(b.window_hours)} hours` : 'Length: Milo decides'} &middot; ${esc(BUDGETS[b.budget_band] || b.budget_band)} for two</p>
     ${b.requests ? `<div class="ops-requests"><p class="${b.mode === 'solo' ? (b.surprise ? 'ops-surprise' : 'ops-open') : 'ops-open'}">${b.mode !== 'solo' ? 'Requests' : b.surprise ? "SURPRISE: don't mention these to the partner" : 'Not a secret: the partner can see these'}</p><p>${esc(b.requests).replace(/\n/g, '<br>')}</p></div>` : ''}
     ${(b.brief || []).length ? `<div class="ops-brief"><p class="ops-open">Brief (from their picks)</p><ul>${b.brief.map(line => `<li>${esc(line)}</li>`).join('')}</ul></div>` : ''}
     <p>WhatsApp: <a href="https://wa.me/${esc(String(b.contact || '').replace(/\D/g, ''))}" target="_blank" rel="noopener">${esc(b.contact)}</a>${b.physical_gifts ? ` &middot; ${esc(b.physical_gifts)} physical gift(s) on this plan` : ''}</p>

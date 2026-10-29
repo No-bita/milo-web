@@ -322,3 +322,9 @@
   font-size: 13px;
 }
 
+
+/* Accounts v1: code step and Google slot */
+.milo-auth-links { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.milo-auth-links .milo-text-link { min-height: 44px; }
+.milo-code-input { letter-spacing: .3em; font-size: 20px; text-align: center; }
+.milo-google-slot { display: flex; justify-content: center; min-height: 44px; }

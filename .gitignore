@@ -7,3 +7,5 @@ dist-ssr
 .env.*
 dist-phase1
 dist-v31
+dist-accounts
+dist-accounts-live

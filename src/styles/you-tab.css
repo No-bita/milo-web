@@ -1,0 +1,59 @@
+/* You tab: quiet rows, with the rose card only for a person who has joined. */
+.milo-you .milo-home-body { display: flex; flex-direction: column; gap: 22px; }
+.milo-you .milo-home-headline { margin-bottom: -18px; }
+.milo-you-lead { margin: 0; font-size: 14px; color: var(--color-ink-muted); }
+.milo-you-section { display: flex; flex-direction: column; gap: 10px; }
+.milo-you-label { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: .1em; color: var(--color-ink-muted); }
+.milo-you-label.is-warm { color: var(--color-oxblood); }
+.milo-you h2 { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.milo-you-row p, .milo-you-card p { margin: 2px 0 0; font-size: 13px; line-height: 1.45; color: var(--color-ink-muted); overflow-wrap: anywhere; }
+
+.milo-you-row, .milo-you-row-inner { display: flex; align-items: center; gap: 14px; }
+.milo-you-row > div, .milo-you-row-inner > div { flex: 1; min-width: 0; }
+.milo-you-row, .milo-you-card { padding: 16px 18px; background: #fff; border: 1px solid var(--color-taupe); border-radius: 18px; }
+.milo-you-card { display: flex; flex-direction: column; gap: 14px; }
+
+.milo-you-icon { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--color-sand); color: #4A433D; display: grid; place-items: center; font-size: 16px; font-weight: 600; }
+.milo-you-icon.is-dashed { background: none; border: 1.5px dashed #B9ADA4; color: var(--color-ink-muted); }
+.milo-you-icon.is-filled { background: var(--color-ink); color: var(--color-ivory); }
+
+.milo-you-person { padding: 20px; border-radius: 20px; background: var(--color-oxblood-wash); display: flex; flex-direction: column; gap: 16px; }
+.milo-you-person-head { display: flex; align-items: center; gap: 14px; }
+.milo-you-person-head > div { min-width: 0; }
+.milo-you-person h2 { font-family: var(--font-serif); font-weight: 400; font-size: 24px; line-height: 1.15; }
+.milo-you-person-head p { margin: 2px 0 0; font-size: 14px; line-height: 1.45; color: #4A433D; }
+.milo-you-pair { flex: none; position: relative; width: 76px; height: 48px; }
+.milo-you-pair i { position: absolute; top: 0; width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--color-oxblood-wash); color: var(--color-ivory); display: grid; place-items: center; font: 600 16px var(--font-sans); font-style: normal; }
+.milo-you-pair .is-me { left: 0; background: var(--color-ink); }
+.milo-you-pair .is-them { left: 30px; top: 2px; background: var(--color-oxblood); }
+
+.milo-you-nights { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: var(--color-ivory); }
+.milo-you-count { margin: 0; font-size: 15px; font-weight: 600; }
+.milo-you-dots { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.milo-you-dots i { box-sizing: border-box; width: 14px; height: 14px; border-radius: 50%; }
+.milo-you-dots .is-booked { background: var(--color-oxblood); }
+.milo-you-dots .is-planned { border: 1.5px solid var(--color-oxblood); background: rgba(110, 34, 40, .22); }
+.milo-you-more { font-size: 12px; color: var(--color-ink-muted); }
+.milo-you-split { margin: 0; font-size: 12px; color: var(--color-ink-muted); }
+
+.milo-you-text { align-self: flex-start; min-height: 44px; padding: 0 4px; border: 0; background: none; font: 600 14px var(--font-sans); color: var(--color-oxblood); cursor: pointer; }
+.milo-you-outline { min-height: 46px; border: 1.5px solid var(--color-oxblood); border-radius: 999px; background: transparent; color: var(--color-oxblood); font: 600 15px var(--font-sans); cursor: pointer; }
+.milo-you-save { min-height: 44px; padding: 0 22px; border: 1.5px solid var(--color-oxblood); border-radius: 999px; background: transparent; color: var(--color-oxblood); font: 600 14px var(--font-sans); cursor: pointer; }
+.milo-you-text:focus-visible, .milo-you-outline:focus-visible, .milo-you-save:focus-visible, .milo-you-help a:focus-visible { outline: 2px solid var(--color-oxblood); outline-offset: 2px; }
+
+.milo-you-rename { display: flex; flex-direction: column; gap: 8px; }
+.milo-you-rename[hidden] { display: none; }
+.milo-you-rename label { font-size: 13px; font-weight: 600; }
+.milo-you-hint { margin: 0; font-size: 12px; line-height: 1.45; color: var(--color-ink-muted); }
+.milo-you-rename-actions { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+
+.milo-you-help { border-radius: 18px; background: #fff; border: 1px solid var(--color-taupe); }
+.milo-you-help a { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 18px; border-radius: 18px; color: var(--color-ink); text-decoration: none; font-size: 15px; }
+.milo-you-help a > span:nth-child(2) { flex: 1; }
+.milo-you-help-icon { display: flex; color: #4A433D; }
+.milo-you-chevron { display: flex; color: var(--color-ink-muted); }
+
+/* Nights > Past from the accounts API */
+.milo-nights-past { display: block; width: 100%; margin-top: 8px; padding: 16px; background: #fff; border: 1px solid var(--color-taupe); border-radius: 14px; box-sizing: border-box; }
+.milo-nights-past b { display: block; font-family: var(--font-serif); font-weight: 400; font-size: 20px; margin-bottom: 4px; }
+.milo-nights-past span { display: block; font-size: 13px; line-height: 19px; color: var(--color-ink-muted); }

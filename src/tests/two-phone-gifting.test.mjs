@@ -39,10 +39,11 @@ test('gifts stay secret, reveal on time, and reach the ops list', async () => {
     await sheet.locator('[data-kind=moment_drop]').click();
     await sheet.locator('.milo-gift-item', { hasText: 'Hand-tied bouquet' }).click();
     await sheet.locator('select[name=stop_index]').selectOption('2');
-    await sheet.locator('input[name=venue]').fill('Courtyard Cafe, Indiranagar');
     await sheet.locator('input[name=note]').fill('Happy Saturday');
-    // Missing contact is caught before anything is sent.
+    // No number saved for this person yet: the server asks for one and the field appears.
+    assert.equal(await sheet.locator('.milo-gift-contact').isVisible(), false, 'not asked up front');
     await sheet.locator('button[type=submit]').click();
+    await sheet.locator('.milo-gift-contact:not([hidden])').waitFor();
     assert.match(await sheet.locator('.milo-gift-error').textContent(), /WhatsApp/);
     await sheet.locator('input[name=contact]').fill('+91 98765 43210');
     await sheet.locator('input[name=show_hint]').check();
@@ -110,7 +111,7 @@ test('gifts stay secret, reveal on time, and reach the ops list', async () => {
     const card = ops.page.locator('.ops-gift:not(.ops-booking)', { hasText: 'Hand-tied bouquet' });
     await card.waitFor();
     const text = await card.textContent();
-    for (const detail of ['Asha', 'Ravi', 'Courtyard Cafe, Indiranagar', 'Happy Saturday', '+919876543210', 'Hint shown: yes']) assert.ok(text.includes(detail), `ops card missing ${detail}`);
+    for (const detail of ['Asha', 'Ravi', 'venue from the booking, or ask on WhatsApp', 'Happy Saturday', '+919876543210', 'Hint shown: yes']) assert.ok(text.includes(detail), `ops card missing ${detail}`);
     assert.equal(await ops.page.locator('.ops-gift:not(.ops-booking)').count(), 1, 'digital gifts are not in the ops list');
     await card.locator('select').selectOption('dispatched');
     await card.locator('.ops-status', { hasText: 'dispatched' }).waitFor();

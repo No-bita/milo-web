@@ -1,3 +1,4 @@
+import { accountsEnabled } from '../domain/account-api.js';
 import { renderItinerary, attachItinerary } from '../components/itinerary.js';
 import { renderNightTiming, attachNightTiming, liveTimingForNight } from '../components/night-timing.js';
 import { store } from '../domain/store.js';
@@ -41,7 +42,8 @@ export function attachSoloNightListeners(container, sessionId = 'aarav') {
     attachNightTiming(container, item.night.id, sessionId, { solo: true });
     container.querySelector('#miloSoloContinue')?.addEventListener('click', () => {
       const user = store.getState()[sessionId === 'sneha' ? 'sessionB' : 'sessionA']?.user;
-      if (!user?.loggedIn) {
+      // With real accounts, sign-in is asked for at booking instead.
+      if (!accountsEnabled() && !user?.loggedIn) {
         store.updateSession(sessionId, { returnScreen: 's4_waiting', loginReason: 'save_plan' });
         store.setSessionScreen(sessionId, 'login');
       } else {
