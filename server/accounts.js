@@ -128,8 +128,10 @@ export function googleVerifier(env, fetchImpl = globalThis.fetch) {
     if (!ok) fail(401, 'unauthorized');
     if (!GOOGLE_ISSUERS.includes(claims.iss) || claims.aud !== env.GOOGLE_CLIENT_ID) fail(401, 'unauthorized');
     if (typeof claims.exp !== 'number' || claims.exp * 1000 <= now) fail(401, 'unauthorized');
-    if (claims.email_verified !== true || typeof claims.sub !== 'string' || claims.sub.length > 255) fail(401, 'unauthorized');
-    return { sub: claims.sub, email: cleanEmail(claims.email) };
+    if (claims.email_verified !== true || typeof claims.sub !== 'string' || !claims.sub.length || claims.sub.length > 255) fail(401, 'unauthorized');
+    const email = cleanEmail(claims.email);
+    const authoritative = email.endsWith('@gmail.com') || (typeof claims.hd === 'string' && claims.hd.length > 0);
+    return { sub: claims.sub, email, authoritative };
   };
 }
 
@@ -137,8 +139,15 @@ export function googleVerifier(env, fetchImpl = globalThis.fetch) {
 // Gives the account this seat if nobody has it yet, unless the account already holds
 // the plan's other seat (one person can't be both halves).
 export async function claimSeat(db, accountId, participantId, planId) {
-  const { rows } = await db.query(`UPDATE participants SET account_id=$1 WHERE id=$2 AND account_id IS NULL
-    AND NOT EXISTS (SELECT 1 FROM participants o WHERE o.plan_id=$3 AND o.account_id=$1) RETURNING id`, [accountId, participantId, planId]);
+  let rows;
+  try {
+    ({ rows } = await db.query(`UPDATE participants SET account_id=$1 WHERE id=$2 AND account_id IS NULL
+    AND NOT EXISTS (SELECT 1 FROM participants o WHERE o.plan_id=$3 AND o.account_id=$1) RETURNING id`, [accountId, participantId, planId]));
+  } catch (error) {
+    // The unique plan/account index is the final guard against concurrent claims.
+    if (error.code === '23505') return false;
+    throw error;
+  }
   return rows.length > 0;
 }
 
@@ -253,9 +262,11 @@ export async function handleAccounts({ db, request, path, method, env, origin, n
     if (method !== 'POST') fail(405, 'method_not_allowed');
     await limit('google', LIMITS.google);
     const body = await readBody(); keys(body, ['credential']);
-    const { sub, email } = await verifyGoogle(body.credential, now);
+    const { sub, email, authoritative } = await verifyGoogle(body.credential, now);
     let { rows: [account] } = await db.query('SELECT * FROM accounts WHERE google_sub=$1', [sub]);
     if (!account) {
+      // Require current mailbox proof when Google is not authoritative.
+      if (!authoritative) fail(403, 'email_verification_required');
       // Same email, same account, whichever way they first signed in.
       ({ rows: [account] } = await db.query(`INSERT INTO accounts(id,email,google_sub,created_at,last_seen_at) VALUES($1,$2,$3,$4,$4)
         ON CONFLICT(email) DO UPDATE SET google_sub=coalesce(accounts.google_sub, EXCLUDED.google_sub), last_seen_at=$4 RETURNING *`, [randomUUID(), email, sub, new Date(now)]));
@@ -304,4 +315,4 @@ export async function handleAccounts({ db, request, path, method, env, origin, n
   if (path === '/api/me/people') return ok({ people: await people(db, me.id) }, renew);
   if (path === '/api/me/nights') return ok({ nights: await nights(db, me.id) }, renew);
   fail(404, 'not_found');
-}
+         }
