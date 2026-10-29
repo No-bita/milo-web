@@ -16,7 +16,7 @@ let server, browser;
 const errors = [];
 
 before(async () => {
-  const built = spawnSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--outDir', 'dist-phase1', '--emptyOutDir', '--logLevel', 'error'], {
+  const built = spawnSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--mode', 'qa', '--outDir', 'dist-phase1', '--emptyOutDir', '--logLevel', 'error'], {
     cwd: root, env: { ...process.env, VITE_MILO_PHASE1: 'true' }, encoding: 'utf8'
   });
   assert.equal(built.status, 0, built.stderr);

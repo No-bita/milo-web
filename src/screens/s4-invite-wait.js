@@ -9,8 +9,10 @@ import { partnerLabel, hasPartnerName, sentenceName, escapeHtml } from '../logic
 import { cleanName } from '../domain/network-adapter.js';
 import { renderSender, attachSender, renderInvitePreview, preparedUrl, handoff, NO_DELIVERY, PREPARED_COPY } from '../components/invite-handoff.js';
 
+import { QA_MODE } from '../domain/qa-mode.js';
+
 // Demo scaffolding (open the partner's side in a new tab) shows only with ?demo
-const isDemo = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo');
+const isDemo = () => QA_MODE && typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo');
 
 export function renderScreen04(sessionId = 'aarav') {
   const state = store.getState();
