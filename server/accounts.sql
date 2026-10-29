@@ -15,7 +15,7 @@ CREATE TABLE accounts (
 -- token_hash = sha256(token). The token itself lives only in the HttpOnly cookie.
 CREATE TABLE account_sessions (
   id uuid PRIMARY KEY,
-  account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE RESTRICT,
   token_hash text NOT NULL UNIQUE,
   created_at timestamptz NOT NULL DEFAULT now(),
   renewed_at timestamptz NOT NULL DEFAULT now(),
@@ -43,6 +43,6 @@ CREATE TABLE account_rate_limits (
   PRIMARY KEY(scope, ip_hash, window_start)
 );
 -- A seat belongs to at most one account once claimed. Null: not signed in (yet).
-ALTER TABLE participants ADD COLUMN account_id uuid REFERENCES accounts(id) ON DELETE SET NULL;
+ALTER TABLE participants ADD COLUMN account_id uuid REFERENCES accounts(id) ON DELETE RESTRICT;
 CREATE INDEX participants_account ON participants(account_id) WHERE account_id IS NOT NULL;
 COMMIT;
