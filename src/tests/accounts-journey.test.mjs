@@ -15,7 +15,7 @@ const SHOTS = process.env.MILO_SCREENS || null;
 let server, browser;
 
 before(async () => {
-  const built = spawnSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--outDir', 'dist-accounts-live', '--emptyOutDir', '--logLevel', 'error'], {
+  const built = spawnSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--mode', 'qa', '--outDir', 'dist-accounts-live', '--emptyOutDir', '--logLevel', 'error'], {
     cwd: root, env: { ...process.env, VITE_MILO_PHASE1: 'true', VITE_MILO_ACCOUNTS: 'true' }, encoding: 'utf8'
   });
   assert.equal(built.status, 0, built.stderr);
