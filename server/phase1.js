@@ -145,7 +145,7 @@ export function createApi({ acquire, env = process.env, clientIp, now = Date.now
     const account = await currentAccount(db, request, now(), origin);
     if (!account) fail(401, 'sign_in_required');
     if (me.account_id && me.account_id !== account.id) fail(403, 'forbidden');
-    if (!me.account_id) await claimSeat(db, account.id, me.id, plan.id);
+    if (!me.account_id && !await claimSeat(db, account.id, me.id, plan.id)) fail(403, 'forbidden');
     return account;
   }
   return async request => {
