@@ -10,12 +10,12 @@ import { chromium } from 'playwright';
 import { startPhase1LocalServer } from './support/phase1-local-server.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const distDir = fileURLToPath(new URL('../../dist-accounts-logout/', import.meta.url));
+const distDir = fileURLToPath(new URL('../../dist-accounts-links/', import.meta.url));
 const SHOTS = process.env.MILO_SCREENS || null;
 let server, browser;
 
 before(async () => {
-  const built = spawnSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--mode', 'qa', '--outDir', 'dist-accounts-logout', '--logLevel', 'error'], {
+  const built = spawnSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--mode', 'qa', '--outDir', 'dist-accounts-links', '--logLevel', 'error'], {
     cwd: root, env: { ...process.env, VITE_MILO_PHASE1: 'true', VITE_MILO_ACCOUNTS: 'true' }, encoding: 'utf8'
   });
   assert.equal(built.status, 0, built.stderr);
@@ -45,7 +45,7 @@ test('email code sign-in, name once, You shows the account, sign out', async () 
     await page.locator('#miloEmailInput-aarav').fill('Asha@Example.com');
     await page.locator('#miloEmailSubmit-aarav').click();
     await page.locator('#miloCodeForm-aarav').waitFor();
-    assert.match(await page.locator('.milo-login-subline').textContent(), /We sent a 6-digit code to Asha@Example\.com/);
+    assert.match(await page.locator('.milo-login-subline').textContent(), /We sent a sign-in link and 6-digit code to Asha@Example\.com/);
     await shot(page, 'login-2-code');
     const code = server.mail.at(-1).code;
     assert.equal(server.mail.at(-1).to, 'asha@example.com');
@@ -91,5 +91,33 @@ test('email code sign-in, name once, You shows the account, sign out', async () 
     const after = await page.evaluate(() => fetch('/api/me', { credentials: 'same-origin' }).then(r => r.status));
     assert.equal(after, 401);
     assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
+
+test('emailed link: explicit confirm, URL cleared, name step then signed-in You', async () => {
+  const context = await browser.newContext({ viewport: { width: 420, height: 844 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(`${server.site}/app/?screen=login`);
+    await page.locator('#miloEmailInput-aarav').fill('link-browser@example.com');
+    await page.locator('#miloEmailSubmit-aarav').click();
+    await page.locator('#miloCodeForm-aarav').waitFor();
+    const link = server.mail.at(-1).link;
+    await page.goto(link);
+    await page.locator('#miloLinkContinue-aarav').waitFor();
+    assert.equal(new URL(page.url()).hash, '');
+    assert.equal((await context.cookies()).some(c => c.name === 'milo_session'), false, 'opening/previewing alone does not sign in');
+    await shot(page, 'login-link-confirm');
+    await page.locator('#miloLinkContinue-aarav').click();
+    await page.locator('#miloNameForm-aarav').waitFor();
+    await page.locator('#miloAccountName-aarav').fill('Link Person');
+    await page.locator('#miloNameSubmit-aarav').click();
+    await page.locator('.milo-you-account').waitFor();
+    assert.equal(await page.locator('.milo-you-account h2').textContent(), 'Link Person');
+    await shot(page, 'login-link-signed-in');
+    await page.goto(link);
+    await page.locator('#miloLinkContinue-aarav').click();
+    await page.locator('#miloAuthError-aarav:not([hidden])').waitFor();
+    assert.match(await page.locator('#miloAuthError-aarav').textContent(), /That code didn't work/);
   } finally { await context.close(); }
 });

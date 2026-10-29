@@ -23,7 +23,7 @@ const GOOGLE_KEYS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
 const sha = (v) => createHash('sha256').update(v).digest('hex');
 
 export const accountsOn = (env) => env.MILO_ACCOUNTS_ENABLED === 'true';
-export const isAccountsPath = (path) => /^\/api\/(auth\/(email\/start|email\/verify|google|logout)|me(\/(claim|people|nights))?)$/.test(path);
+export const isAccountsPath = (path) => /^\/api\/(auth\/(email\/start|email\/verify|email\/link|google|logout)|me(\/(claim|people|nights))?)$/.test(path);
 
 export function cleanEmail(value) {
   valid(typeof value === 'string');
@@ -71,16 +71,16 @@ export async function currentAccount(db, request, now, origin) {
 // ---------- email codes ----------
 const codeHash = (secret, email, code) => createHmac('sha256', secret).update(`${email}:${code}`).digest('hex');
 
-export const CODE_EMAIL = (code) => ({
+export const CODE_EMAIL = (code, link) => ({
   subject: `Your Milo code: ${code}`,
-  text: `${code}\n\nEnter this code to sign in to Milo. It works for 10 minutes. If you didn't ask for it, ignore this email.\n`
+  text: `${code}\n\nEnter this code to sign in to Milo${link ? `, or open this link and choose Continue:\n${link}` : '.'}\n\nThe code and link work for 10 minutes. Using either one expires both. If you didn't ask for it, ignore this email.\n`
 });
 
 // Sends through Resend (https://resend.com/docs/api-reference/emails/send-email).
 export function resendMailer(env, fetchImpl = globalThis.fetch) {
-  return async ({ to, code }) => {
+  return async ({ to, code, link }) => {
     if (!env.RESEND_API_KEY) fail(503, 'unavailable');
-    const { subject, text } = CODE_EMAIL(code);
+    const { subject, text } = CODE_EMAIL(code, link);
     let res;
     try {
       res = await fetchImpl('https://api.resend.com/emails', {
@@ -213,10 +213,13 @@ export async function handleAccounts({ db, request, path, method, env, origin, n
     const email = cleanEmail(body.email);
     const { rows: [recent] } = await db.query('SELECT count(*)::int AS n FROM login_codes WHERE email=$1 AND created_at > $2', [email, new Date(now - 600_000)]);
     if (recent.n >= CODES_PER_EMAIL) fail(429, 'rate_limited');
+    const linkToken = randomBytes(32).toString('base64url');
+    const link = new URL('/app/', origin);
+    link.hash = `milo-sign-in=${linkToken}`;
     const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
-    await db.query('INSERT INTO login_codes(id,email,code_hash,created_at,expires_at) VALUES($1,$2,$3,$4,$5)',
-      [randomUUID(), email, codeHash(env.AUTH_SECRET, email, code), new Date(now), new Date(now + CODE_MINUTES * 60_000)]);
-    await mailer({ to: email, code });
+    await db.query('INSERT INTO login_codes(id,email,code_hash,created_at,expires_at,link_hash) VALUES($1,$2,$3,$4,$5,$6)',
+      [randomUUID(), email, codeHash(env.AUTH_SECRET, email, code), new Date(now), new Date(now + CODE_MINUTES * 60_000), sha(linkToken)]);
+    await mailer({ to: email, code, link: link.href });
     // Same answer whether or not an account exists for this email.
     return ok({ sent: true });
   }
@@ -240,6 +243,21 @@ export async function handleAccounts({ db, request, path, method, env, origin, n
     return ok({ account: accountView(account) }, { 'Set-Cookie': await startSession(db, account.id, now, origin) });
   }
 
+  if (path === '/api/auth/email/link') {
+    if (method !== 'POST') fail(405, 'method_not_allowed');
+    await limit('code_verify', LIMITS.code_verify);
+    const body = await readBody(); keys(body, ['token']);
+    valid(typeof body.token === 'string' && TOKEN.test(body.token));
+    // A GET/email preview never consumes a link. The person must confirm in the app.
+    // Code and link share one row, so only one of them can win even concurrently.
+    const { rows: [code] } = await db.query(`UPDATE login_codes SET used_at=$2 WHERE link_hash=$1
+      AND used_at IS NULL AND expires_at > $2 AND attempts < $3 RETURNING email`, [sha(body.token), new Date(now), CODE_TRIES]);
+    if (!code) fail(400, 'invalid_code');
+    const { rows: [account] } = await db.query(`INSERT INTO accounts(id,email,created_at,last_seen_at) VALUES($1,$2,$3,$3)
+      ON CONFLICT(email) DO UPDATE SET last_seen_at=$3 RETURNING *`, [randomUUID(), code.email, new Date(now)]);
+    return ok({ account: accountView(account) }, { 'Set-Cookie': await startSession(db, account.id, now, origin) });
+  }
+
   if (path === '/api/auth/google') {
     if (method !== 'POST') fail(405, 'method_not_allowed');
     await limit('google', LIMITS.google);
@@ -247,8 +265,7 @@ export async function handleAccounts({ db, request, path, method, env, origin, n
     const { sub, email, authoritative } = await verifyGoogle(body.credential, now);
     let { rows: [account] } = await db.query('SELECT * FROM accounts WHERE google_sub=$1', [sub]);
     if (!account) {
-      // Google cannot prove current ownership of non-Gmail/non-Workspace mailboxes.
-      // Use the email challenge instead; never attach by an old verified-email claim.
+      // Require current mailbox proof when Google is not authoritative.
       if (!authoritative) fail(403, 'email_verification_required');
       // Same email, same account, whichever way they first signed in.
       ({ rows: [account] } = await db.query(`INSERT INTO accounts(id,email,google_sub,created_at,last_seen_at) VALUES($1,$2,$3,$4,$4)
@@ -298,4 +315,4 @@ export async function handleAccounts({ db, request, path, method, env, origin, n
   if (path === '/api/me/people') return ok({ people: await people(db, me.id) }, renew);
   if (path === '/api/me/nights') return ok({ nights: await nights(db, me.id) }, renew);
   fail(404, 'not_found');
-    }
+         }

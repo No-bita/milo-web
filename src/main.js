@@ -30,6 +30,11 @@ import { showFirstOpen } from './components/first-open.js';
 import { initApp } from './app.js';
 import { installPremiumIcons } from './components/premium-icons.js';
 
+// A mail link can reopen an already mounted tab using fragment-only navigation.
+window.addEventListener('hashchange', () => {
+  if (new URLSearchParams(window.location.hash.slice(1)).has('milo-sign-in')) window.location.reload();
+});
+
 const app = document.getElementById('app');
 if (app) {
   showFirstOpen(app, () => {

@@ -14,6 +14,7 @@ import { QA_MODE } from './domain/qa-mode.js';
 import { attachStorageAdapter } from './domain/storage-adapter.js';
 import { isPhase1Enabled, attachNetworkSync } from './domain/network-adapter.js';
 import { accountsEnabled } from './domain/account-api.js';
+import { prepareEmailLink } from './screens/login-accounts.js';
 import { syncAccount } from './domain/auth.js';
 import { showPartnerJoin } from './screens/partner-join.js';
 import { renderScreen00, attachScreen00Listeners } from './screens/s0-invitation.js';
@@ -204,13 +205,12 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
 
   // Check URL parameters
   const urlParams = new URLSearchParams(window.location.search);
-  // ?as is a production flow: the real partner join redirects to /app/?as=sneha.
   const asParam = urlParams.get('as'); // 'aarav' or 'sneha'
-  // Pure-QA hooks are inert in production builds (see domain/qa-mode.js).
   const isReset = QA_MODE ? urlParams.get('reset') : null;
   const isGolden = QA_MODE ? urlParams.get('golden') : null;
   const vpParam = QA_MODE ? urlParams.get('vp') : null;
-  const screenParam = QA_MODE ? urlParams.get('screen') : null;
+  const emailLink = accountsEnabled() && prepareEmailLink();
+  const screenParam = emailLink ? 'login' : (QA_MODE ? urlParams.get('screen') : null);
 
   // Server invite (/app/?invite=<token>, no ?as): the partner joins a real plan. Only with the launch flag.
   // Shared solo plan (/app/?shared=<token>): read-only, for the planner's partner.
@@ -246,7 +246,6 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
     }
   });
 
-  // Unsigned base64 demo invites are QA-only; server invites never reach this.
   const inviteStatus = QA_MODE ? inviteFromParams(urlParams) : null;
   if (inviteStatus === 'invalid' || inviteStatus === 'expired') {
     container.innerHTML = `<div class="milo-stage"><div class="milo-viewport">${renderInviteError(inviteStatus)}</div></div>`;

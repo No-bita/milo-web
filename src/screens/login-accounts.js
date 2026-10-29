@@ -2,11 +2,23 @@
 // no name from any plan asks "What should Milo call you?" once. Shown instead of the old
 // local-only form when VITE_MILO_ACCOUNTS=true.
 import { store } from '../domain/store.js';
-import { startEmail, verifyEmail, googleSignIn, setAccountName, loadGoogle, googleClientId } from '../domain/auth.js';
+import { startEmail, verifyEmail, verifyEmailLink, googleSignIn, setAccountName, loadGoogle, googleClientId } from '../domain/auth.js';
 import { escapeHtml as escape } from '../logic/partner.js';
 import { cleanName } from '../domain/network-adapter.js';
 
 // Survives the app's full re-renders while this screen is open.
+let linkToken = null;
+export function prepareEmailLink() {
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const token = params.get('milo-sign-in');
+  if (!token) return false;
+  // Remove the bearer token before any providers or app renders can see the URL.
+  window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  linkToken = /^[A-Za-z0-9_-]{43}$/.test(token) ? token : null;
+  flow = { step: linkToken ? 'link' : 'email', email: '', busy: false, error: linkToken ? '' : 'That link looks incomplete. Send yourself a fresh one.' };
+  return true;
+}
+
 let flow = { step: 'email', email: '', error: '', busy: false };
 const set = (patch, sessionId) => { flow = { ...flow, ...patch }; store.updateSession(sessionId, { loginTick: Date.now() }); };
 export const resetLoginFlow = () => { flow = { step: 'email', email: '', error: '', busy: false }; };
@@ -23,14 +35,16 @@ const errorText = (r) => ERRORS[r.code] || "Milo couldn't reach the server. Try 
 const session = (sessionId) => store.getState()[sessionId === 'sneha' ? 'sessionB' : 'sessionA'] || {};
 
 function intro(sessionId) {
-  if (flow.step === 'code') return ['Check your email', `We sent a 6-digit code to ${escape(flow.email)}. It works for 10 minutes.`];
+  if (flow.step === 'link') return ['Your way back in', 'Tap Continue to sign in with this email link.'];
+  if (flow.step === 'code') return ['Check your email', `We sent a sign-in link and 6-digit code to ${escape(flow.email)}. Use either within 10 minutes.`];
   if (flow.step === 'name') return ['What should Milo call you?', 'Your person sees this name on your plans.'];
   if (session(sessionId).loginReason === 'booking') return ['Sign in to book.', 'Milo needs to know who to confirm with. Your plan stays as it is.'];
-  return ['Welcome to Milo.', 'Sign in to save your plans and pick up on any phone.'];
+  return ['Welcome to Milo.', 'Your little corner of Milo starts here.'];
 }
 
 function body(sessionId) {
   const err = `<p class="milo-field-error is-visible" id="miloAuthError-${sessionId}" role="alert"${flow.error ? '' : ' hidden'}>${escape(flow.error)}</p>`;
+  if (flow.step === 'link') return `${err}<button type="button" class="milo-cta-button milo-login-cta" id="miloLinkContinue-${sessionId}"${flow.busy ? ' disabled' : ''}>Continue</button>`;
   if (flow.step === 'code') {
     return `<form class="milo-login-form" id="miloCodeForm-${sessionId}" novalidate aria-label="Enter your code">
         <div class="milo-form-group">
@@ -63,7 +77,7 @@ function body(sessionId) {
           <input type="email" id="miloEmailInput-${sessionId}" name="email" class="milo-input" value="${escape(flow.email || session(sessionId).user?.email || '')}" required autocomplete="email" placeholder="you@example.com">
         </div>
         ${err}
-        <button type="submit" class="milo-cta-button milo-login-cta" id="miloEmailSubmit-${sessionId}"${flow.busy ? ' disabled' : ''}>Send me a code</button>
+        <button type="submit" class="milo-cta-button milo-login-cta" id="miloEmailSubmit-${sessionId}"${flow.busy ? ' disabled' : ''}>Email me a link and code</button>
       </form>
       <div class="milo-login-divider" role="separator"><span>or</span></div>
       <div class="milo-social-group">
@@ -99,6 +113,7 @@ export function renderAccountLogin(sessionId = 'aarav') {
 function finish(sessionId) {
   const live = session(sessionId);
   const destination = live.returnScreen || 'you';
+  linkToken = null;
   resetLoginFlow();
   store.updateSession(sessionId, { returnScreen: null, originScreen: null, loginReason: null, screen: destination });
 }
@@ -126,6 +141,12 @@ export function attachAccountLoginListeners(container, sessionId = 'aarav') {
     set({ email, busy: true, error: '' }, sessionId);
     const r = await startEmail(email);
     set(r.ok ? { step: 'code', busy: false } : { busy: false, error: errorText(r) }, sessionId);
+  });
+
+  container.querySelector(`#miloLinkContinue-${sessionId}`)?.addEventListener('click', async () => {
+    if (flow.busy || !linkToken) return;
+    set({ busy: true, error: '' }, sessionId);
+    await signedIn(sessionId, await verifyEmailLink(sessionId, linkToken));
   });
 
   const codeForm = container.querySelector(`#miloCodeForm-${sessionId}`);

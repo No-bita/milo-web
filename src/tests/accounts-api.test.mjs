@@ -12,7 +12,7 @@ import { EXPERIENCE_POOL } from '../data/mockData.js';
 
 const ORIGIN = 'http://127.0.0.1';
 const CLIENT_ID = 'test-client.apps.googleusercontent.com';
-const MIGRATIONS = ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql', 'intent-v31.sql', 'accounts.sql', 'account-ownership.sql'];
+const MIGRATIONS = ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql', 'intent-v31.sql', 'accounts.sql', 'account-ownership.sql', 'email-links.sql'];
 const env = { NODE_ENV: 'test', MILO_PHASE1_ENABLED: 'true', MILO_ACCOUNTS_ENABLED: 'true', MILO_PUBLIC_ORIGIN: ORIGIN, RATE_LIMIT_SECRET: 'x', AUTH_SECRET: 'auth-secret-for-tests', GOOGLE_CLIENT_ID: CLIENT_ID, OPS_SECRET: 'ops-secret-for-tests-only-123' };
 
 let db, api, clock = Date.parse('2026-10-27T10:00:00Z');
@@ -31,7 +31,7 @@ before(async () => {
   let tail = Promise.resolve();
   const acquire = async () => { const previous = tail; let release; tail = new Promise(r => { release = r; }); await previous; return { query: (q, a) => db.query(q, a), release }; };
   api = createApi({ acquire, env, clientIp, now: () => clock,
-    mailer: async ({ to, code }) => { mail.push({ to, code }); },
+    mailer: async ({ to, code, link }) => { mail.push({ to, code, link }); },
     verifyGoogle: googleVerifier(env, fakeGoogleKeys) });
 });
 after(async () => db.close());
@@ -233,6 +233,32 @@ test('accounts off: the routes are not there and booking works as before', async
     const res = await off(new Request(`${ORIGIN}${path}`, { method, headers: { origin: ORIGIN, 'content-type': 'application/json' }, ...(method === 'POST' ? { body: '{"email":"a@example.com"}' } : {}) }));
     assert.equal(res.status, 404, path);
   }
+});
+
+test('email link: no GET consumption, one use shared with code, expiry, raw token not stored', async () => {
+  await call('POST', '/api/auth/email/start', { body: { email: 'link@example.com' } });
+  const sent = mail.at(-1), token = new URLSearchParams(new URL(sent.link).hash.slice(1)).get('milo-sign-in');
+  assert.equal(new URL(sent.link).origin, ORIGIN);
+  assert.match(token, /^[A-Za-z0-9_-]{43}$/);
+  assert.equal((await call('GET', '/api/auth/email/link')).status, 405);
+  const jar = {};
+  const r = await call('POST', '/api/auth/email/link', { body: { token }, jar });
+  assert.equal(r.status, 200);
+  assert.equal(r.data.account.email, 'link@example.com');
+  assert.equal((await call('GET', '/api/me', { jar })).status, 200);
+  assert.equal((await call('POST', '/api/auth/email/link', { body: { token } })).status, 400);
+  assert.equal((await call('POST', '/api/auth/email/verify', { body: { email: sent.to, code: sent.code } })).status, 400);
+  await call('POST', '/api/auth/email/start', { body: { email: 'code-first@example.com' } });
+  const codeFirst = mail.at(-1);
+  const t2 = new URLSearchParams(new URL(codeFirst.link).hash.slice(1)).get('milo-sign-in');
+  assert.equal((await call('POST', '/api/auth/email/verify', { body: { email: codeFirst.to, code: codeFirst.code } })).status, 200);
+  assert.equal((await call('POST', '/api/auth/email/link', { body: { token: t2 } })).status, 400);
+  await call('POST', '/api/auth/email/start', { body: { email: 'expired-link@example.com' } });
+  const t3 = new URLSearchParams(new URL(mail.at(-1).link).hash.slice(1)).get('milo-sign-in');
+  clock += 11 * 60_000;
+  assert.equal((await call('POST', '/api/auth/email/link', { body: { token: t3 } })).status, 400);
+  const raw = JSON.stringify((await db.query('SELECT * FROM login_codes')).rows);
+  assert.ok(!raw.includes(token));
 });
 
  test('Google non-authoritative mailbox never links an email account; established sub still works', async () => {

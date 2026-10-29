@@ -37,6 +37,11 @@ export async function verifyEmail(sessionId, email, code) {
   return r.ok ? afterSignIn(sessionId) : r;
 }
 
+export async function verifyEmailLink(sessionId, token) {
+  const r = await send('POST', '/api/auth/email/link', { token });
+  return r.ok ? afterSignIn(sessionId) : r;
+}
+
 export async function googleSignIn(sessionId, credential) {
   const r = await send('POST', '/api/auth/google', { credential });
   return r.ok ? afterSignIn(sessionId) : r;
@@ -91,4 +96,4 @@ export async function syncAccount() {
   if (!seats.length) return;
   const claim = await send('POST', '/api/me/claim', { seats });
   if (claim.ok && claim.data.claimed > 0) await refreshAccount(store);
-}
+  }
