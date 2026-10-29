@@ -5,6 +5,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
@@ -13,19 +14,59 @@ const dist = (p) => readFile(new URL(`../../dist/${p}`, import.meta.url), 'utf8'
 const site = 'http://127.0.0.1:4193';
 let server, browser;
 
+// Accept readiness only from this child, never an unrelated server on the port.
+function startPreview(port) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { cwd: root });
+    let output = '';
+    const timer = setTimeout(() => fail(new Error('Preview startup timed out')), 10000);
+    function cleanup() {
+      clearTimeout(timer);
+      child.off('error', fail);
+      child.off('exit', exited);
+      child.stdout.off('data', ready);
+    }
+    function fail(error) { cleanup(); child.kill(); reject(error); }
+    function exited(code) { fail(new Error(`Preview exited before readiness (${code}): ${output}`)); }
+    function ready(chunk) {
+      output += chunk;
+      if (!output.includes(`http://127.0.0.1:${port}/`)) return;
+      if (child.exitCode !== null) return exited(child.exitCode);
+      cleanup();
+      resolve(child);
+    }
+    child.on('error', fail);
+    child.on('exit', exited);
+    child.stdout.on('data', ready);
+    child.stderr.on('data', chunk => { output += chunk; });
+  });
+}
+
 before(async () => {
-  server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', '4193', '--strictPort'], { cwd: root });
-  for (let n = 0; n < 100; n++) { try { if ((await fetch(`${site}/app/`)).ok) break; } catch { /* starting */ } await new Promise(r => setTimeout(r, 100)); }
+  server = await startPreview(4193);
   browser = await chromium.launch({ ...(process.env.CHROME_BIN ? { executablePath: process.env.CHROME_BIN } : {}), headless: true });
 });
 after(async () => { await browser?.close(); server?.kill(); });
 
+test('preview startup rejects an occupied port instead of testing another server', async () => {
+  const occupied = createServer();
+  await new Promise((resolve, reject) => {
+    occupied.once('error', reject);
+    occupied.listen(0, '127.0.0.1', resolve);
+  });
+  try {
+    await assert.rejects(startPreview(occupied.address().port), /Preview exited before readiness/);
+  } finally {
+    await new Promise((resolve, reject) => occupied.close(error => error ? reject(error) : resolve()));
+  }
+});
+
 test('/app/ carries the landing link preview, theme colour and icon', async () => {
   const html = await dist('app/index.html');
   for (const tag of [
-    '<meta property="og:url" content="https://www.aaryanshah.co.in/app/" />',
+    '<meta property="og:url" content="https://milo.aaryanshah.co.in/app/" />',
     '<meta property="og:title" content="milo. - You picked the person. Milo handles the plan." />',
-    '<meta property="og:image" content="https://www.aaryanshah.co.in/og-image.png" />',
+    '<meta property="og:image" content="https://milo.aaryanshah.co.in/og-image.png" />',
     '<meta name="twitter:card" content="summary_large_image" />',
     '<meta name="theme-color" content="#FBF8F4" />',
     '<link rel="icon" type="image/svg+xml" href="../favicon.svg" />'
