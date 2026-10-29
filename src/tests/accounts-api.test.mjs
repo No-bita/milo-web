@@ -12,7 +12,7 @@ import { EXPERIENCE_POOL } from '../data/mockData.js';
 
 const ORIGIN = 'http://127.0.0.1';
 const CLIENT_ID = 'test-client.apps.googleusercontent.com';
-const MIGRATIONS = ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql', 'intent-v31.sql', 'accounts.sql'];
+const MIGRATIONS = ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql', 'intent-v31.sql', 'accounts.sql', 'account-ownership.sql'];
 const env = { NODE_ENV: 'test', MILO_PHASE1_ENABLED: 'true', MILO_ACCOUNTS_ENABLED: 'true', MILO_PUBLIC_ORIGIN: ORIGIN, RATE_LIMIT_SECRET: 'x', AUTH_SECRET: 'auth-secret-for-tests', GOOGLE_CLIENT_ID: CLIENT_ID, OPS_SECRET: 'ops-secret-for-tests-only-123' };
 
 let db, api, clock = Date.parse('2026-10-27T10:00:00Z');
@@ -58,7 +58,7 @@ async function emailSignIn(email) {
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
 function idToken(claims, { kid = 'k1', key = privateKey } = {}) {
   const head = b64({ alg: 'RS256', kid, typ: 'JWT' });
-  const body = b64({ iss: 'https://accounts.google.com', aud: CLIENT_ID, exp: Math.floor(clock / 1000) + 600, email_verified: true, ...claims });
+  const body = b64({ iss: 'https://accounts.google.com', aud: CLIENT_ID, exp: Math.floor(clock / 1000) + 600, email_verified: true, hd: 'example.com', ...claims });
   const sig = createSign('RSA-SHA256').update(`${head}.${body}`).sign(key).toString('base64url');
   return `${head}.${body}.${sig}`;
 }
@@ -234,3 +234,23 @@ test('accounts off: the routes are not there and booking works as before', async
     assert.equal(res.status, 404, path);
   }
 });
+
+ test('Google non-authoritative mailbox never links an email account; established sub still works', async () => {
+  const owner = await emailSignIn('protected@example.com');
+  const r = await call('POST', '/api/auth/google', { body: { credential: idToken({ sub: 'stale-mailbox', email: owner.account.email, hd: undefined }) } });
+  assert.equal(r.status, 403);
+  assert.equal(r.data.error, 'email_verification_required');
+  assert.equal((await db.query('SELECT google_sub FROM accounts WHERE id=$1', [owner.account.id])).rows[0].google_sub, null);
+  assert.equal((await call('POST', '/api/auth/google', { body: { credential: idToken({ sub: 'gmail-user', email: 'safe.user@gmail.com', hd: undefined }) } })).status, 200);
+  assert.equal((await call('POST', '/api/auth/google', { body: { credential: idToken({ sub: 'gmail-user', email: 'new@example.com', hd: undefined }) } })).status, 200);
+ });
+ test('one account cannot book with the other seat or claim both halves', async () => {
+  const who = await emailSignIn('one-half@example.com');
+  const p = await togetherPlan({ name: 'One' }, { name: 'Two' });
+  const claim = seat_key => call('POST', '/api/me/claim', { jar: who.jar, body: { seats: [{ plan_id: p.id, seat_key }] } });
+  assert.equal((await claim(p.seatA)).data.claimed, 1);
+  assert.equal((await claim(p.seatB)).data.claimed, 0);
+  assert.equal((await call('POST', `/api/plans/${p.id}/booking`, { jar: who.jar, key: p.seatB, body: { budget_band: '2k_4k', window_hours: 3, contact: '+91 93333 44444' } })).status, 403);
+  const seats = (await db.query('SELECT id FROM participants WHERE plan_id=$1 AND account_id IS NULL', [p.id])).rows;
+  await assert.rejects(db.query('UPDATE participants SET account_id=$1 WHERE id=$2', [who.account.id, seats[0].id]), e => e.code === '23505');
+ });
