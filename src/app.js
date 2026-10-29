@@ -13,6 +13,7 @@ import { inviteFromParams, renderInviteError } from './domain/invite.js';
 import { attachStorageAdapter } from './domain/storage-adapter.js';
 import { isPhase1Enabled, attachNetworkSync } from './domain/network-adapter.js';
 import { accountsEnabled } from './domain/account-api.js';
+import { prepareEmailLink } from './screens/login-accounts.js';
 import { syncAccount } from './domain/auth.js';
 import { showPartnerJoin } from './screens/partner-join.js';
 import { renderScreen00, attachScreen00Listeners } from './screens/s0-invitation.js';
@@ -207,7 +208,8 @@ export function initApp(container, { loadSynthesis = loadPersonalSynthesis } = {
   const isReset = urlParams.get('reset');
   const isGolden = urlParams.get('golden');
   const vpParam = urlParams.get('vp');
-  const screenParam = urlParams.get('screen');
+  const emailLink = accountsEnabled() && prepareEmailLink();
+  const screenParam = emailLink ? 'login' : urlParams.get('screen');
 
   // Server invite (/app/?invite=<token>, no ?as): the partner joins a real plan. Only with the launch flag.
   // Shared solo plan (/app/?shared=<token>): read-only, for the planner's partner.
