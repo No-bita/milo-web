@@ -10,12 +10,12 @@ import { chromium } from 'playwright';
 import { startPhase1LocalServer } from './support/phase1-local-server.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const distDir = fileURLToPath(new URL('../../dist-accounts-live/', import.meta.url));
+const distDir = fileURLToPath(new URL('../../dist-accounts-logout/', import.meta.url));
 const SHOTS = process.env.MILO_SCREENS || null;
 let server, browser;
 
 before(async () => {
-  const built = spawnSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--mode', 'qa', '--outDir', 'dist-accounts-live', '--emptyOutDir', '--logLevel', 'error'], {
+  const built = spawnSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--mode', 'qa', '--outDir', 'dist-accounts-logout', '--logLevel', 'error'], {
     cwd: root, env: { ...process.env, VITE_MILO_PHASE1: 'true', VITE_MILO_ACCOUNTS: 'true' }, encoding: 'utf8'
   });
   assert.equal(built.status, 0, built.stderr);
@@ -27,7 +27,7 @@ after(async () => { await browser?.close(); await server?.close(); });
 const shot = async (page, name) => { if (SHOTS) { await page.waitForTimeout(250); await page.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: true }); } };
 
 test('email code sign-in, name once, You shows the account, sign out', async () => {
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const context = await browser.newContext({ viewport: { width: 420, height: 844 } });
   const page = await context.newPage();
   page.setDefaultTimeout(20000);
   const errors = [];
@@ -77,6 +77,14 @@ test('email code sign-in, name once, You shows the account, sign out', async () 
     await page.goto(`${server.site}/app/?screen=you`);
     await page.locator('.milo-you-account').waitFor();
     await page.locator('#miloYouAccountManage').click();
+    await page.route('**/api/auth/logout', route => route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"unavailable"}' }));
+    await page.locator('#miloYouSignOut').click();
+    await page.locator('#miloSignOutError:not([hidden])').waitFor();
+    assert.equal(await page.locator('.milo-you-account h2').textContent(), 'Asha');
+    assert.equal(await page.locator('#miloYouSignOut').isEnabled(), true);
+    assert.equal(await page.evaluate(() => fetch('/api/me').then(r => r.status)), 200);
+    await shot(page, 'logout-failed-still-signed-in');
+    await page.unroute('**/api/auth/logout');
     await page.locator('#miloYouSignOut').click();
     await page.locator('#miloYouLoginBtn').waitFor();
     assert.equal(await page.locator('#miloYouLoginBtn').textContent(), 'Sign in or create account');

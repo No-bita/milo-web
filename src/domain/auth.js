@@ -49,9 +49,11 @@ export async function setAccountName(name) {
 }
 
 export async function signOut(sessionId) {
-  await send('POST', '/api/auth/logout');
+  const result = await send('POST', '/api/auth/logout');
+  if (!result.ok) return result;
   store.setSessionUser(sessionId, null);
   store.setAccount({ status: 'signed_out', me: null, people: [], nights: [] });
+  return result;
 }
 
 // Loads Google's sign-in script once, only when a client id is configured.
