@@ -13,7 +13,7 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 // accounts: true turns on accounts v1 with a fake mailer; sent codes are in `mail`.
 export async function startPhase1LocalServer({ distDir, opsSecret = 'local-ops-secret-for-tests', accounts = false }) {
   const db = new PGlite();
-  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql', 'intent-v31.sql', 'accounts.sql', 'booking-length.sql']) await db.exec(await readFile(new URL(`../../../server/${file}`, import.meta.url), 'utf8'));
+  for (const file of ['schema.sql', 'gifts.sql', 'concierge.sql', 'solo.sql', 'data-v2a.sql', 'data-v2b.sql', 'intent-v31.sql', 'accounts.sql', 'account-ownership.sql', 'email-links.sql', 'booking-length.sql']) await db.exec(await readFile(new URL(`../../../server/${file}`, import.meta.url), 'utf8'));
   // PGlite has one connection: serialize requests like a single pooled client.
   let tail = Promise.resolve();
   const acquire = async () => {
@@ -27,7 +27,7 @@ export async function startPhase1LocalServer({ distDir, opsSecret = 'local-ops-s
   const mail = [];
   if (accounts) Object.assign(env, { MILO_ACCOUNTS_ENABLED: 'true', AUTH_SECRET: 'local-auth-secret-for-tests' });
   const api = createApi({ acquire, env, clientIp: () => '127.0.0.1', now: () => Date.now() + clockOffset,
-    mailer: async ({ to, code }) => { mail.push({ to, code }); }, verifyGoogle: async () => { throw Object.assign(new Error('no google in tests'), { status: 503 }); } });
+    mailer: async ({ to, code, link }) => { mail.push({ to, code, link }); }, verifyGoogle: async () => { throw Object.assign(new Error('no google in tests'), { status: 503 }); } });
 
   const serveFile = async (pathname, res) => {
     let file = normalize(join(distDir, decodeURIComponent(pathname)));
